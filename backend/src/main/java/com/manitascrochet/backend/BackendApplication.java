@@ -1,0 +1,28 @@
+package com.manitascrochet.backend;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class BackendApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(BackendApplication.class, args);
+	}
+
+/* 	@Bean
+	CommandLineRunner pruebas(FiguraService figuraService) {
+		return args -> {
+
+			Figura figura = new Figura();
+			figura.setNombre("Totoro");
+			figura.setCategoria("Anime");
+			figura.setDificultad("Intermedio");
+
+			figuraService.guardar(figura);
+
+			System.out.println("Figura guardada correctamente");
+		};
+	} */
+
+}
