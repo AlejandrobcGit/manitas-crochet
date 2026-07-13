@@ -7,8 +7,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
 
-@Data
 @Document(collection = "figuras")
+@Data
 public class Figura {
 
     @Id
@@ -18,13 +18,13 @@ public class Figura {
 
     private String descripcion;
 
-    private String categoria;
+    private String categoriaId;
 
-    private String dificultad;
+    private Dificultad dificultad;
 
     private String autor;
 
     private String imagenPrincipal;
 
-    private List<String> materiales;
+    private List<String> coloresIds;
 }

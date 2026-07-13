@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.manitascrochet.backend.model.Figura;
+import com.manitascrochet.backend.repository.CategoriaRepository;
+import com.manitascrochet.backend.repository.ColorRepository;
 import com.manitascrochet.backend.repository.FiguraRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 public class FiguraService {
 
     private final FiguraRepository figuraRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final ColorRepository colorRepository;
 
     // Obtener todas las figuras
     public List<Figura> obtenerTodas() {
@@ -28,6 +32,16 @@ public class FiguraService {
 
     // Crear o guardar figura
     public Figura guardar(Figura figura) {
+
+        categoriaRepository.findById(figura.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("La categoría no existe"));
+
+        for (String colorId : figura.getColoresIds()) {
+
+            colorRepository.findById(colorId)
+                    .orElseThrow(() -> new RuntimeException(
+                            "El color con id " + colorId + " no existe"));
+        }
         return figuraRepository.save(figura);
     }
 
@@ -37,13 +51,23 @@ public class FiguraService {
         Figura figura = figuraRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Figura no encontrada"));
 
+        categoriaRepository.findById(figura.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("La categoría no existe"));
+
+        for (String colorId : figura.getColoresIds()) {
+
+            colorRepository.findById(colorId)
+                    .orElseThrow(() -> new RuntimeException(
+                            "El color con id " + colorId + " no existe"));
+        }
+        
         figura.setNombre(figuraActualizada.getNombre());
         figura.setDescripcion(figuraActualizada.getDescripcion());
-        figura.setCategoria(figuraActualizada.getCategoria());
+        figura.setCategoriaId(figuraActualizada.getCategoriaId());
         figura.setDificultad(figuraActualizada.getDificultad());
         figura.setAutor(figuraActualizada.getAutor());
         figura.setImagenPrincipal(figuraActualizada.getImagenPrincipal());
-        figura.setMateriales(figuraActualizada.getMateriales());
+        figura.setColoresIds(figuraActualizada.getColoresIds());
 
         return figuraRepository.save(figura);
     }

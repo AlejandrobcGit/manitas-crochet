@@ -10,19 +10,4 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
-/* 	@Bean
-	CommandLineRunner pruebas(FiguraService figuraService) {
-		return args -> {
-
-			Figura figura = new Figura();
-			figura.setNombre("Totoro");
-			figura.setCategoria("Anime");
-			figura.setDificultad("Intermedio");
-
-			figuraService.guardar(figura);
-
-			System.out.println("Figura guardada correctamente");
-		};
-	} */
-
 }
