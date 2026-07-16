@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.service.FiguraService;
 
@@ -26,8 +27,8 @@ public class FiguraController {
 
     // GET /api/figuras
     @GetMapping
-    public List<Figura> obtenerTodas() {
-        return figuraService.obtenerTodas();
+    public List<FiguraListadoDto> obtenerTodas() {
+        return figuraService.obtenerTodasDto();
     }
 
     // GET /api/figuras/{id}

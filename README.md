@@ -155,58 +155,28 @@ manitas-crochet/
 Ejemplo de documento almacenado en MongoDB:
 
 ```json
-{
-  "id": "1",
-  "nombre": "Totoro",
-  "descripcion": "Figura inspirada en Mi Vecino Totoro",
-  "categoria": "Anime",
-  "dificultad": "Intermedio",
-  "autor": "Manitas Crochet",
-  "imagenPrincipal": "totoro.jpg",
-  "materiales": [
-    "Algodón gris",
-    "Algodón blanco",
-    "Ojos de seguridad"
-  ]
-}
+[
+  {
+    "id": "6a556072919c8e369d5dba43",
+    "nombre": "Pikachu",
+    "descripcion": "Figura amigurumi inspirada en Pokémon",
+    "categoria": "Anime",
+    "dificultad": "PRINCIPIANTE",
+    "autor": "Alejo",
+    "imagenPrincipal": "pikachu.jpg",
+    "colores": [
+      {
+        "nombre": "Amarillo",
+        "codigo": "#FFFF00"
+      },
+      {
+        "nombre": "Negro",
+        "codigo": "#000000"
+      }
+    ]
+  }
+]
 ```
-
----
-
-## 🚀 Funcionalidades MVP
-
-### RF-01 – Visualizar catálogo
-
-Visualización de todas las figuras registradas.
-
-### RF-02 – Ver detalle
-
-Consulta completa de una figura.
-
-### RF-03 – Búsqueda
-
-Búsqueda por nombre.
-
-### RF-04 – Filtrado
-
-Filtrado por categoría y dificultad.
-
-### RF-05 – Crear figura
-
-Registro de nuevas creaciones.
-
-### RF-06 – Editar figura
-
-Actualización de información existente.
-
-### RF-07 – Eliminar figura
-
-Eliminación de registros.
-
-### RF-08 – Gestión de materiales
-
-Listado dinámico de materiales por figura.
-
 ---
 
 ## 🔮 Roadmap

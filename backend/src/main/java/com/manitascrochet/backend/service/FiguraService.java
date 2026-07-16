@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.manitascrochet.backend.dto.ColorDto;
+import com.manitascrochet.backend.dto.FiguraListadoDto;
+import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 import com.manitascrochet.backend.repository.ColorRepository;
@@ -21,8 +24,40 @@ public class FiguraService {
     private final ColorRepository colorRepository;
 
     // Obtener todas las figuras
-    public List<Figura> obtenerTodas() {
-        return figuraRepository.findAll();
+    public List<FiguraListadoDto> obtenerTodasDto() {
+        return figuraRepository.findAll()
+                .stream()
+                .map(this::convertirADto)
+                .toList();
+    }
+
+    // Obtener todas las figuras y convertirlas a DTO
+    private FiguraListadoDto convertirADto(Figura figura) {
+
+        String categoria = categoriaRepository
+                .findById(figura.getCategoriaId())
+                .map(Categoria::getNombre)
+                .orElse("Sin categoría");
+
+        List<ColorDto> colores = figura.getColoresIds()
+                .stream()
+                .map(colorId -> colorRepository.findById(colorId))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(color -> new ColorDto(
+                        color.getNombre(),
+                        color.getCodigo()))
+                .toList();
+
+        return new FiguraListadoDto(
+                figura.getId(),
+                figura.getNombre(),
+                figura.getDescripcion(),
+                categoria,
+                figura.getDificultad(),
+                figura.getAutor(),
+                figura.getImagenPrincipal(),
+                colores);
     }
 
     // Obtener una figura por id
@@ -60,7 +95,7 @@ public class FiguraService {
                     .orElseThrow(() -> new RuntimeException(
                             "El color con id " + colorId + " no existe"));
         }
-        
+
         figura.setNombre(figuraActualizada.getNombre());
         figura.setDescripcion(figuraActualizada.getDescripcion());
         figura.setCategoriaId(figuraActualizada.getCategoriaId());
