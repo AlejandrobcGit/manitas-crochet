@@ -1,7 +1,6 @@
 package com.manitascrochet.backend.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,12 +26,12 @@ public class ColorController {
     // GET /api/color
     @GetMapping
     public List<Color> obtenerTodas() {
-        return colorService.obtenerTodas();
+        return colorService.obtenerTodos();
     }
 
     // GET /api/color/{id}
     @GetMapping("/{id}")
-    public Optional<Color> obtenerPorId(@PathVariable String id) {
+    public Color obtenerPorId(@PathVariable String id) {
         return colorService.obtenerPorId(id);
     }
 

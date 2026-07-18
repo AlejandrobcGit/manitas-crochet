@@ -1,10 +1,11 @@
 package com.manitascrochet.backend.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaDuplicadaException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 
@@ -22,16 +23,16 @@ public class CategoriaService {
     }
 
     // Obtener una categoria por id
-    public Optional<Categoria> obtenerPorId(String id) {
-        return categoriaRepository.findById(id);
+    public Categoria obtenerPorId(String id) {
+        return categoriaRepository.findById(id)
+                .orElseThrow(() -> new CategoriaNoEncontradaException(id));
     }
 
     // Crear o guardar categoria
     public Categoria guardar(Categoria categoria) {
-         categoriaRepository.findByNombreIgnoreCase(categoria.getNombre())
+        categoriaRepository.findByNombreIgnoreCase(categoria.getNombre())
                 .ifPresent(existingCategoria -> {
-                    throw new RuntimeException(
-                            "Ya existe una categoria con el mismo nombre");
+                    throw new CategoriaDuplicadaException(categoria.getNombre());
                 });
         return categoriaRepository.save(categoria);
     }
@@ -40,22 +41,28 @@ public class CategoriaService {
     public Categoria actualizar(String id, Categoria categoriaActualizada) {
 
         Categoria categoria = categoriaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
-        
-        categoriaRepository.findByNombreIgnoreCase(categoriaActualizada.getNombre())
+                .orElseThrow(() -> new CategoriaNoEncontradaException(id));
+
+        categoriaRepository.findByNombreIgnoreCase(
+                categoriaActualizada.getNombre())
                 .ifPresent(existingCategoria -> {
+
                     if (!existingCategoria.getId().equals(id)) {
-                        throw new RuntimeException("Ya existe una categoria con el mismo nombre");
+                        throw new CategoriaDuplicadaException(
+                                categoriaActualizada.getNombre());
                     }
                 });
 
-        categoria.setNombre(categoriaActualizada.getNombre());
-        
+        categoria.setNombre(
+                categoriaActualizada.getNombre());
+
         return categoriaRepository.save(categoria);
     }
 
     // Eliminar categoria
     public void eliminar(String id) {
+        categoriaRepository.findById(id)
+                .orElseThrow(() -> new CategoriaNoEncontradaException(id));
         categoriaRepository.deleteById(id);
     }
 }

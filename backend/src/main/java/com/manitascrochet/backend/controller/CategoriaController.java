@@ -1,7 +1,6 @@
 package com.manitascrochet.backend.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +31,7 @@ public class CategoriaController {
 
     // GET /api/categorias/{id}
     @GetMapping("/{id}")
-    public Optional<Categoria> obtenerPorId(@PathVariable String id) {
+    public Categoria obtenerPorId(@PathVariable String id) {
         return categoriaService.obtenerPorId(id);
     }
 

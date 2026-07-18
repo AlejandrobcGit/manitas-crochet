@@ -1,7 +1,6 @@
 package com.manitascrochet.backend.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,7 +32,7 @@ public class FiguraController {
 
     // GET /api/figuras/{id}
     @GetMapping("/{id}")
-    public Optional<Figura> obtenerPorId(@PathVariable String id) {
+    public Figura obtenerPorId(@PathVariable String id) {
         return figuraService.obtenerPorId(id);
     }
 

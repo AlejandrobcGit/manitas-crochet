@@ -1,5 +1,6 @@
 package com.manitascrochet.backend.model;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -26,5 +27,11 @@ public class Figura {
 
     private String imagenPrincipal;
 
+    private List<String> imagenesSecundarias;
+
     private List<String> coloresIds;
+
+    private LocalDateTime fechaCreacion;
+
+    private LocalDateTime fechaModificacion;
 }
