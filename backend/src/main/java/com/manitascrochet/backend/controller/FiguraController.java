@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.service.FiguraService;
@@ -32,8 +33,8 @@ public class FiguraController {
 
     // GET /api/figuras/{id}
     @GetMapping("/{id}")
-    public Figura obtenerPorId(@PathVariable String id) {
-        return figuraService.obtenerPorId(id);
+    public FiguraDetalleDto obtenerPorId(@PathVariable String id) {
+        return figuraService.obtenerPorIdDto(id);
     }
 
     // POST /api/figuras

@@ -31,6 +31,10 @@ public class Figura {
 
     private List<String> coloresIds;
 
+    private Integer altura;
+
+    private Integer ancho;
+
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaModificacion;

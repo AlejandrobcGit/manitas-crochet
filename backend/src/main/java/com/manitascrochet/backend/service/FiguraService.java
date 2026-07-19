@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.manitascrochet.backend.dto.ColorDto;
+import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
@@ -32,17 +33,48 @@ public class FiguraService {
 
                 return figuraRepository.findAll()
                                 .stream()
-                                .map(this::convertirADto)
+                                .map(this::convertirFiguraListadoDto)
                                 .toList();
         }
 
         // Convertir Figura a FiguraListadoDto
-        private FiguraListadoDto convertirADto(Figura figura) {
+        private FiguraListadoDto convertirFiguraListadoDto(Figura figura) {
 
                 String categoria = categoriaRepository
                                 .findById(figura.getCategoriaId())
                                 .map(Categoria::getNombre)
-                                .orElse("Sin categoría");
+                                .orElseThrow(() -> new CategoriaNoEncontradaException(figura.getCategoriaId()));
+
+                return new FiguraListadoDto(
+                                figura.getId(),
+                                figura.getNombre(),
+                                categoria,
+                                figura.getImagenPrincipal(),
+                                figura.getAltura(),
+                                figura.getAncho());
+        }
+
+        // Obtener figura por id
+        public Figura obtenerPorId(String id) {
+                return figuraRepository.findById(id)
+                                .orElseThrow(() -> new FiguraNoEncontradaException(id));
+        }
+
+        // Obtener figura por id en formato DTO
+        public FiguraDetalleDto obtenerPorIdDto(String id) {
+
+                return convertirFiguraDetalleDto(
+                                figuraRepository.findById(id)
+                                                .orElseThrow(() -> new FiguraNoEncontradaException(id)));
+        }
+
+        // Convertir Figura a FiguraDetalleDto
+        private FiguraDetalleDto convertirFiguraDetalleDto(Figura figura) {
+
+                String categoria = categoriaRepository
+                                .findById(figura.getCategoriaId())
+                                .map(Categoria::getNombre)
+                                .orElseThrow(() -> new CategoriaNoEncontradaException(figura.getCategoriaId()));
 
                 List<ColorDto> colores = figura.getColoresIds()
                                 .stream()
@@ -54,7 +86,7 @@ public class FiguraService {
                                                 color.getCodigo()))
                                 .toList();
 
-                return new FiguraListadoDto(
+                return new FiguraDetalleDto(
                                 figura.getId(),
                                 figura.getNombre(),
                                 figura.getDescripcion(),
@@ -62,14 +94,10 @@ public class FiguraService {
                                 figura.getDificultad(),
                                 figura.getAutor(),
                                 figura.getImagenPrincipal(),
-                                colores);
-        }
-
-        // Obtener figura por id
-        public Figura obtenerPorId(String id) {
-
-                return figuraRepository.findById(id)
-                                .orElseThrow(() -> new FiguraNoEncontradaException(id));
+                                figura.getImagenesSecundarias(),
+                                colores,
+                                figura.getAltura(),
+                                figura.getAncho());
         }
 
         // Crear figura
