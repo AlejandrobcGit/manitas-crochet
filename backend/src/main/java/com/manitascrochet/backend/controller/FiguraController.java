@@ -2,6 +2,7 @@ package com.manitascrochet.backend.controller;
 
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,13 +10,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.service.FiguraService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -38,9 +42,20 @@ public class FiguraController {
     }
 
     // POST /api/figuras
-    @PostMapping
-    public Figura crear(@RequestBody Figura figura) {
-        return figuraService.guardar(figura);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public FiguraDetalleDto crearFigura(
+
+            @RequestPart("data") @Valid Figura figura,
+
+            @RequestPart("imagenPrincipal") MultipartFile imagenPrincipal,
+
+            @RequestPart(value = "imagenesSecundarias", required = false) List<MultipartFile> imagenesSecundarias) {
+
+        return figuraService.crear(
+                figura,
+                imagenPrincipal,
+                imagenesSecundarias);
+
     }
 
     // PUT /api/figuras/{id}

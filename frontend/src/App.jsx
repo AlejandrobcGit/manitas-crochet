@@ -1,7 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
-import Inicio from "./pages/Inicio";
 import FiguraDetalle from "./pages/FiguraDetalle";
+import FiguraCrear from "./pages/FiguraCrear";
+import Inicio from "./pages/Inicio";
 
 function App() {
     return (
@@ -15,6 +16,10 @@ function App() {
             <Route
                 path="/figuras/:id"
                 element={<FiguraDetalle />}
+            />
+            <Route
+                path="/figura/"
+                element={<FiguraCrear />}
             />
 
         </Routes>

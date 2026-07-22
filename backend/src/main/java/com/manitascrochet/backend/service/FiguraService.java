@@ -1,10 +1,12 @@
 package com.manitascrochet.backend.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.manitascrochet.backend.dto.ColorDto;
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
@@ -27,6 +29,7 @@ public class FiguraService {
         private final FiguraRepository figuraRepository;
         private final CategoriaRepository categoriaRepository;
         private final ColorRepository colorRepository;
+        private final FileStorageService fileStorageService;
 
         // Obtener todas las figuras en formato DTO
         public List<FiguraListadoDto> obtenerTodasDto() {
@@ -101,7 +104,8 @@ public class FiguraService {
         }
 
         // Crear figura
-        public Figura guardar(Figura figura) {
+        public FiguraDetalleDto crear(Figura figura, MultipartFile imagenPrincipal,
+                        List<MultipartFile> imagenesSecundarias) {
 
                 categoriaRepository.findById(figura.getCategoriaId())
                                 .orElseThrow(() -> new CategoriaNoEncontradaException(
@@ -117,7 +121,47 @@ public class FiguraService {
                 figura.setFechaCreacion(LocalDateTime.now());
                 figura.setFechaModificacion(LocalDateTime.now());
 
-                return figuraRepository.save(figura);
+                // Guardamos primero SIN imágenes para que Mongo genere el ID.
+                Figura figuraGuardada = figuraRepository.save(figura);
+
+                // Guardar imagen principal
+                if (imagenPrincipal != null && !imagenPrincipal.isEmpty()) {
+
+                        String filename = fileStorageService.store(
+                                        imagenPrincipal,
+                                        figuraGuardada.getId(),
+                                        figuraGuardada.getNombre());
+
+                        figuraGuardada.setImagenPrincipal(filename);
+                }
+
+                // Guardar imágenes secundarias, cada una con un sufijo -1, -2, -3...
+                if (imagenesSecundarias != null && !imagenesSecundarias.isEmpty()) {
+
+                        List<String> nombresImagenes = new ArrayList<>();
+                        int indice = 1;
+
+                        for (MultipartFile imagen : imagenesSecundarias) {
+
+                                if (!imagen.isEmpty()) {
+
+                                        String nombreDiferenciado = figuraGuardada.getNombre() + "-" + indice;
+
+                                        String filename = fileStorageService.store(
+                                                        imagen,
+                                                        figuraGuardada.getId(),
+                                                        nombreDiferenciado);
+
+                                        nombresImagenes.add(filename);
+                                        indice++;
+                                }
+                        }
+
+                        figuraGuardada.setImagenesSecundarias(nombresImagenes);
+                }
+
+                // Segundo save: ahora sí con los nombres de archivo ya calculados.
+                return convertirFiguraDetalleDto(figuraRepository.save(figuraGuardada));
         }
 
         // Actualizar figura
