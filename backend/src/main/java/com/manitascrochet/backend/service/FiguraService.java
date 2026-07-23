@@ -100,7 +100,8 @@ public class FiguraService {
                                 figura.getImagenesSecundarias(),
                                 colores,
                                 figura.getAltura(),
-                                figura.getAncho());
+                                figura.getAncho(),
+                                figura.getPeso());
         }
 
         // Crear figura
@@ -165,9 +166,11 @@ public class FiguraService {
         }
 
         // Actualizar figura
-        public Figura actualizar(
+        public FiguraDetalleDto actualizar(
                         String id,
-                        Figura figuraActualizada) {
+                        Figura figuraActualizada,
+                        MultipartFile imagenPrincipal,
+                        List<MultipartFile> imagenesSecundarias) {
 
                 Figura figura = figuraRepository.findById(id)
                                 .orElseThrow(() -> new FiguraNoEncontradaException(id));
@@ -184,15 +187,90 @@ public class FiguraService {
                                                         colorId));
                 }
 
+                // ----------------------------------------------------
+                // DATOS BÁSICOS
+                // ----------------------------------------------------
+
                 figura.setNombre(figuraActualizada.getNombre());
                 figura.setDescripcion(figuraActualizada.getDescripcion());
                 figura.setCategoriaId(figuraActualizada.getCategoriaId());
                 figura.setDificultad(figuraActualizada.getDificultad());
+                figura.setAltura(figuraActualizada.getAltura());
+                figura.setAncho(figuraActualizada.getAncho());
+                figura.setPeso(figuraActualizada.getPeso());
                 figura.setAutor(figuraActualizada.getAutor());
-                figura.setImagenPrincipal(figuraActualizada.getImagenPrincipal());
                 figura.setColoresIds(figuraActualizada.getColoresIds());
-                figura.setFechaModificacion(LocalDateTime.now());
-                return figuraRepository.save(figura);
+
+                // ----------------------------------------------------
+                // IMAGEN PRINCIPAL
+                // ----------------------------------------------------
+
+                if (imagenPrincipal != null && !imagenPrincipal.isEmpty()) {
+
+                        // Borrar imagen anterior
+                        if (figura.getImagenPrincipal() != null &&
+                                        !figura.getImagenPrincipal().isBlank()) {
+
+                                fileStorageService.delete(
+                                                figura.getImagenPrincipal());
+                        }
+
+                        String filename = fileStorageService.store(
+                                        imagenPrincipal,
+                                        figura.getId(),
+                                        figura.getNombre());
+
+                        figura.setImagenPrincipal(filename);
+                }
+
+                // ----------------------------------------------------
+                // IMÁGENES SECUNDARIAS
+                // ----------------------------------------------------
+
+                if (imagenesSecundarias != null &&
+                                !imagenesSecundarias.isEmpty()) {
+
+                        // Borrar imágenes secundarias anteriores
+                        if (figura.getImagenesSecundarias() != null) {
+
+                                for (String imagen : figura.getImagenesSecundarias()) {
+
+                                        fileStorageService.delete(imagen);
+                                }
+                        }
+
+                        List<String> nombresImagenes = new ArrayList<>();
+
+                        int indice = 1;
+
+                        for (MultipartFile imagen : imagenesSecundarias) {
+
+                                if (!imagen.isEmpty()) {
+
+                                        String nombreDiferenciado = figura.getNombre() + "-" + indice;
+
+                                        String filename = fileStorageService.store(
+                                                        imagen,
+                                                        figura.getId(),
+                                                        nombreDiferenciado);
+
+                                        nombresImagenes.add(filename);
+
+                                        indice++;
+                                }
+                        }
+
+                        figura.setImagenesSecundarias(nombresImagenes);
+                }
+
+                // ----------------------------------------------------
+                // FECHA MODIFICACIÓN
+                // ----------------------------------------------------
+
+                figura.setFechaModificacion(
+                                LocalDateTime.now());
+
+                return convertirFiguraDetalleDto(figuraRepository.save(figura));
         }
 
         // Eliminar figura

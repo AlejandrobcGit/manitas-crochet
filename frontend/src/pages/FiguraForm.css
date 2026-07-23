@@ -91,6 +91,17 @@
   color: var(--color-ink-soft);
 }
 
+.form-medidas {
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  gap: 1rem;
+}
+
+.form-medidas .form-field {
+  min-width: 0;
+}
+
+
 /* --- Colores --- */
 
 .form-colores {

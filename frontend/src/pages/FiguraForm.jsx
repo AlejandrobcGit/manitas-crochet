@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { useApiFetch } from "../api/useApiFetch";
 import { FigurasContext } from "../contexts/FigurasContext";
@@ -7,23 +7,31 @@ import { FigurasContext } from "../contexts/FigurasContext";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-import "./FiguraCrear.css";
+import "./FiguraForm.css";
 
-const DIFICULTADES = ["PRINCIPIANTE", "INTERMEDIO", "AVANZADO"];
+const API_URL = "http://localhost:8080";
+
+const DIFICULTADES = [
+    "PRINCIPIANTE",
+    "INTERMEDIO",
+    "AVANZADO"
+];
 
 function FiguraForm() {
 
     const apiFetch = useApiFetch();
     const navigate = useNavigate();
+    const { id } = useParams();
+
+    const esEdicion = Boolean(id);
+
     const { recargarFiguras } = useContext(FigurasContext);
 
-    // --- Colecciones cargadas desde el backend ---
     const [categorias, setCategorias] = useState([]);
     const [coloresDisponibles, setColoresDisponibles] = useState([]);
     const [cargandoOpciones, setCargandoOpciones] = useState(true);
     const [errorOpciones, setErrorOpciones] = useState(null);
 
-    // --- Campos de texto/número ---
     const [nombre, setNombre] = useState("");
     const [categoriaId, setCategoriaId] = useState("");
     const [dificultad, setDificultad] = useState("");
@@ -31,10 +39,36 @@ function FiguraForm() {
     const [altura, setAltura] = useState("");
     const [ancho, setAncho] = useState("");
     const [autor, setAutor] = useState("");
+    const [peso, setPeso] = useState("");
+
     const [coloresIds, setColoresIds] = useState([]);
+
     const [comboColoresAbierto, setComboColoresAbierto] = useState(false);
     const [filtroColor, setFiltroColor] = useState("");
     const comboColoresRef = useRef(null);
+
+    const [imagenPrincipal, setImagenPrincipal] = useState(null);
+    const [imagenPrincipalPreview, setImagenPrincipalPreview] = useState(null);
+
+    const [imagenesSecundarias, setImagenesSecundarias] = useState([]);
+    const [imagenesSecundariasPreview, setImagenesSecundariasPreview] = useState([]);
+
+    const [cargandoFigura, setCargandoFigura] = useState(false);
+    const [enviando, setEnviando] = useState(false);
+    const [error, setError] = useState(null);
+
+    const crearUrlImagen = (filename) => {
+
+        if (!filename) {
+            return null;
+        }
+
+        if (filename.startsWith("http")) {
+            return filename;
+        }
+
+        return `${API_URL}/api/imagenes/${filename}`;
+    };
 
     useEffect(() => {
 
@@ -65,7 +99,6 @@ function FiguraForm() {
             } finally {
 
                 setCargandoOpciones(false);
-
             }
         };
 
@@ -73,112 +106,230 @@ function FiguraForm() {
 
     }, []);
 
-    // Cierra el combo de colores al hacer click fuera de él
     useEffect(() => {
 
-        const handleClickFuera = (e) => {
-            if (comboColoresRef.current && !comboColoresRef.current.contains(e.target)) {
+        if (!esEdicion) {
+            return;
+        }
+
+        const cargarFigura = async () => {
+
+            try {
+
+                setCargandoFigura(true);
+                setError(null);
+
+                const response = await apiFetch(`/api/figuras/${id}`);
+                const figura = await response.json();
+
+                setNombre(figura.nombre || "");
+                setDescripcion(figura.descripcion || "");
+                setDificultad(figura.dificultad || "");
+                setAutor(figura.autor || "");
+                setAltura(figura.altura ?? "");
+                setAncho(figura.ancho ?? "");
+                setPeso(figura.peso ?? "");
+
+                if (figura.categoriaId) {
+
+                    setCategoriaId(figura.categoriaId);
+
+                } else if (figura.categoria && categorias.length > 0) {
+
+                    const categoriaEncontrada = categorias.find(
+                        categoria => categoria.nombre === figura.categoria
+                    );
+
+                    setCategoriaId(categoriaEncontrada?.id || "");
+                }
+
+                if (figura.coloresIds) {
+
+                    setColoresIds(figura.coloresIds);
+
+                } else if (figura.colores && coloresDisponibles.length > 0) {
+
+                    const idsColores = figura.colores
+                        .map(colorDetalle => {
+
+                            const colorEncontrado = coloresDisponibles.find(
+                                color =>
+                                    color.nombre === colorDetalle.nombre ||
+                                    color.codigo === colorDetalle.codigo
+                            );
+
+                            return colorEncontrado?.id;
+                        })
+                        .filter(Boolean);
+
+                    setColoresIds(idsColores);
+                }
+
+                if (figura.imagenPrincipal) {
+                    setImagenPrincipalPreview(
+                        crearUrlImagen(figura.imagenPrincipal)
+                    );
+                }
+
+                if (figura.imagenesSecundarias) {
+                    setImagenesSecundariasPreview(
+                        figura.imagenesSecundarias.map(
+                            imagen => crearUrlImagen(imagen)
+                        )
+                    );
+                }
+
+            } catch (err) {
+
+                setError(err.message || "No se pudo cargar la figura");
+
+            } finally {
+
+                setCargandoFigura(false);
+            }
+        };
+
+        cargarFigura();
+
+    }, [id, esEdicion, categorias, coloresDisponibles]);
+
+    useEffect(() => {
+
+        const handleClickFuera = (event) => {
+
+            if (
+                comboColoresRef.current &&
+                !comboColoresRef.current.contains(event.target)
+            ) {
                 setComboColoresAbierto(false);
             }
         };
 
         document.addEventListener("mousedown", handleClickFuera);
 
-        return () => document.removeEventListener("mousedown", handleClickFuera);
+        return () => {
+            document.removeEventListener("mousedown", handleClickFuera);
+        };
 
     }, []);
 
-    // Seleccionados primero (en el orden en que se eligieron), luego el resto
-    // alfabéticamente; además filtra por el texto de búsqueda del combo.
     const coloresOrdenados = useMemo(() => {
 
         const texto = filtroColor.trim().toLowerCase();
 
         const filtrados = texto
-            ? coloresDisponibles.filter(c => c.nombre.toLowerCase().includes(texto))
+            ? coloresDisponibles.filter(color =>
+                color.nombre.toLowerCase().includes(texto)
+            )
             : coloresDisponibles;
 
         return [...filtrados].sort((a, b) => {
 
-            const aSel = coloresIds.includes(a.id);
-            const bSel = coloresIds.includes(b.id);
+            const aSeleccionado = coloresIds.includes(a.id);
+            const bSeleccionado = coloresIds.includes(b.id);
 
-            if (aSel && !bSel) return -1;
-            if (!aSel && bSel) return 1;
+            if (aSeleccionado && !bSeleccionado) {
+                return -1;
+            }
 
-            if (aSel && bSel) {
+            if (!aSeleccionado && bSeleccionado) {
+                return 1;
+            }
+
+            if (aSeleccionado && bSeleccionado) {
                 return coloresIds.indexOf(a.id) - coloresIds.indexOf(b.id);
             }
 
             return a.nombre.localeCompare(b.nombre);
-
         });
 
     }, [coloresDisponibles, coloresIds, filtroColor]);
 
-    const coloresSeleccionados = useMemo(
-        () => coloresIds
-            .map(id => coloresDisponibles.find(c => c.id === id))
-            .filter(Boolean),
-        [coloresIds, coloresDisponibles]
-    );
+    const coloresSeleccionados = useMemo(() => {
 
-    // --- Imágenes ---
-    const [imagenPrincipal, setImagenPrincipal] = useState(null);
-    const [imagenPrincipalPreview, setImagenPrincipalPreview] = useState(null);
+        return coloresIds
+            .map(colorId =>
+                coloresDisponibles.find(color => color.id === colorId)
+            )
+            .filter(Boolean);
 
-    const [imagenesSecundarias, setImagenesSecundarias] = useState([]);
-    const [imagenesSecundariasPreview, setImagenesSecundariasPreview] = useState([]);
+    }, [coloresIds, coloresDisponibles]);
 
-    // --- Estado de envío ---
-    const [enviando, setEnviando] = useState(false);
-    const [error, setError] = useState(null);
+    const handleImagenPrincipal = (event) => {
 
-    const handleImagenPrincipal = (e) => {
-        const file = e.target.files?.[0] || null;
+        const file = event.target.files?.[0] || null;
+
         setImagenPrincipal(file);
-        setImagenPrincipalPreview(file ? URL.createObjectURL(file) : null);
+
+        setImagenPrincipalPreview(
+            file ? URL.createObjectURL(file) : null
+        );
     };
 
-    const handleImagenesSecundarias = (e) => {
-        const files = Array.from(e.target.files || []);
+    const handleImagenesSecundarias = (event) => {
+
+        const files = Array.from(event.target.files || []);
+
         setImagenesSecundarias(files);
-        setImagenesSecundariasPreview(files.map(f => URL.createObjectURL(f)));
+
+        setImagenesSecundariasPreview(
+            files.map(file => URL.createObjectURL(file))
+        );
     };
 
-    const toggleColor = (id) => {
+    const toggleColor = (idColor) => {
+
         setColoresIds(prev =>
-            prev.includes(id)
-                ? prev.filter(c => c !== id)
-                : [...prev, id]
+            prev.includes(idColor)
+                ? prev.filter(colorId => colorId !== idColor)
+                : [...prev, idColor]
         );
     };
 
     const resetForm = () => {
+
         setNombre("");
         setCategoriaId("");
         setDificultad("");
         setDescripcion("");
         setAltura("");
         setAncho("");
+        setPeso("");
         setAutor("");
         setColoresIds([]);
+
         setImagenPrincipal(null);
         setImagenPrincipalPreview(null);
+
         setImagenesSecundarias([]);
         setImagenesSecundariasPreview([]);
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (event) => {
 
-        e.preventDefault();
+        event.preventDefault();
 
         if (!nombre.trim()) {
             setError("El nombre es obligatorio");
             return;
         }
 
-        if (!imagenPrincipal) {
+        if (!categoriaId) {
+            setError("La categoría es obligatoria");
+            return;
+        }
+
+        if (!dificultad) {
+            setError("La dificultad es obligatoria");
+            return;
+        }
+
+        if (coloresIds.length === 0) {
+            setError("Debes seleccionar al menos un color");
+            return;
+        }
+
+        if (!esEdicion && !imagenPrincipal) {
             setError("La imagen principal es obligatoria");
             return;
         }
@@ -188,76 +339,101 @@ function FiguraForm() {
 
         try {
 
-            // Objeto que se serializa como el "data" del @RequestPart @Valid Figura.
-            // categoriaId y coloresIds son solo los IDs de Mongo; el backend
-            // resuelve las referencias contra sus propias colecciones.
             const figura = {
                 nombre: nombre.trim(),
-                categoriaId: categoriaId || null,
-                dificultad: dificultad || null,
+                categoriaId,
+                dificultad,
                 descripcion: descripcion.trim() || null,
                 altura: altura ? Number(altura) : null,
                 ancho: ancho ? Number(ancho) : null,
+                peso: peso ? Number(peso) : null,
                 autor: autor.trim() || null,
                 coloresIds
             };
 
             const formData = new FormData();
 
-            // Parte "data": JSON con content-type explícito, tal como espera
-            // @RequestPart("data") @Valid Figura en el backend
             formData.append(
                 "data",
-                new Blob([JSON.stringify(figura)], { type: "application/json" })
+                new Blob(
+                    [JSON.stringify(figura)],
+                    { type: "application/json" }
+                )
             );
 
-            // Parte "imagenPrincipal": obligatoria
-            formData.append("imagenPrincipal", imagenPrincipal);
+            if (imagenPrincipal) {
+                formData.append("imagenPrincipal", imagenPrincipal);
+            }
 
-            // Parte "imagenesSecundarias": opcional, se puede repetir la key
             imagenesSecundarias.forEach(file => {
                 formData.append("imagenesSecundarias", file);
             });
 
-            // No fijar Content-Type a mano: el navegador añade el boundary
-            // correcto del multipart automáticamente.
-            const response = await apiFetch("/api/figuras", {
-                method: "POST",
+            const endpoint = esEdicion
+                ? `/api/figuras/${id}`
+                : "/api/figuras";
+
+            const method = esEdicion
+                ? "PUT"
+                : "POST";
+
+            const response = await apiFetch(endpoint, {
+                method,
                 body: formData
             });
 
-            if (!response.ok) {
-                throw new Error("Error al crear la figura");
-            }
-
-            const nuevaFigura = await response.json();
+            const figuraGuardada = await response.json();
 
             await recargarFiguras?.();
 
-            resetForm();
+            if (!esEdicion) {
+                resetForm();
+            }
 
-            navigate(`/figuras/${nuevaFigura.id}`);
+            navigate(`/figuras/${figuraGuardada.id}`);
 
         } catch (err) {
 
-            setError(err.message || "Error al crear la figura");
+            setError(
+                err.message ||
+                (
+                    esEdicion
+                        ? "Error al actualizar la figura"
+                        : "Error al crear la figura"
+                )
+            );
 
         } finally {
 
             setEnviando(false);
-
         }
     };
 
+    if (cargandoFigura) {
+
+        return (
+            <div className="app">
+                <Header />
+
+                <main className="form-main">
+                    <p className="form-status">
+                        Cargando figura...
+                    </p>
+                </main>
+
+                <Footer />
+            </div>
+        );
+    }
+
     return (
-
         <div className="app">
-
             <Header />
 
             <main className="form-main">
-
-                <h1 className="form-title">Nueva figura</h1>
+                <h1 className="form-title">
+                    {esEdicion ? "Editar figura" : "Nueva figura"}
+                </h1>
 
                 <form className="figura-form" onSubmit={handleSubmit}>
 
@@ -271,71 +447,102 @@ function FiguraForm() {
 
                         <label className="form-field">
                             <span>Nombre *</span>
+
                             <input
                                 type="text"
                                 value={nombre}
-                                onChange={e => setNombre(e.target.value)}
+                                onChange={event => setNombre(event.target.value)}
                                 required
                             />
                         </label>
 
                         <label className="form-field">
-                            <span>Categoría</span>
+                            <span>Categoría *</span>
+
                             <select
                                 value={categoriaId}
-                                onChange={e => setCategoriaId(e.target.value)}
+                                onChange={event => setCategoriaId(event.target.value)}
                                 disabled={cargandoOpciones}
+                                required
                             >
                                 <option value="">Selecciona…</option>
-                                {categorias.map(cat => (
-                                    <option key={cat.id} value={cat.id}>
-                                        {cat.nombre}
+
+                                {categorias.map(categoria => (
+                                    <option
+                                        key={categoria.id}
+                                        value={categoria.id}
+                                    >
+                                        {categoria.nombre}
                                     </option>
                                 ))}
                             </select>
                         </label>
 
                         <label className="form-field">
-                            <span>Dificultad</span>
+                            <span>Dificultad *</span>
+
                             <select
                                 value={dificultad}
-                                onChange={e => setDificultad(e.target.value)}
+                                onChange={event => setDificultad(event.target.value)}
+                                required
                             >
                                 <option value="">Selecciona…</option>
-                                {DIFICULTADES.map(d => (
-                                    <option key={d} value={d}>{d}</option>
+
+                                {DIFICULTADES.map(valor => (
+                                    <option key={valor} value={valor}>
+                                        {valor}
+                                    </option>
                                 ))}
                             </select>
                         </label>
 
                         <label className="form-field">
                             <span>Autor</span>
+
                             <input
                                 type="text"
                                 value={autor}
-                                onChange={e => setAutor(e.target.value)}
+                                onChange={event => setAutor(event.target.value)}
                             />
                         </label>
 
+                    </div>
+
+                    <div className="form-medidas">
+
                         <label className="form-field">
                             <span>Alto (cm)</span>
+
                             <input
                                 type="number"
                                 min="0"
                                 step="0.1"
                                 value={altura}
-                                onChange={e => setAltura(e.target.value)}
+                                onChange={event => setAltura(event.target.value)}
                             />
                         </label>
 
                         <label className="form-field">
                             <span>Ancho (cm)</span>
+
                             <input
                                 type="number"
                                 min="0"
                                 step="0.1"
                                 value={ancho}
-                                onChange={e => setAncho(e.target.value)}
+                                onChange={event => setAncho(event.target.value)}
+                            />
+                        </label>
+
+                        <label className="form-field">
+                            <span>Peso (g)</span>
+
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                value={peso}
+                                onChange={event => setPeso(event.target.value)}
                             />
                         </label>
 
@@ -343,16 +550,16 @@ function FiguraForm() {
 
                     <label className="form-field">
                         <span>Descripción</span>
+
                         <textarea
                             rows={4}
                             value={descripcion}
-                            onChange={e => setDescripcion(e.target.value)}
+                            onChange={event => setDescripcion(event.target.value)}
                         />
                     </label>
 
                     <div className="form-field" ref={comboColoresRef}>
-
-                        <span>Colores</span>
+                        <span>Colores *</span>
 
                         {errorOpciones && (
                             <p className="form-status form-status--error">
@@ -365,29 +572,39 @@ function FiguraForm() {
                             <button
                                 type="button"
                                 className="form-combo__control"
-                                onClick={() => setComboColoresAbierto(prev => !prev)}
+                                onClick={() =>
+                                    setComboColoresAbierto(prev => !prev)
+                                }
                                 disabled={cargandoOpciones}
                             >
-
                                 {coloresSeleccionados.length === 0 ? (
                                     <span className="form-combo__placeholder">
-                                        {cargandoOpciones ? "Cargando colores…" : "Selecciona colores…"}
+                                        {cargandoOpciones
+                                            ? "Cargando colores…"
+                                            : "Selecciona colores…"}
                                     </span>
                                 ) : (
                                     <span className="form-combo__tags">
                                         {coloresSeleccionados.map(color => (
-                                            <span className="form-combo__tag" key={color.id}>
+                                            <span
+                                                className="form-combo__tag"
+                                                key={color.id}
+                                            >
                                                 <span
                                                     className="form-combo__tag-swatch"
-                                                    style={{ backgroundColor: color.codigo }}
+                                                    style={{
+                                                        backgroundColor: color.codigo
+                                                    }}
                                                 />
+
                                                 {color.nombre}
+
                                                 <span
                                                     role="button"
                                                     tabIndex={-1}
                                                     className="form-combo__tag-quitar"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
+                                                    onClick={event => {
+                                                        event.stopPropagation();
                                                         toggleColor(color.id);
                                                     }}
                                                 >
@@ -401,11 +618,9 @@ function FiguraForm() {
                                 <span className="form-combo__flecha">
                                     {comboColoresAbierto ? "▲" : "▼"}
                                 </span>
-
                             </button>
 
                             {comboColoresAbierto && (
-
                                 <div className="form-combo__panel">
 
                                     <input
@@ -413,22 +628,26 @@ function FiguraForm() {
                                         className="form-combo__buscador"
                                         placeholder="Buscar color…"
                                         value={filtroColor}
-                                        onChange={e => setFiltroColor(e.target.value)}
+                                        onChange={event =>
+                                            setFiltroColor(event.target.value)
+                                        }
                                         autoFocus
                                     />
 
                                     <div className="form-combo__lista">
 
                                         {coloresOrdenados.map(color => (
-
                                             <label
                                                 className={
                                                     "form-combo__opcion" +
-                                                    (coloresIds.includes(color.id) ? " form-combo__opcion--activa" : "")
+                                                    (
+                                                        coloresIds.includes(color.id)
+                                                            ? " form-combo__opcion--activa"
+                                                            : ""
+                                                    )
                                                 }
                                                 key={color.id}
                                             >
-
                                                 <input
                                                     type="checkbox"
                                                     checked={coloresIds.includes(color.id)}
@@ -437,13 +656,13 @@ function FiguraForm() {
 
                                                 <span
                                                     className="form-combo__opcion-swatch"
-                                                    style={{ backgroundColor: color.codigo }}
+                                                    style={{
+                                                        backgroundColor: color.codigo
+                                                    }}
                                                 />
 
                                                 {color.nombre}
-
                                             </label>
-
                                         ))}
 
                                         {coloresOrdenados.length === 0 && (
@@ -453,22 +672,23 @@ function FiguraForm() {
                                         )}
 
                                     </div>
-
                                 </div>
-
                             )}
-
                         </div>
-
                     </div>
 
                     <label className="form-field">
-                        <span>Imagen principal *</span>
+                        <span>
+                            {esEdicion
+                                ? "Cambiar imagen principal"
+                                : "Imagen principal *"}
+                        </span>
+
                         <input
                             type="file"
                             accept="image/*"
                             onChange={handleImagenPrincipal}
-                            required
+                            required={!esEdicion}
                         />
                     </label>
 
@@ -482,6 +702,7 @@ function FiguraForm() {
 
                     <label className="form-field">
                         <span>Imágenes secundarias</span>
+
                         <input
                             type="file"
                             accept="image/*"
@@ -492,12 +713,12 @@ function FiguraForm() {
 
                     {imagenesSecundariasPreview.length > 0 && (
                         <div className="form-preview-grid">
-                            {imagenesSecundariasPreview.map((src, i) => (
+                            {imagenesSecundariasPreview.map((src, index) => (
                                 <img
-                                    key={i}
+                                    key={index}
                                     className="form-preview"
                                     src={src}
-                                    alt={`Vista previa secundaria ${i + 1}`}
+                                    alt={`Vista previa secundaria ${index + 1}`}
                                 />
                             ))}
                         </div>
@@ -508,17 +729,20 @@ function FiguraForm() {
                         className="form-btn form-btn--principal"
                         disabled={enviando}
                     >
-                        {enviando ? "Creando…" : "Crear figura"}
+                        {enviando
+                            ? esEdicion
+                                ? "Guardando…"
+                                : "Creando…"
+                            : esEdicion
+                                ? "Guardar cambios"
+                                : "Crear figura"}
                     </button>
 
                 </form>
-
             </main>
 
             <Footer />
-
         </div>
-
     );
 }
 

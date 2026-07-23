@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,11 +59,18 @@ public class FiguraController {
 
     // PUT /api/figuras/{id}
     @PutMapping("/{id}")
-    public Figura actualizar(
+    public FiguraDetalleDto actualizar(
             @PathVariable String id,
-            @RequestBody Figura figura) {
 
-        return figuraService.actualizar(id, figura);
+            @RequestPart("data") @Valid Figura figura,
+
+            @RequestPart(value = "imagenPrincipal", required = false) MultipartFile imagenPrincipal,
+
+            @RequestPart(value = "imagenesSecundarias", required = false) List<MultipartFile> imagenesSecundarias) {
+
+        return figuraService.actualizar(id, figura,
+                imagenPrincipal,
+                imagenesSecundarias);
     }
 
     // DELETE /api/figuras/{id}

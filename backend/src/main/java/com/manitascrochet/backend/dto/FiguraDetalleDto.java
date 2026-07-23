@@ -30,5 +30,7 @@ public class FiguraDetalleDto {
 
     private Integer altura;
 
-    private Integer ancho;  
+    private Integer ancho;
+    
+    private Integer peso;
 }

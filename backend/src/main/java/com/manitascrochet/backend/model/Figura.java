@@ -35,6 +35,8 @@ public class Figura {
 
     private Integer ancho;
 
+    private Integer peso;
+
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaModificacion;

@@ -84,13 +84,18 @@ function FiguraDetalle() {
                                     </p>
                                 )}
 
-                                {(figura.altura || figura.ancho) && (
+                                {(figura.altura || figura.ancho || figura.pesoGramos) && (
                                     <div className="detail-info__row">
                                         {figura.altura && (
                                             <span>Alto: {figura.altura} cm</span>
                                         )}
+
                                         {figura.ancho && (
                                             <span>Ancho: {figura.ancho} cm</span>
+                                        )}
+
+                                        {figura.peso && (
+                                            <span>Peso: {figura.peso} g</span>
                                         )}
                                     </div>
                                 )}

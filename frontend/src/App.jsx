@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 
 import FiguraDetalle from "./pages/FiguraDetalle";
-import FiguraCrear from "./pages/FiguraCrear";
+import FiguraForm from "./pages/FiguraForm";
 import Inicio from "./pages/Inicio";
 
 function App() {
@@ -18,9 +18,15 @@ function App() {
                 element={<FiguraDetalle />}
             />
             <Route
-                path="/figura/"
-                element={<FiguraCrear />}
+                path="/figuras/nueva"
+                element={<FiguraForm />}
             />
+
+            <Route
+                path="/figuras/editar/:id"
+                element={<FiguraForm />}
+            />
+
 
         </Routes>
     );
