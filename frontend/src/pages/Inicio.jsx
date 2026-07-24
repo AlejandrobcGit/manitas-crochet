@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useFiguras } from "../hooks/useFiguras";
+import { useCategorias } from "../hooks/useCategorias";
+import { useDebounce } from "../hooks/useDebounce";
 
 import FiguraCard from "../components/FiguraCard";
 import Header from "../components/Header";
@@ -12,40 +14,25 @@ function Inicio() {
 
     const {
         figuras,
+        recargarFiguras,
         loading,
         error
     } = useFiguras();
 
-    const [categoria, setCategoria] =
-        useState("Todas");
+    const {
+        categorias,
+        loading: loadingCategorias
+    } = useCategorias();
 
-    const categorias = useMemo(() => {
+    const [nombre, setNombre] = useState("");
+    const [categoriaId, setCategoriaId] = useState("");
 
-        if (!figuras) return ["Todas"];
+    const nombreDebounced = useDebounce(nombre, 400);
 
-        const unicas = [
-            ...new Set(
-                figuras
-                    .map(f => f.categoria)
-                    .filter(Boolean)
-            )
-        ];
-
-        return ["Todas", ...unicas];
-
-    }, [figuras]);
-
-    const figurasFiltradas = useMemo(() => {
-
-        if (!figuras) return [];
-
-        return categoria === "Todas"
-            ? figuras
-            : figuras.filter(
-                f => f.categoria === categoria
-            );
-
-    }, [figuras, categoria]);
+    // Cada vez que cambie la busqueda (debounced) o la categoria, pedimos al backend
+    useEffect(() => {
+        recargarFiguras(nombreDebounced, categoriaId);
+    }, [nombreDebounced, categoriaId]);
 
     return (
 
@@ -53,84 +40,100 @@ function Inicio() {
 
             <Header />
 
-            <main>
+            <main className="catalog-page">
 
-                <section
-                    className="catalog-hero"
-                    id="catalogo">
+                <section className="catalog-layout" id="catalogo">
 
-                    <p className="catalog-hero__eyebrow">
-                        Colección actual
-                    </p>
+                    <aside className="catalog-sidebar">
+                        <div className="catalog-panel">
+                            <h2 className="catalog-title">Filtrar figuras</h2>
 
-                    <h1 className="catalog-hero__title">
-                        Manitas Crochet
-                    </h1>
-
-                    <p className="catalog-hero__subtitle">
-                        Figuras de crochet tejidas a mano, una a una.
-                    </p>
-
-                </section>
-
-                {!loading &&
-                    !error &&
-                    categorias.length > 1 && (
-
-                        <nav className="catalog-filter">
-
-                            {categorias.map(cat => (
-
-                                <button
-                                    key={cat}
-                                    className={
-                                        "catalog-filter__item" +
-                                        (
-                                            cat === categoria
-                                                ? " catalog-filter__item--active"
-                                                : ""
-                                        )
-                                    }
-                                    onClick={() =>
-                                        setCategoria(cat)
-                                    }
-                                >
-                                    {cat}
-                                </button>
-
-                            ))}
-
-                        </nav>
-
-                    )}
-
-                {loading && (
-                    <p className="catalog-status">
-                        Cargando figuras...
-                    </p>
-                )}
-
-                {error && (
-                    <p className="catalog-status catalog-status--error">
-                        Error al cargar figuras
-                    </p>
-                )}
-
-                {!loading &&
-                    !error && (
-
-                        <div className="catalog-grid">
-
-                            {figurasFiltradas.map(figura => (
-                                <FiguraCard
-                                    key={figura.id}
-                                    figura={figura}
+                            <label className="catalog-field">
+                                <span>Buscar por nombre</span>
+                                <input
+                                    type="text"
+                                    className="catalog-search"
+                                    placeholder="Escribe un nombre..."
+                                    value={nombre}
+                                    onChange={(e) => setNombre(e.target.value)}
                                 />
-                            ))}
+                            </label>
 
+                            {!loadingCategorias && (
+                                <>
+                                    <label className="catalog-field">
+                                        <span>Categoría</span>
+                                        <select
+                                            className="catalog-select"
+                                            value={categoriaId}
+                                            onChange={(e) => setCategoriaId(e.target.value)}
+                                        >
+                                            <option value="">Todas las categorías</option>
+
+                                            {categorias.map((cat) => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {cat.nombre}
+                                                </option>
+                                            ))}
+
+                                        </select>
+                                    </label>
+
+                                    <button
+                                        type="button"
+                                        className="catalog-clear"
+                                        onClick={() => {
+                                            setNombre("");
+                                            setCategoriaId("");
+                                        }}
+                                    >
+                                        Limpiar filtros
+                                    </button>
+                                </>
+                            )}
                         </div>
+                    </aside>
 
-                    )}
+                    <div className="catalog-content">
+                        {loading && (
+                            <p className="catalog-status">
+                                Cargando figuras...
+                            </p>
+                        )}
+
+                        {error && (
+                            <p className="catalog-status catalog-status--error">
+                                Error al cargar figuras
+                            </p>
+                        )}
+
+                        {!loading &&
+                            !error && (
+
+                                <div className="catalog-grid">
+
+                                    {figuras.map(figura => (
+                                        <FiguraCard
+                                            key={figura.id}
+                                            figura={figura}
+                                        />
+                                    ))}
+
+                                </div>
+
+                            )}
+
+                        {!loading &&
+                            !error &&
+                            figuras.length === 0 && (
+
+                                <p className="catalog-status">
+                                    No se encontraron figuras.
+                                </p>
+
+                            )}
+                    </div>
+                </section>
 
             </main>
 

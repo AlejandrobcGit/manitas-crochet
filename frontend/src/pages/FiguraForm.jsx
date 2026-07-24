@@ -443,300 +443,312 @@ function FiguraForm() {
                         </p>
                     )}
 
-                    <div className="form-grid">
+                    <div className="form-columns">
+                        <div className="form-left">
+                            <div className="form-grid">
 
-                        <label className="form-field">
-                            <span>Nombre *</span>
-
-                            <input
-                                type="text"
-                                value={nombre}
-                                onChange={event => setNombre(event.target.value)}
-                                required
-                            />
-                        </label>
-
-                        <label className="form-field">
-                            <span>Categoría *</span>
-
-                            <select
-                                value={categoriaId}
-                                onChange={event => setCategoriaId(event.target.value)}
-                                disabled={cargandoOpciones}
-                                required
-                            >
-                                <option value="">Selecciona…</option>
-
-                                {categorias.map(categoria => (
-                                    <option
-                                        key={categoria.id}
-                                        value={categoria.id}
-                                    >
-                                        {categoria.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        <label className="form-field">
-                            <span>Dificultad *</span>
-
-                            <select
-                                value={dificultad}
-                                onChange={event => setDificultad(event.target.value)}
-                                required
-                            >
-                                <option value="">Selecciona…</option>
-
-                                {DIFICULTADES.map(valor => (
-                                    <option key={valor} value={valor}>
-                                        {valor}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        <label className="form-field">
-                            <span>Autor</span>
-
-                            <input
-                                type="text"
-                                value={autor}
-                                onChange={event => setAutor(event.target.value)}
-                            />
-                        </label>
-
-                    </div>
-
-                    <div className="form-medidas">
-
-                        <label className="form-field">
-                            <span>Alto (cm)</span>
-
-                            <input
-                                type="number"
-                                min="0"
-                                step="0.1"
-                                value={altura}
-                                onChange={event => setAltura(event.target.value)}
-                            />
-                        </label>
-
-                        <label className="form-field">
-                            <span>Ancho (cm)</span>
-
-                            <input
-                                type="number"
-                                min="0"
-                                step="0.1"
-                                value={ancho}
-                                onChange={event => setAncho(event.target.value)}
-                            />
-                        </label>
-
-                        <label className="form-field">
-                            <span>Peso (g)</span>
-
-                            <input
-                                type="number"
-                                min="0"
-                                step="0.1"
-                                value={peso}
-                                onChange={event => setPeso(event.target.value)}
-                            />
-                        </label>
-
-                    </div>
-
-                    <label className="form-field">
-                        <span>Descripción</span>
-
-                        <textarea
-                            rows={4}
-                            value={descripcion}
-                            onChange={event => setDescripcion(event.target.value)}
-                        />
-                    </label>
-
-                    <div className="form-field" ref={comboColoresRef}>
-                        <span>Colores *</span>
-
-                        {errorOpciones && (
-                            <p className="form-status form-status--error">
-                                {errorOpciones}
-                            </p>
-                        )}
-
-                        <div className="form-combo">
-
-                            <button
-                                type="button"
-                                className="form-combo__control"
-                                onClick={() =>
-                                    setComboColoresAbierto(prev => !prev)
-                                }
-                                disabled={cargandoOpciones}
-                            >
-                                {coloresSeleccionados.length === 0 ? (
-                                    <span className="form-combo__placeholder">
-                                        {cargandoOpciones
-                                            ? "Cargando colores…"
-                                            : "Selecciona colores…"}
-                                    </span>
-                                ) : (
-                                    <span className="form-combo__tags">
-                                        {coloresSeleccionados.map(color => (
-                                            <span
-                                                className="form-combo__tag"
-                                                key={color.id}
-                                            >
-                                                <span
-                                                    className="form-combo__tag-swatch"
-                                                    style={{
-                                                        backgroundColor: color.codigo
-                                                    }}
-                                                />
-
-                                                {color.nombre}
-
-                                                <span
-                                                    role="button"
-                                                    tabIndex={-1}
-                                                    className="form-combo__tag-quitar"
-                                                    onClick={event => {
-                                                        event.stopPropagation();
-                                                        toggleColor(color.id);
-                                                    }}
-                                                >
-                                                    ×
-                                                </span>
-                                            </span>
-                                        ))}
-                                    </span>
-                                )}
-
-                                <span className="form-combo__flecha">
-                                    {comboColoresAbierto ? "▲" : "▼"}
-                                </span>
-                            </button>
-
-                            {comboColoresAbierto && (
-                                <div className="form-combo__panel">
+                                <label className="form-field">
+                                    <span>Nombre *</span>
 
                                     <input
                                         type="text"
-                                        className="form-combo__buscador"
-                                        placeholder="Buscar color…"
-                                        value={filtroColor}
-                                        onChange={event =>
-                                            setFiltroColor(event.target.value)
-                                        }
-                                        autoFocus
+                                        value={nombre}
+                                        onChange={event => setNombre(event.target.value)}
+                                        required
                                     />
+                                </label>
 
-                                    <div className="form-combo__lista">
+                                <label className="form-field">
+                                    <span>Categoría *</span>
 
-                                        {coloresOrdenados.map(color => (
-                                            <label
-                                                className={
-                                                    "form-combo__opcion" +
-                                                    (
-                                                        coloresIds.includes(color.id)
-                                                            ? " form-combo__opcion--activa"
-                                                            : ""
-                                                    )
-                                                }
-                                                key={color.id}
+                                    <select
+                                        value={categoriaId}
+                                        onChange={event => setCategoriaId(event.target.value)}
+                                        disabled={cargandoOpciones}
+                                        required
+                                    >
+                                        <option value="">Selecciona…</option>
+
+                                        {categorias.map(categoria => (
+                                            <option
+                                                key={categoria.id}
+                                                value={categoria.id}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={coloresIds.includes(color.id)}
-                                                    onChange={() => toggleColor(color.id)}
-                                                />
-
-                                                <span
-                                                    className="form-combo__opcion-swatch"
-                                                    style={{
-                                                        backgroundColor: color.codigo
-                                                    }}
-                                                />
-
-                                                {color.nombre}
-                                            </label>
+                                                {categoria.nombre}
+                                            </option>
                                         ))}
+                                    </select>
+                                </label>
 
-                                        {coloresOrdenados.length === 0 && (
-                                            <p className="form-combo__vacio">
-                                                Sin resultados.
-                                            </p>
+                                <label className="form-field">
+                                    <span>Dificultad *</span>
+
+                                    <select
+                                        value={dificultad}
+                                        onChange={event => setDificultad(event.target.value)}
+                                        required
+                                    >
+                                        <option value="">Selecciona…</option>
+
+                                        {DIFICULTADES.map(valor => (
+                                            <option key={valor} value={valor}>
+                                                {valor}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+
+                                <label className="form-field">
+                                    <span>Autor</span>
+
+                                    <input
+                                        type="text"
+                                        value={autor}
+                                        onChange={event => setAutor(event.target.value)}
+                                    />
+                                </label>
+
+                            </div>
+
+                            <div className="form-medidas">
+
+                                <label className="form-field">
+                                    <span>Alto (cm)</span>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        inputMode="numeric"
+                                        pattern="\d*"
+                                        value={altura}
+                                        onChange={event => setAltura(event.target.value)}
+                                    />
+                                </label>
+
+                                <label className="form-field">
+                                    <span>Ancho (cm)</span>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        inputMode="numeric"
+                                        pattern="\d*"
+                                        value={ancho}
+                                        onChange={event => setAncho(event.target.value)}
+                                    />
+                                </label>
+
+                                <label className="form-field">
+                                    <span>Peso (g)</span>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        inputMode="numeric"
+                                        pattern="\d*"
+                                        value={peso}
+                                        onChange={event => setPeso(event.target.value)}
+                                    />
+                                </label>
+
+                            </div>
+
+                            <label className="form-field">
+                                <span>Descripción</span>
+
+                                <textarea
+                                    rows={4}
+                                    value={descripcion}
+                                    onChange={event => setDescripcion(event.target.value)}
+                                />
+                            </label>
+                        </div>
+
+                        <aside className="form-right">
+                            <div className="form-field" ref={comboColoresRef}>
+                                <span>Colores *</span>
+
+                                {errorOpciones && (
+                                    <p className="form-status form-status--error">
+                                        {errorOpciones}
+                                    </p>
+                                )}
+
+                                <div className="form-combo">
+
+                                    <button
+                                        type="button"
+                                        className="form-combo__control"
+                                        onClick={() =>
+                                            setComboColoresAbierto(prev => !prev)
+                                        }
+                                        disabled={cargandoOpciones}
+                                    >
+                                        {coloresSeleccionados.length === 0 ? (
+                                            <span className="form-combo__placeholder">
+                                                {cargandoOpciones
+                                                    ? "Cargando colores…"
+                                                    : "Selecciona colores…"}
+                                            </span>
+                                        ) : (
+                                            <span className="form-combo__tags">
+                                                {coloresSeleccionados.map(color => (
+                                                    <span
+                                                        className="form-combo__tag"
+                                                        key={color.id}
+                                                    >
+                                                        <span
+                                                            className="form-combo__tag-swatch"
+                                                            style={{
+                                                                backgroundColor: color.codigo
+                                                            }}
+                                                        />
+
+                                                        {color.nombre}
+
+                                                        <span
+                                                            role="button"
+                                                            tabIndex={-1}
+                                                            className="form-combo__tag-quitar"
+                                                            onClick={event => {
+                                                                event.stopPropagation();
+                                                                toggleColor(color.id);
+                                                            }}
+                                                        >
+                                                            ×
+                                                        </span>
+                                                    </span>
+                                                ))}
+                                            </span>
                                         )}
 
-                                    </div>
+                                        <span className="form-combo__flecha">
+                                            {comboColoresAbierto ? "▲" : "▼"}
+                                        </span>
+                                    </button>
+
+                                    {comboColoresAbierto && (
+                                        <div className="form-combo__panel">
+
+                                            <input
+                                                type="text"
+                                                className="form-combo__buscador"
+                                                placeholder="Buscar color…"
+                                                value={filtroColor}
+                                                onChange={event =>
+                                                    setFiltroColor(event.target.value)
+                                                }
+                                                autoFocus
+                                            />
+
+                                            <div className="form-combo__lista">
+
+                                                {coloresOrdenados.map(color => (
+                                                    <label
+                                                        className={
+                                                            "form-combo__opcion" +
+                                                            (
+                                                                coloresIds.includes(color.id)
+                                                                    ? " form-combo__opcion--activa"
+                                                                    : ""
+                                                            )
+                                                        }
+                                                        key={color.id}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={coloresIds.includes(color.id)}
+                                                            onChange={() => toggleColor(color.id)}
+                                                        />
+
+                                                        <span
+                                                            className="form-combo__opcion-swatch"
+                                                            style={{
+                                                                backgroundColor: color.codigo
+                                                            }}
+                                                        />
+
+                                                        {color.nombre}
+                                                    </label>
+                                                ))}
+
+                                                {coloresOrdenados.length === 0 && (
+                                                    <p className="form-combo__vacio">
+                                                        Sin resultados.
+                                                    </p>
+                                                )}
+
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <label className="form-field">
+                                <span>
+                                    {esEdicion
+                                        ? "Cambiar imagen principal"
+                                        : "Imagen principal *"}
+                                </span>
+
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImagenPrincipal}
+                                    required={!esEdicion}
+                                />
+                            </label>
+
+                            {imagenPrincipalPreview && (
+                                <img
+                                    className="form-preview form-preview--principal"
+                                    src={imagenPrincipalPreview}
+                                    alt="Vista previa imagen principal"
+                                />
+                            )}
+
+                            <label className="form-field">
+                                <span>Imágenes secundarias</span>
+
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleImagenesSecundarias}
+                                />
+                            </label>
+
+                            {imagenesSecundariasPreview.length > 0 && (
+                                <div className="form-preview-grid">
+                                    {imagenesSecundariasPreview.map((src, index) => (
+                                        <img
+                                            key={index}
+                                            className="form-preview"
+                                            src={src}
+                                            alt={`Vista previa secundaria ${index + 1}`}
+                                        />
+                                    ))}
                                 </div>
                             )}
-                        </div>
+
+                            <button
+                                type="submit"
+                                className="form-btn form-btn--principal"
+                                disabled={enviando}
+                            >
+                                {enviando
+                                    ? esEdicion
+                                        ? "Guardando…"
+                                        : "Creando…"
+                                    : esEdicion
+                                        ? "Guardar cambios"
+                                        : "Crear figura"}
+                            </button>
+                        </aside>
                     </div>
-
-                    <label className="form-field">
-                        <span>
-                            {esEdicion
-                                ? "Cambiar imagen principal"
-                                : "Imagen principal *"}
-                        </span>
-
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImagenPrincipal}
-                            required={!esEdicion}
-                        />
-                    </label>
-
-                    {imagenPrincipalPreview && (
-                        <img
-                            className="form-preview form-preview--principal"
-                            src={imagenPrincipalPreview}
-                            alt="Vista previa imagen principal"
-                        />
-                    )}
-
-                    <label className="form-field">
-                        <span>Imágenes secundarias</span>
-
-                        <input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={handleImagenesSecundarias}
-                        />
-                    </label>
-
-                    {imagenesSecundariasPreview.length > 0 && (
-                        <div className="form-preview-grid">
-                            {imagenesSecundariasPreview.map((src, index) => (
-                                <img
-                                    key={index}
-                                    className="form-preview"
-                                    src={src}
-                                    alt={`Vista previa secundaria ${index + 1}`}
-                                />
-                            ))}
-                        </div>
-                    )}
-
-                    <button
-                        type="submit"
-                        className="form-btn form-btn--principal"
-                        disabled={enviando}
-                    >
-                        {enviando
-                            ? esEdicion
-                                ? "Guardando…"
-                                : "Creando…"
-                            : esEdicion
-                                ? "Guardar cambios"
-                                : "Crear figura"}
-                    </button>
 
                 </form>
             </main>

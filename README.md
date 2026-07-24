@@ -184,11 +184,11 @@ Ejemplo de documento almacenado en MongoDB:
 ### Versión 1.0
 
 - [x] Diseño funcional
-- [ ] Catálogo de figuras
+- [x] Catálogo de figuras
 - [ ] CRUD completo
-- [ ] Búsquedas
-- [ ] Filtros
-- [ ] Responsive Design
+- [x] Búsquedas
+- [x] Filtros
+- [x] Responsive Design
 
 ### Versión 2.0
 

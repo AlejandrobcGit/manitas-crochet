@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,10 +34,34 @@ public class FiguraService {
         private final ColorRepository colorRepository;
         private final FileStorageService fileStorageService;
 
-        // Obtener todas las figuras en formato DTO
-        public List<FiguraListadoDto> obtenerTodasDto() {
+        /*
+         * permite trabajar directamente con MongoDB sin pasar por un repositorio
+         * (MongoRepository).
+         * Es la implementación principal de la interfaz MongoOperations y proporciona
+         * operaciones para crear, consultar, actualizar y borrar documentos.
+         */
 
-                return figuraRepository.findAll()
+        private final MongoTemplate mongoTemplate;
+
+        // Obtener todas las figuras en formato DTO
+        public List<FiguraListadoDto> obtenerTodasDto(String nombre, String categoriaId) {
+
+                Query query = new Query();
+                List<Criteria> criterios = new ArrayList<>();
+
+                if (nombre != null && !nombre.isBlank()) {
+                        criterios.add(Criteria.where("nombre").regex(nombre, "i"));  // buscador → parcial
+                }
+
+                if (categoriaId != null && !categoriaId.isBlank()) {
+                       criterios.add(Criteria.where("categoriaId").is(categoriaId)); // filtro → exacto
+                }
+
+                if (!criterios.isEmpty()) {
+                        query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
+                }
+
+                return mongoTemplate.find(query, Figura.class)
                                 .stream()
                                 .map(this::convertirFiguraListadoDto)
                                 .toList();

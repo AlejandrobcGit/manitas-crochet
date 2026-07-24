@@ -14,20 +14,6 @@ function Footer() {
                         Figuras de crochet hechas a mano, una puntada a la vez.
                     </p>
                 </div>
-
-                <div className="footer__links">
-                    <p className="footer__heading">Contacto</p>
-                    <a className="footer__link" href="mailto:hola@manitascrochet.com">
-                        hola@manitascrochet.com
-                    </a>
-                    <a className="footer__link" href="https://instagram.com" target="_blank" rel="noreferrer">
-                        Instagram
-                    </a>
-                    <a className="footer__link" href="https://wa.me/000000000" target="_blank" rel="noreferrer">
-                        WhatsApp
-                    </a>
-                </div>
-
             </div>
 
             <p className="footer__copy">

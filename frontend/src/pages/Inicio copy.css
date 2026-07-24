@@ -1,0 +1,108 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* --- Hero --- */
+
+.catalog-hero {
+  text-align: center;
+  padding: 3rem 0 2rem;
+}
+
+.catalog-hero__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-coral);
+  margin: 0 0 0.6rem;
+}
+
+.catalog-hero__title {
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.catalog-hero__subtitle {
+  margin: 0.7rem auto 0;
+  max-width: 420px;
+  font-size: 0.95rem;
+  color: var(--color-ink-soft);
+}
+
+/* --- Filtro de categorías --- */
+
+.catalog-filter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  padding-bottom: 2.5rem;
+}
+
+.catalog-filter__item {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px dashed var(--color-ring);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.catalog-filter__item:hover {
+  border-color: var(--color-sage);
+}
+
+.catalog-filter__item--active {
+  background-color: var(--color-sage);
+  border-color: var(--color-sage);
+  color: var(--color-card);
+}
+
+/* --- Estados --- */
+
+.catalog-status {
+  text-align: center;
+  padding: 3rem 0;
+  font-family: var(--font-mono);
+  color: var(--color-ink-soft);
+}
+
+.catalog-status--error {
+  color: var(--color-coral);
+}
+
+/* --- Grid responsive: 1 col movil, 2 tablet, 3 escritorio --- */
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.4rem 1.6rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 640px) {
+  .catalog-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .catalog-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

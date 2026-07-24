@@ -1,21 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Quicksand:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  /* paleta inspirada en madejas de lana, no en la típica crema+terracota */
-  --color-linen: #F2ECDC;      /* fondo general, lino crudo */
-  --color-card: #FBF8F0;       /* tarjetas */
-  --color-ink: #2E2A24;        /* texto principal */
-  --color-ink-soft: rgba(46, 42, 36, 0.65);
-  --color-coral: #C4573F;      /* acento cálido, hilo coral */
-  --color-sage: #6E8266;       /* acento verde salvia */
-  --color-mustard: #D6A039;    /* acento mostaza / dimensiones */
-  --color-ring: #A69C88;       /* anillo de la etiqueta */
+  --color-linen: #f8efe6;      /* fondo general suave */
+  --color-card: #fffaf3;       /* tarjetas */
+  --color-cream: #fdf7ef;      /* fondo de acento */
+  --color-ink: #433b34;        /* texto principal */
+  --color-ink-soft: rgba(67, 59, 52, 0.72);
+  --color-coral: #d9876b;      /* acento cálido */
+  --color-sage: #8f9f7f;       /* verde salvia */
+  --color-mustard: #c8a96c;    /* mostaza suave */
+  --color-ring: #c9b7a0;       /* anillo de la etiqueta */
 
   --font-display: 'Fraunces', serif;
   --font-body: 'Quicksand', sans-serif;
   --font-mono: 'Space Mono', monospace;
 
-  --radius-card: 18px;
+  --radius-card: 20px;
+  --shadow-soft: 0 12px 30px rgba(67, 59, 52, 0.08);
 }
 
 * {
@@ -24,9 +25,16 @@
 
 body {
   margin: 0;
-  background-color: var(--color-linen);
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-linen) 0%, var(--color-cream) 100%);
   color: var(--color-ink);
   font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+::selection {
+  background: rgba(217, 135, 107, 0.25);
+  color: var(--color-ink);
 }
 
 h1, h2, h3 {
@@ -36,4 +44,5 @@ h1, h2, h3 {
 
 a {
   color: inherit;
+  text-decoration: none;
 }

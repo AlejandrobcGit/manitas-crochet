@@ -11,15 +11,25 @@ export function FigurasProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const cargarFiguras = async () => {
+    const cargarFiguras = async (nombre = "", categoriaId = "") => {
 
         try {
 
             setLoading(true);
             setError(null);
 
+            const params = new URLSearchParams();
+
+            if (nombre) params.set("nombre", nombre);
+            if (categoriaId) params.set("categoriaId", categoriaId);
+
+            const queryString = params.toString();
+            const url = queryString
+                ? `/api/figuras?${queryString}`
+                : "/api/figuras";
+            console.log("url:", url);
             const response =
-                await apiFetch("/api/figuras");
+                await apiFetch(url);
 
             const data =
                 await response.json();

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,8 +31,11 @@ public class FiguraController {
 
     // GET /api/figuras
     @GetMapping
-    public List<FiguraListadoDto> obtenerTodas() {
-        return figuraService.obtenerTodasDto();
+    public List<FiguraListadoDto> obtenerTodas(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String categoriaId) {
+            System.out.println("nombre: " + nombre + ", categoriaId: " + categoriaId);
+        return figuraService.obtenerTodasDto(nombre, categoriaId);
     }
 
     // GET /api/figuras/{id}

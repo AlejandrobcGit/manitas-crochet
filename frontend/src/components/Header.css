@@ -1,9 +1,13 @@
 .header {
-    background-color: var(--color-linen);
-    border-bottom: 1px dashed var(--color-ring);
-    position: sticky;
+    background: rgba(255, 250, 243, 0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px dashed rgba(201, 183, 160, 0.45);
+    box-shadow: 0 4px 16px rgba(67, 59, 52, 0.06);
+    position: fixed;
     top: 0;
-    z-index: 20;
+    left: 0;
+    right: 0;
+    z-index: 30;
 }
 
 .header__inner {
@@ -31,18 +35,19 @@
 
 .header__logo-text {
     font-family: var(--font-display);
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1.25rem;
+    color: var(--color-ink);
 }
 
 .header__nav {
     display: flex;
-    gap: 1.5rem;
+    gap: 1.2rem;
 }
 
 .header__link {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     letter-spacing: 0.05em;
     text-transform: uppercase;
     text-decoration: none;
@@ -52,4 +57,7 @@
 
 .header__link:hover {
     color: var(--color-coral);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
 }
