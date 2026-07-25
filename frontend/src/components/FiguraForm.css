@@ -1,8 +1,9 @@
 .form-main {
-  width: min(1080px, 100%);
+  width: 100%;
   max-width: 1080px;
-  margin: 0 auto;
-  padding-bottom: 4rem;
+  margin: 0;
+  padding: 0 1rem 4rem;
+  box-sizing: border-box;
   font-family: var(--font-body);
 }
 
@@ -333,6 +334,27 @@
   .form-btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+/* Acción: mostrar botones en línea dentro del aside */
+.form-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin-top: 0.8rem;
+}
+
+.form-actions .form-btn {
+  width: auto;
+}
+
+@media (max-width: 900px) {
+  .form-actions {
+    flex-direction: column;
+  }
+  .form-actions .form-btn {
+    width: 100%;
   }
 }
 

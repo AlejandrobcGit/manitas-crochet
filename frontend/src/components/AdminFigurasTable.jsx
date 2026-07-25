@@ -1,3 +1,5 @@
+
+
 import "./AdminFigurasTable.css";
 
 const API_URL = "http://localhost:8080";
@@ -7,6 +9,7 @@ function AdminFigurasTable({
     onEditar,
     onEliminar
 }) {
+
 
     return (
         <div className="admin-tabla-container">
@@ -46,11 +49,15 @@ function AdminFigurasTable({
                                 <td>
                                     <div className="admin-tabla__acciones">
 
-                                        <button className="btn-editar">
+                                        <button className="btn-editar"
+                                            onClick={() => onEditar(figura.id)}
+                                        >
                                             Editar
                                         </button>
 
-                                        <button className="btn-eliminar">
+                                        <button className="btn-eliminar"
+                                            onClick={() => onEliminar(figura.id)}
+                                        >
                                             Eliminar
                                         </button>
 

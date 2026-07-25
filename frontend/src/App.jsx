@@ -1,7 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
 import FiguraDetalle from "./pages/FiguraDetalle";
-import FiguraForm from "./pages/FiguraForm";
 import Inicio from "./pages/Inicio";
 import AdminPanel from "./pages/AdminPanel";
 
@@ -18,16 +17,6 @@ function App() {
                 path="/figuras/:id"
                 element={<FiguraDetalle />}
             />
-            <Route
-                path="/figuras/nueva"
-                element={<FiguraForm />}
-            />
-
-            <Route
-                path="/figuras/editar/:id"
-                element={<FiguraForm />}
-            />
-
             <Route
                 path="/administracion"
                 element={<AdminPanel />}

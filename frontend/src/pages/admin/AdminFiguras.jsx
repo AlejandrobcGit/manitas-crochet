@@ -3,10 +3,14 @@ import { useEffect, useState } from "react";
 import { useFiguras } from "../../hooks/useFiguras";
 import { useCategorias } from "../../hooks/useCategorias";
 import { useDebounce } from "../../hooks/useDebounce";
+import { useApiFetch } from "../../api/useApiFetch";
 
 import "./AdminFiguras.css";
 
 import AdminFigurasTable from "../../components/AdminFigurasTable";
+import FiguraForm from "../../components/FiguraForm";
+
+const API_URL = "http://localhost:8080";
 
 function AdminFiguras() {
     const {
@@ -16,6 +20,8 @@ function AdminFiguras() {
         error
     } = useFiguras();
 
+    const apiFetch = useApiFetch();
+
     const {
         categorias,
         loading: loadingCategorias
@@ -23,8 +29,30 @@ function AdminFiguras() {
 
     const [nombre, setNombre] = useState("");
     const [categoriaId, setCategoriaId] = useState("");
+    const [modo, setModo] = useState("LISTADO");
+    const [figuraSeleccionada, setFiguraSeleccionada] = useState(null);
 
     const nombreDebounced = useDebounce(nombre, 400);
+
+    const onEditar = (figuraId) => {
+        setFiguraSeleccionada(figuraId);
+        setModo("EDICION");
+    }
+
+    const onEliminar = async (figuraId) => {
+
+        try {
+            await apiFetch(`/api/figuras/${figuraId}`, {
+                method: "DELETE"
+            });
+
+            setFiguraSeleccionada("");
+            setModo("LISTADO");
+            recargarFiguras(nombreDebounced, categoriaId);
+        } catch (err) {
+            console.error("Error eliminando figura:", err);
+        }
+    }
 
     // Cada vez que cambie la busqueda (debounced) o la categoria, pedimos al backend
     useEffect(() => {
@@ -33,64 +61,68 @@ function AdminFiguras() {
 
     return (
         <>
-            <div className="admin-filtros">
+            {modo === "LISTADO" && (
+                <div className="admin-filtros">
 
-                <label className="admin-campo">
-                    <span>Nombre</span>
+                    <label className="admin-campo">
+                        <span>Nombre</span>
 
-                    <input
-                        type="text"
-                        className="admin-busqueda"
-                        placeholder="Buscar..."
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
-                    />
-                </label>
+                        <input
+                            type="text"
+                            className="admin-busqueda"
+                            placeholder="Buscar..."
+                            value={nombre}
+                            onChange={(e) => setNombre(e.target.value)}
+                        />
+                    </label>
 
-                {!loadingCategorias && (
-                    <>
-                        <label className="admin-campo">
-                            <span>Categoría</span>
+                    {!loadingCategorias && (
+                        <>
+                            <label className="admin-campo">
+                                <span>Categoría</span>
 
-                            <select
-                                className="admin-select"
-                                value={categoriaId}
-                                onChange={(e) => setCategoriaId(e.target.value)}
-                            >
-                                <option value="">
-                                    Todas
-                                </option>
-
-                                {categorias.map((cat) => (
-                                    <option
-                                        key={cat.id}
-                                        value={cat.id}
-                                    >
-                                        {cat.nombre}
+                                <select
+                                    className="admin-select"
+                                    value={categoriaId}
+                                    onChange={(e) => setCategoriaId(e.target.value)}
+                                >
+                                    <option value="">
+                                        Todas
                                     </option>
-                                ))}
-                            </select>
-                        </label>
 
-                        <button
-                            type="button"
-                            className="admin-limpiar"
-                            onClick={() => {
-                                setNombre("");
-                                setCategoriaId("");
-                            }}
-                        >
-                            Limpiar
-                        </button>
+                                    {categorias.map((cat) => (
+                                        <option
+                                            key={cat.id}
+                                            value={cat.id}
+                                        >
+                                            {cat.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
 
-                        <button className="btn-editar">
-                            Crear figura
-                        </button>
+                            <button
+                                type="button"
+                                className="admin-limpiar"
+                                onClick={() => {
+                                    setNombre("");
+                                    setCategoriaId("");
+                                }}
+                            >
+                                Limpiar
+                            </button>
 
-                    </>
-                )}
+                            <button className="admin-limpiar"
+                                onClick={() => setModo("CREAR")}
+                            >
+                                Crear figura
+                            </button>
 
-            </div>
+                        </>
+                    )}
+
+                </div>
+            )}
             <div className="catalog-content">
                 {loading && (
                     <p className="catalog-status">
@@ -106,21 +138,30 @@ function AdminFiguras() {
 
                 {!loading &&
                     !error && (
-
                         <div>
+                            {modo === "LISTADO" && (
+                                <AdminFigurasTable
+                                    figuras={figuras}
+                                    onEditar={onEditar}
+                                    onEliminar={onEliminar}
+                                />
+                            )}
 
-                            <AdminFigurasTable
-                                figuras={figuras}
-                                onEditar={(figura) => {
-                                    console.log("Editar", figura);
-                                }}
-                                onEliminar={(figura) => {
-                                    console.log("Eliminar", figura);
-                                }}
-                            />
+                            {modo === "CREAR" && (
+                                <FiguraForm
+                                    onVolver={() => setModo("LISTADO")}
+                                />
+                            )}
+
+                            {modo === "EDICION" && (
+                                <FiguraForm
+                                    esEdicion={true}
+                                    figuraId={figuraSeleccionada}
+                                    onVolver={() => setModo("LISTADO")}
+                                />
+                            )}
 
                         </div>
-
                     )}
 
                 {!loading &&
