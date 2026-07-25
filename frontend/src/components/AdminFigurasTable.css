@@ -1,0 +1,96 @@
+.admin-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+.admin-tabla th {
+    padding: 0.5rem 1rem;
+    text-align: center;
+    border: 1px solid black;
+}
+
+.admin-tabla td {
+    padding: 0.5rem 1rem;
+    text-align: left;
+    border: 1px solid black;
+    vertical-align: middle;
+}
+
+/* Imagen */
+.admin-tabla th:first-child,
+.admin-tabla td:first-child {
+    width: 120px;
+    text-align: center;
+}
+
+/* Nombre */
+.admin-tabla th:nth-child(2),
+.admin-tabla td:nth-child(2) {
+    width: auto;
+}
+
+/* Categoria */
+.admin-tabla th:nth-child(3),
+.admin-tabla td:nth-child(3) {
+    width: auto;
+}
+
+/* Acciones */
+.admin-tabla th:last-child,
+.admin-tabla td:last-child {
+    width: 180px;
+}
+
+/* Columna imagen */
+
+.admin-tabla__imagen {
+    width: 60px;
+    height: 60px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+/* Columna acciones */
+
+.admin-tabla__acciones {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-editar {
+    padding: 0.4rem 0.8rem;
+
+    background: #4f8ef7;
+    color: white;
+
+    border: none;
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+.btn-eliminar {
+    padding: 0.4rem 0.8rem;
+
+    background: #dc3545;
+    color: white;
+
+    border: none;
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+.btn-editar:hover {
+    background: #3976dd;
+}
+
+.btn-eliminar:hover {
+    background: #bc2533;
+}

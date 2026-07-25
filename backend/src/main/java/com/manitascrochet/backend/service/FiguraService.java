@@ -50,11 +50,11 @@ public class FiguraService {
                 List<Criteria> criterios = new ArrayList<>();
 
                 if (nombre != null && !nombre.isBlank()) {
-                        criterios.add(Criteria.where("nombre").regex(nombre, "i"));  // buscador → parcial
+                        criterios.add(Criteria.where("nombre").regex(nombre, "i")); // buscador → parcial
                 }
 
                 if (categoriaId != null && !categoriaId.isBlank()) {
-                       criterios.add(Criteria.where("categoriaId").is(categoriaId)); // filtro → exacto
+                        criterios.add(Criteria.where("categoriaId").is(categoriaId)); // filtro → exacto
                 }
 
                 if (!criterios.isEmpty()) {
@@ -74,6 +74,10 @@ public class FiguraService {
                                 .findById(figura.getCategoriaId())
                                 .map(Categoria::getNombre)
                                 .orElseThrow(() -> new CategoriaNoEncontradaException(figura.getCategoriaId()));
+
+                if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
+                        figura.setImagenPrincipal("default.png");
+                }
 
                 return new FiguraListadoDto(
                                 figura.getId(),
@@ -116,6 +120,10 @@ public class FiguraService {
                                                 color.getCodigo()))
                                 .toList();
 
+                if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
+                        figura.setImagenPrincipal("default.png");
+                }
+                
                 return new FiguraDetalleDto(
                                 figura.getId(),
                                 figura.getNombre(),

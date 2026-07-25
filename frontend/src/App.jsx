@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import FiguraDetalle from "./pages/FiguraDetalle";
 import FiguraForm from "./pages/FiguraForm";
 import Inicio from "./pages/Inicio";
+import AdminPanel from "./pages/AdminPanel";
 
 function App() {
     return (
@@ -27,6 +28,10 @@ function App() {
                 element={<FiguraForm />}
             />
 
+            <Route
+                path="/administracion"
+                element={<AdminPanel />}
+            />
 
         </Routes>
     );

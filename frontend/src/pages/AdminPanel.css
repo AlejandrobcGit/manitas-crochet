@@ -1,0 +1,118 @@
+/* ==========================
+   Página
+========================== */
+
+.admin-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================
+   Layout principal
+========================== */
+
+.admin-layout {
+    width: 100%;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+/* ==========================
+   Menú lateral
+========================== */
+
+.admin-menu {
+    width: 220px;
+    flex-shrink: 0;
+}
+
+.admin-panel {
+    background: rgba(251, 248, 240, 0.94);
+    border: 1px solid rgba(46, 42, 36, 0.1);
+    border-radius: 1.25rem;
+    padding: 1rem;
+    box-shadow: 0 20px 40px rgba(46, 42, 36, 0.08);
+}
+
+.admin-title {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    color: var(--color-ink);
+}
+
+.admin-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-menu li {
+    padding: 0.0rem 1rem;
+    border-radius: 999px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+
+    color: var(--color-ink);
+
+    border: 1px dashed var(--color-ring);
+
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.admin-menu li:hover {
+    border-color: var(--color-sage);
+}
+
+.admin-menu li.activo {
+    background-color: var(--color-sage);
+    border-color: var(--color-sage);
+    color: var(--color-card);
+}
+
+/* ==========================
+   Contenido
+========================== */
+
+.admin-content {
+    flex: 1;
+}
+
+.admin-content-panel {
+    background: rgba(251, 248, 240, 0.94);
+    border: 1px solid rgba(46, 42, 36, 0.1);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    box-shadow: 0 20px 40px rgba(46, 42, 36, 0.08);
+}
+
+.admin-content h1 {
+    margin: 0 0 1rem;
+    color: var(--color-ink);
+}
+
+.admin-content p {
+    color: var(--color-ink-soft);
+    line-height: 1.6;
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media (max-width: 900px) {
+    .admin-layout {
+        flex-direction: column;
+    }
+
+    .admin-menu {
+        width: 100%;
+    }
+}

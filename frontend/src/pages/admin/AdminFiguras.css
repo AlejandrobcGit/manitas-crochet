@@ -1,0 +1,115 @@
+/* ==========================
+   Barra de filtros
+========================== */
+
+.admin-filtros {
+    display: flex;
+    align-items: end;
+    gap: 0.75rem;
+    flex-wrap: nowrap;
+
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+
+    background: rgba(251, 248, 240, 0.94);
+    border: 1px solid rgba(46, 42, 36, 0.1);
+    border-radius: 12px;
+}
+
+/* ==========================
+   Campos
+========================== */
+
+.admin-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.admin-campo span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-ink-soft);
+}
+
+/* ==========================
+   Input búsqueda
+========================== */
+
+.admin-busqueda {
+    width: 240px;
+    height: 34px;
+
+    padding: 0 0.75rem;
+
+    border: 1px solid var(--color-ring);
+    border-radius: 8px;
+
+    background: white;
+    color: var(--color-ink);
+
+    font-size: 0.85rem;
+}
+
+/* ==========================
+   Select categoría
+========================== */
+
+.admin-select {
+    width: 180px;
+    height: 34px;
+
+    padding: 0 0.75rem;
+
+    border: 1px solid var(--color-ring);
+    border-radius: 8px;
+
+    background: white;
+    color: var(--color-ink);
+
+    font-size: 0.85rem;
+}
+
+/* ==========================
+   Botón limpiar
+========================== */
+
+.admin-limpiar {
+    height: 34px;
+
+    padding: 0 1rem;
+
+    border: 1px solid var(--color-ring);
+    border-radius: 8px;
+
+    background: var(--color-card);
+
+    cursor: pointer;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+
+    transition: all 0.2s ease;
+}
+
+.admin-limpiar:hover {
+    border-color: var(--color-sage);
+    background: var(--color-sage);
+    color: white;
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media (max-width: 700px) {
+    .admin-filtros {
+        flex-wrap: wrap;
+        align-items: stretch;
+    }
+
+    .admin-busqueda,
+    .admin-select {
+        width: 100%;
+    }
+}

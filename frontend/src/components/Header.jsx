@@ -11,9 +11,10 @@ function Header() {
                 </a>
 
                 <nav className="header__nav">
-                    <a className="header__link" href="#catalogo">Catálogo</a>
+                    <a className="header__link" href="/">Catálogo</a>
                     <a className="header__link" href="#sobre-nosotros">Sobre nosotros</a>
                     <a className="header__link" href="#contacto">Contacto</a>
+                    <a className="header__link" href="/administracion">Administración</a>
                 </nav>
 
             </div>

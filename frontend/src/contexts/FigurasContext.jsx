@@ -27,7 +27,7 @@ export function FigurasProvider({ children }) {
             const url = queryString
                 ? `/api/figuras?${queryString}`
                 : "/api/figuras";
-            console.log("url:", url);
+
             const response =
                 await apiFetch(url);
 
