@@ -2,9 +2,9 @@ import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { useApiFetch } from "../api/useApiFetch";
-import { ColoresContext } from "../contexts/ColoresContext";
+import { CategoriasContext } from "../contexts/CategoriasContext";
 
-import "./ColorForm.css";
+import "./CategoriaForm.css";
 
 const API_URL = "http://localhost:8080";
 
@@ -15,14 +15,13 @@ const DIFICULTADES = [
     "AVANZADO"
 ];
 
-function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" }) {
+function CategoriaForm({ onVolver, onEditar, esEdicion = false, categoria = null}) {
 
     const apiFetch = useApiFetch();
 
-    const { recargarColores } = useContext(ColoresContext);
+    const { recargarCategorias } = useContext(CategoriasContext);
     const [nombre, setNombre] = useState("");
-    const [codigo, setCodigo] = useState(color);
-    const [cargandoColor, setCargandoColor] = useState(false);
+    const [cargandoCategoria, setCargandoCategoria] = useState(false);
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState(null);
 
@@ -33,15 +32,14 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
             return;
         }
 
-        setNombre(color.nombre)
-        setCodigo(color.codigo)
+        setNombre(categoria.nombre)
+
 
     }, [esEdicion]);
 
 
     const resetForm = () => {
         setNombre("");
-        setCodigo("");
     };
 
     const handleSubmit = async (event) => {
@@ -53,24 +51,18 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
             return;
         }
 
-        if (!codigo) {
-            setError("Codigo es obligatorio");
-            return;
-        }
-
         setError(null);
         setEnviando(true);
 
         try {
 
-            const colorEditar = {
+            const categoriaEditar = {
                 nombre: nombre.trim(),
-                codigo
             };
 
             const endpoint = esEdicion
-                ? `/api/color/${color.id}`
-                : "/api/color";
+                ? `/api/categorias/${categoria.id}`
+                : "/api/categorias";
 
             const method = esEdicion
                 ? "PUT"
@@ -78,12 +70,12 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
 
             const response = await apiFetch(endpoint, {
                 method,
-                body: JSON.stringify(colorEditar)
+                body: JSON.stringify(categoriaEditar)
             });
 
-            const colorGuardada = await response.json();
+            const categoriaGuardada = await response.json();
 
-            await recargarColores?.();
+            await recargarCategorias?.();
 
             if (!esEdicion) {
                 resetForm();
@@ -97,8 +89,8 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
                 err.message ||
                 (
                     esEdicion
-                        ? "Error al actualizar el color"
-                        : "Error al crear el color"
+                        ? "Error al actualizar el categoria"
+                        : "Error al crear el categoria"
                 )
             );
 
@@ -108,12 +100,12 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
         }
     };
 
-    if (cargandoColor) {
+    if (cargandoCategoria) {
 
         return (
             <main className="form-main">
                 <p className="form-status">
-                    Cargando color...
+                    Cargando categoria...
                 </p>
             </main>
         );
@@ -122,10 +114,10 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
     return (
         <main className="form-main">
             <h1 className="form-title">
-                {esEdicion ? "Editar color" : "Nuevo color"}
+                {esEdicion ? "Editar categoria" : "Nuevo categoria"}
             </h1>
 
-            <form className="color-form" onSubmit={handleSubmit}>
+            <form className="categoria-form" onSubmit={handleSubmit}>
 
                 {error && (
                     <p className="form-status form-status--error">
@@ -148,15 +140,6 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
                                 />
                             </label>
 
-                            <label className="form-field">
-                                <span>Codigo</span>
-
-                                <input
-                                    type="color"
-                                    value={codigo}
-                                    onChange={event => setCodigo(event.target.value)}
-                                />
-                            </label>
                         </div>
 
                     </div>
@@ -174,7 +157,7 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
                                         : "Creando…"
                                     : esEdicion
                                         ? "Guardar cambios"
-                                        : "Crear color"}
+                                        : "Crear categoria"}
                             </button>
 
                             <button
@@ -194,4 +177,4 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
     );
 }
 
-export default ColorForm;
+export default CategoriaForm;

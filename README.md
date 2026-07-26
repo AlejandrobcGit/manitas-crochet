@@ -1,254 +1,88 @@
 # 🧶 Manitas Crochet
 
 ![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)
-![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?logo=springboot&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?logo=springboot&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![MongoDB](https://img.shields.io/badge/MongoDB-NoSQL-47A248?logo=mongodb&logoColor=white)
-![Estado](https://img.shields.io/badge/Estado-En%20Desarrollo-yellow)
+![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-yellow)
 ![Licencia](https://img.shields.io/badge/Licencia-MIT-blue)
 
-> *Creaciones únicas tejidas con imaginación*
+Manitas Crochet es una aplicación full stack para gestionar un catálogo digital de figuras de crochet y amigurumis. El proyecto combina un backend en Spring Boot con un frontend en React y Vite, permitiendo explorar, buscar y administrar piezas con imágenes y metadatos.
 
-Manitas Crochet es una aplicación Full Stack desarrollada con **Java, Spring Boot, React y MongoDB** para gestionar y visualizar un catálogo digital de figuras de crochet y amigurumis artesanales.
+## ✨ Qué incluye actualmente
 
-El proyecto nace con el objetivo de ofrecer una plataforma moderna donde explorar, organizar y administrar creaciones tejidas a mano, proporcionando una experiencia visual intuitiva y una arquitectura escalable basada en tecnologías actuales.
-
----
-
-## 📖 Descripción
-
-La aplicación permite gestionar un catálogo de figuras de crochet mediante una interfaz moderna y responsive.
-
-Los usuarios pueden:
-
-- Explorar el catálogo de figuras.
-- Buscar figuras por nombre.
-- Filtrar por categoría y nivel de dificultad.
-- Consultar información detallada de cada creación.
-- Registrar nuevas figuras.
-- Editar figuras existentes.
-- Eliminar figuras del catálogo.
-
----
-
-## ✨ Características principales
-
-### Catálogo Visual
-
-Visualización de todas las figuras en formato de tarjetas.
-
-### Gestión de Figuras
-
-Operaciones CRUD completas:
-
-- Crear
-- Consultar
-- Actualizar
-- Eliminar
-
-### Sistema de Búsqueda
-
-Búsqueda rápida por nombre de figura.
-
-### Sistema de Filtros
-
-Filtrado por:
-
-- Categoría
-- Nivel de dificultad
-
-### Diseño Responsive
-
-Adaptado para:
-
-- 📱 Móvil
-- 💻 Escritorio
-- 📟 Tablet
-
----
+- Catálogo público de figuras con tarjetas y detalle.
+- Búsqueda por nombre y filtrado por categoría o dificultad.
+- Panel de administración para crear, editar y eliminar figuras, colores y categorías.
+- Subida y visualización de imágenes asociadas a cada figura.
+- API REST para consumo desde el frontend.
 
 ## 🏗️ Arquitectura
 
-El proyecto sigue una arquitectura cliente-servidor:
+El proyecto sigue una arquitectura cliente-servidor simple y clara:
 
 ```text
-┌─────────────┐
-│   React     │
-│ Frontend UI │
-└──────┬──────┘
-       │ HTTP/REST
-       ▼
-┌─────────────┐
-│ Spring Boot │
-│ REST API    │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│  MongoDB    │
-│  Database   │
-└─────────────┘
+React / Vite
+   │
+   └─> Spring Boot API REST
+          │
+          └─> MongoDB
 ```
 
----
+## 🛠️ Tecnologías principales
 
-## 🛠️ Tecnologías
+- Backend: Java 21, Spring Boot 3.5.16, Spring Data MongoDB, Maven, Lombok, Validation.
+- Frontend: React 19, Vite 8, React Router 7, CSS personalizado.
+- Base de datos: MongoDB.
+- Almacenamiento de archivos: sistema local de imágenes en el backend.
 
-### Backend
-
-- Java 21
-- Spring Boot 3
-- Spring Data MongoDB
-- Maven
-- Lombok
-- Bean Validation
-
-### Frontend
-
-- React
-- Vite
-- React Router
-- Axios
-- Tailwind CSS
-
-### Base de Datos
-
-- MongoDB Atlas
-
-### Control de versiones
-
-- Git
-- GitHub
-
----
-
-## 📂 Estructura del Proyecto
+## 📁 Estructura del repositorio
 
 ```text
 manitas-crochet/
-│
-├── backend/
-│   ├── controller/
-│   ├── service/
-│   ├── repository/
-│   ├── model/
-│   ├── dto/
-│   └── config/
-│
-├── frontend/
-│   ├── pages/
-│   ├── components/
-│   ├── services/
-│   ├── hooks/
-│   ├── router/
-│   └── layouts/
-│
-├── docs/
-│
-└── README.md
+├── backend/           # API REST y lógica de negocio
+├── frontend/          # Aplicación React/Vite
+├── docs/              # Documentación de arquitectura y requisitos
+└── README.md          # Documentación general del proyecto
 ```
 
----
+## ▶️ Inicio rápido
 
-## 📊 Modelo de Datos
+### 1. Backend
 
-Ejemplo de documento almacenado en MongoDB:
+Requisitos:
+- Java 21
+- Maven
+- MongoDB accesible mediante la variable de entorno MONGODB_URI
 
-```json
-[
-  {
-    "id": "6a556072919c8e369d5dba43",
-    "nombre": "Pikachu",
-    "descripcion": "Figura amigurumi inspirada en Pokémon",
-    "categoria": "Anime",
-    "dificultad": "PRINCIPIANTE",
-    "autor": "Alejo",
-    "imagenPrincipal": "pikachu.jpg",
-    "colores": [
-      {
-        "nombre": "Amarillo",
-        "codigo": "#FFFF00"
-      },
-      {
-        "nombre": "Negro",
-        "codigo": "#000000"
-      }
-    ]
-  }
-]
-```
----
-
-## 🔮 Roadmap
-
-### Versión 1.0
-
-- [x] Diseño funcional
-- [x] Catálogo de figuras
-- [ ] CRUD completo
-- [x] Búsquedas
-- [x] Filtros
-- [x] Responsive Design
-
-### Versión 2.0
-
-- [ ] Autenticación de usuarios
-- [ ] Favoritos
-- [ ] Múltiples imágenes
-- [ ] Valoraciones
-- [ ] Comentarios
-- [ ] Descarga de patrones PDF
-
-### Versión 3.0
-
-- [ ] Gestión de pedidos
-- [ ] Tienda online
-- [ ] Panel de administración
-- [ ] Dashboard estadístico
-
----
-
-## 📸 Capturas de Pantalla
-
-Próximamente.
-
-### Página principal
-
-```text
-[ Captura pendiente ]
-```
-
-### Detalle de figura
-
-```text
-[ Captura pendiente ]
-```
-
----
-
-## ⚙️ Instalación
-
-### Clonar repositorio
+Variables de entorno necesarias:
 
 ```bash
-git clone https://github.com/TU-USUARIO/manitas-crochet.git
+MONGODB_URI=mongodb://localhost:27017/manitas-crochet
+SERVER_PORT=8080
 ```
 
-### Backend
+Ejecutar:
 
 ```bash
 cd backend
-mvn clean install
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
-Servidor:
+En Windows PowerShell:
+
+```powershell
+cd backend
+mvnw.cmd spring-boot:run
+```
+
+La API estará disponible en:
 
 ```text
 http://localhost:8080
 ```
 
-### Frontend
+### 2. Frontend
 
 ```bash
 cd frontend
@@ -256,36 +90,46 @@ npm install
 npm run dev
 ```
 
-Aplicación:
+La aplicación quedará disponible en:
 
 ```text
 http://localhost:5173
 ```
 
----
+## 🔗 Puntos principales del sistema
 
-## 🎯 Objetivo del Proyecto
+- Frontend público: inicio y detalle de figuras.
+- Panel admin: rutas bajo /administracion.
+- API base del backend: /api/figuras, /api/categorias, /api/color, /api/imagenes.
 
-Este proyecto forma parte de mi portfolio como desarrollador Full Stack y tiene como objetivo demostrar conocimientos en:
+## 📌 Estado actual
 
-- Arquitectura REST
-- Desarrollo Backend con Spring Boot
-- Desarrollo Frontend con React
-- Bases de datos NoSQL
-- Gestión de APIs
-- Diseño responsive
-- Control de versiones con Git
+El proyecto ya cuenta con:
+- CRUD de figuras.
+- Gestión de categorías, colores y dificultades.
+- Gestión de imágenes.
+- Interfaz de administración funcional.
 
----
+## �️ Roadmap
 
-## 👨‍💻 Autor
+### Versión 1.0
+- [x] Catálogo público de figuras
+- [x] Búsqueda y filtros básicos
+- [x] Gestión de figuras desde el panel de administración
+- [x] Gestión de categorías y colores
+- [x] Subida y visualización de imágenes
 
-**Alejandro Blanco**
+### Próximas mejoras
+- [ ] Autenticación de usuarios
+- [ ] Favoritos y valoraciones
+- [ ] Mejoras en la experiencia de administración
+- [ ] Optimización de imágenes y rendimiento
+- [ ] Despliegue en producción
 
-Desarrollador Full Stack en formación especializado en Java, Spring Boot y React.
+## �👤 Autor
 
----
+Proyecto desarrollado como ejercicio de portfolio y aprendizaje full stack.
 
 ## 📄 Licencia
 
-Este proyecto está distribuido bajo licencia MIT.
+Este proyecto se distribuye bajo la licencia MIT.

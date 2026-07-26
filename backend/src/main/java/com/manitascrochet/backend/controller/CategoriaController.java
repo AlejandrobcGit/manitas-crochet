@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.manitascrochet.backend.model.Categoria;
@@ -25,8 +26,9 @@ public class CategoriaController {
 
     // GET /api/categorias
     @GetMapping
-    public List<Categoria> obtenerTodas() {
-        return categoriaService.obtenerTodas();
+    public List<Categoria> obtenerTodas(
+            @RequestParam(required = false) String nombre) {
+        return categoriaService.obtenerTodas(nombre);
     }
 
     // GET /api/categorias/{id}

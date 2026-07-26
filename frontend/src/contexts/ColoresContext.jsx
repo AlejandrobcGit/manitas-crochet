@@ -56,9 +56,7 @@ export function ColoresProvider({ children }) {
         <ColoresContext.Provider
             value={{
                 colores,
-                setColores,
-                cargarColores,
-                recargarColores: cargarColores,
+                 recargarColores: cargarColores,
                 loading,
                 error
             }}

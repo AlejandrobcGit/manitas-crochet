@@ -1,16 +1,84 @@
-# React + Vite
+# Frontend de Manitas Crochet
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este directorio contiene la interfaz web del proyecto, desarrollada con React y Vite. Su función es mostrar el catálogo de figuras y ofrecer un panel de administración para gestionar contenido.
 
-Currently, two official plugins are available:
+## 🚀 Tecnologías
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19
+- Vite 8
+- React Router 7
+- CSS personalizado
+- Fetch nativo para consumir la API REST del backend
 
-## React Compiler
+## 📦 Scripts disponibles
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Instalar dependencias:
 
-## Expanding the ESLint configuration
+```bash
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Iniciar el entorno de desarrollo:
+
+```bash
+npm run dev
+```
+
+Compilar para producción:
+
+```bash
+npm run build
+```
+
+Revisar calidad de código con ESLint:
+
+```bash
+npm run lint
+```
+
+## 🧭 Rutas principales
+
+- `/` — página de inicio con el catálogo de figuras.
+- `/figuras/:id` — vista detallada de una figura.
+- `/administracion` — panel de administración.
+
+## 🔌 Integración con el backend
+
+El frontend consume la API del backend en los endpoints:
+
+- `/api/figuras`
+- `/api/categorias`
+- `/api/color`
+- `/api/imagenes`
+
+Por defecto, la aplicación espera que el backend esté disponible en:
+
+```text
+http://localhost:8080
+```
+
+## 📁 Estructura relevante
+
+```text
+src/
+├── components/     # Componentes reutilizables
+├── pages/          # Páginas principales del sitio
+├── contexts/       # Contextos de datos
+├── hooks/          # Hooks personalizados
+├── api/            # Utilidades para peticiones HTTP
+└── App.jsx         # Configuración de rutas
+```
+
+## ▶️ Ejecución rápida
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Luego abre la URL mostrada por Vite en el navegador, normalmente:
+
+```text
+http://localhost:5173
+```

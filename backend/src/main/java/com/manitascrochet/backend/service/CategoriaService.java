@@ -2,6 +2,9 @@ package com.manitascrochet.backend.service;
 
 import java.util.List;
 
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaDuplicadaException;
@@ -16,10 +19,25 @@ import lombok.RequiredArgsConstructor;
 public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
+    /*
+     * permite trabajar directamente con MongoDB sin pasar por un repositorio
+     * (MongoRepository).
+     * Es la implementación principal de la interfaz MongoOperations y proporciona
+     * operaciones para crear, consultar, actualizar y borrar documentos.
+     */
+
+    private final MongoTemplate mongoTemplate;
 
     // Obtener todas las categorias
-    public List<Categoria> obtenerTodas() {
-        return categoriaRepository.findAll();
+    public List<Categoria> obtenerTodas(String nombre) {
+        System.out.println("Servicio Categoria Nombre -> " + nombre);
+        Query query = new Query();
+
+        if (nombre != null && !nombre.isBlank()) {
+            query.addCriteria(Criteria.where("nombre").regex(nombre, "i")); // buscador → parcial
+        }
+
+        return mongoTemplate.find(query, Categoria.class);
     }
 
     // Obtener una categoria por id

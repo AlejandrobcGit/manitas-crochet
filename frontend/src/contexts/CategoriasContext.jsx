@@ -11,15 +11,25 @@ export function CategoriasProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const cargarCategorias = async () => {
+    const cargarCategorias = async (nombre = "") => {
 
         try {
 
             setLoading(true);
             setError(null);
 
+             const params = new URLSearchParams();
+
+            if (nombre) params.set("nombre", nombre);
+
+            const queryString = params.toString();
+            
+            const url = queryString
+                ? `/api/categorias?${queryString}`
+                : "/api/categorias";
+
             const response =
-                await apiFetch("/api/categorias");
+                await apiFetch(url);
 
             const data =
                 await response.json();
@@ -45,6 +55,7 @@ export function CategoriasProvider({ children }) {
         <CategoriasContext.Provider
             value={{
                 categorias,
+                 recargarCategorias: cargarCategorias,
                 loading,
                 error
             }}
