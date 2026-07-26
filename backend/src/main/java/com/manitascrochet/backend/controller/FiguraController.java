@@ -34,7 +34,6 @@ public class FiguraController {
     public List<FiguraListadoDto> obtenerTodas(
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String categoriaId) {
-            System.out.println("nombre: " + nombre + ", categoriaId: " + categoriaId);
         return figuraService.obtenerTodasDto(nombre, categoriaId);
     }
 

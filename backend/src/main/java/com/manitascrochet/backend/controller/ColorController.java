@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.manitascrochet.backend.model.Color;
@@ -25,8 +26,10 @@ public class ColorController {
 
     // GET /api/color
     @GetMapping
-    public List<Color> obtenerTodas() {
-        return colorService.obtenerTodos();
+    public List<Color> obtenerTodas(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) String codigo) {
+        return colorService.obtenerTodos(nombre,codigo);
     }
 
     // GET /api/color/{id}

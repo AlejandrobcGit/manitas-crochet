@@ -56,7 +56,7 @@ public class FiguraService {
                 if (categoriaId != null && !categoriaId.isBlank()) {
                         criterios.add(Criteria.where("categoriaId").is(categoriaId)); // filtro → exacto
                 }
-
+                // Combina todos los filtros antes de ejecutar la consulta.   
                 if (!criterios.isEmpty()) {
                         query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
                 }

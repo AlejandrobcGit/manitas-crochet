@@ -1,7 +1,11 @@
 package com.manitascrochet.backend.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CodigoColorDuplicadoException;
@@ -17,10 +21,34 @@ import lombok.RequiredArgsConstructor;
 public class ColorService {
 
     private final ColorRepository colorRepository;
+    /*
+     * permite trabajar directamente con MongoDB sin pasar por un repositorio
+     * (MongoRepository).
+     * Es la implementación principal de la interfaz MongoOperations y proporciona
+     * operaciones para crear, consultar, actualizar y borrar documentos.
+     */
+
+    private final MongoTemplate mongoTemplate;
 
     // Obtener todos los colores
-    public List<Color> obtenerTodos() {
-        return colorRepository.findAll();
+    public List<Color> obtenerTodos(String nombre, String codigo) {
+        Query query = new Query();
+        List<Criteria> criterios = new ArrayList<>();
+
+        if (nombre != null && !nombre.isBlank()) {
+            criterios.add(Criteria.where("nombre").regex(nombre, "i")); // buscador → parcial
+        }
+
+        if (codigo != null && !codigo.isBlank()) {
+            criterios.add(Criteria.where("codigo").regex(codigo, "i")); // buscador → parcial
+        }
+    // Combina todos los filtros antes de ejecutar la consulta.    
+        if (!criterios.isEmpty()) {
+            query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
+        }
+
+        return mongoTemplate.find(query, Color.class);
+
     }
 
     // Obtener color por id
