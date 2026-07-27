@@ -10,27 +10,27 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class FiguraDetalleDto {
-      private String id;
+  private String id;
 
-    private String nombre;
+  private String nombre;
 
-    private String descripcion;
+  private String descripcion;
 
-    private String categoria;
+  private String categoria;
 
-    private Dificultad dificultad;
+  private Dificultad dificultad;
 
-    private String autor;
+  private String autor;
 
-    private String imagenPrincipal;
+  private String imagenPrincipal;
 
-    private List<String> imagenesSecundarias;
+  private List<String> imagenesSecundarias;
 
-    private List<ColorDto> colores;
+  private List<ColorDto> colores;
 
-    private Integer altura;
+  private Integer altura;
 
-    private Integer ancho;
-    
-    private Integer peso;
+  private Integer ancho;
+
+  private Integer peso;
 }

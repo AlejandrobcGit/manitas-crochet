@@ -8,9 +8,9 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import com.manitascrochet.backend.exception.GlobalExceptionHandler.CodigoColorDuplicadoException;
-import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorDuplicadoException;
-import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler1.CodigoColorDuplicadoException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler1.ColorDuplicadoException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler1.ColorNoEncontradoException;
 import com.manitascrochet.backend.model.Color;
 import com.manitascrochet.backend.repository.ColorRepository;
 

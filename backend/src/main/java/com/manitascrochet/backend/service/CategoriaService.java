@@ -7,8 +7,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaDuplicadaException;
-import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler1.CategoriaDuplicadaException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler1.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 
@@ -30,7 +30,7 @@ public class CategoriaService {
 
     // Obtener todas las categorias
     public List<Categoria> obtenerTodas(String nombre) {
-        System.out.println("Servicio Categoria Nombre -> " + nombre);
+
         Query query = new Query();
 
         if (nombre != null && !nombre.isBlank()) {
