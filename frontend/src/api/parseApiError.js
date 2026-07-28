@@ -1,17 +1,17 @@
 export const parseApiError = async (response) => {
+    let data = null;
+
     try {
-        const data = await response.json();
-        if (data?.error && data?.mensaje) {
-            return data;
-        }
-    } catch {
-        // La respuesta no tenía JSON
+        data = await response.json();
+    } catch (parseErr) {
+        console.warn("parseApiError: la respuesta no contenía JSON válido", parseErr);
     }
+
     return {
-        status: response.status,
-        error: "UNKNOWN_ERROR",
-        mensaje: "Ha ocurrido un error inesperado.",
-        timestamp: new Date().toISOString(),
-        fieldErrors: null
+        status: response.status, // ⬅️ SIEMPRE del response real, nunca confíes en que venga en el body
+        error: data?.error || "UNKNOWN_ERROR",
+        mensaje: data?.mensaje || "Ha ocurrido un error inesperado.",
+        timestamp: data?.timestamp || new Date().toISOString(),
+        fieldErrors: data?.fieldErrors || null
     };
 };

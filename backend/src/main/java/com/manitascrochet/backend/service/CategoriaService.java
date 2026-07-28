@@ -7,8 +7,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import com.manitascrochet.backend.exception.GlobalExceptionHandler1.CategoriaDuplicadaException;
-import com.manitascrochet.backend.exception.GlobalExceptionHandler1.CategoriaNoEncontradaException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaDuplicadaException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 

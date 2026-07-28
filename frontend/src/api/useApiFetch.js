@@ -1,8 +1,9 @@
 import { useContext } from "react";
-import { UserContext } from "../contexts/user.context";
-import { parseApiError } from "../api/parseApiError";
+import { useUser } from "../hooks/useUser";
+import { parseApiError } from "./parseApiError";
 
-const API_URL = import.meta.env.VITE_API_URL;
+//const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = "http://localhost:8080";
 
 const NO_RETRY_CODES = [
     "BAD_CREDENTIALS",
@@ -11,8 +12,8 @@ const NO_RETRY_CODES = [
     "EMAIL_ALREADY_EXISTS"
 ];
 
-export const useAuthFetch = () => {
-    const { user, refresh, setUser } = useContext(UserContext);
+export const useApiFetch = () => {
+    const { user, refresh, setUser } = useUser();
 
     const authFetch = async (url, options = {}) => {
         const headers = {
@@ -38,6 +39,13 @@ export const useAuthFetch = () => {
 
             if (!newToken) {
                 setUser(null);
+
+                // Si el backend ya devuelve un 401 explicando que no está autorizado,
+                // conservamos ese error en lugar de sustituirlo por "SESSION_EXPIRED".
+                if (apiError.status === 401 && apiError.error === "UNAUTHORIZED") {
+                    throw apiError;
+                }
+
                 throw {
                     status: 401,
                     error: "SESSION_EXPIRED",

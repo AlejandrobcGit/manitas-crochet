@@ -1,10 +1,11 @@
-package  com.manitascrochet.backend.security;
+package com.manitascrochet.backend.security;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -32,50 +33,59 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .headers(headers -> headers.frameOptions(frame -> frame.disable()))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/admin/**").authenticated()
-                .requestMatchers("/**").permitAll()
-            )
-            // ─── Handlers para errores de Spring Security ──────────────────
-            .exceptionHandling(ex -> ex
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        //--------------------------------------------------
+                        // Escritura solo para ADMIN
+                        //--------------------------------------------------
+                        .requestMatchers("/auth/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                        //--------------------------------------------------
+                        // Consulta polico para todos
+                        //--------------------------------------------------
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                        .anyRequest().authenticated())
+                // ─── Handlers para errores de Spring Security ──────────────────
+                .exceptionHandling(ex -> ex
 
-                // Token ausente o inválido → 401
-                .authenticationEntryPoint((request, response, authException) -> {
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-                    response.setStatus(401);
-                    response.getWriter().write("""
-                        {
-                            "status": 401,
-                            "error": "UNAUTHORIZED",
-                            "mensaje": "No autenticado. Por favor inicia sesión.",
-                            "timestamp": "%s",
-                            "fieldErrors": null
-                        }
-                        """.formatted(LocalDateTime.now()));
-                })
+                        // Token ausente o inválido → 401
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.setStatus(401);
+                            response.getWriter().write("""
+                                    {
+                                        "status": 401,
+                                        "error": "UNAUTHORIZED",
+                                        "mensaje": "No autenticado. Por favor inicia sesión.",
+                                        "timestamp": "%s",
+                                        "fieldErrors": null
+                                    }
+                                    """.formatted(LocalDateTime.now()));
+                        })
 
-                // Token válido pero sin permisos → 403
-                .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-                    response.setStatus(403);
-                    response.getWriter().write("""
-                        {
-                            "status": 403,
-                            "error": "ACCESS_DENIED",
-                            "mensaje": "No tienes permisos para realizar esta acción.",
-                            "timestamp": "%s",
-                            "fieldErrors": null
-                        }
-                        """.formatted(LocalDateTime.now()));
-                })
-            )
-            .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                        // Token válido pero sin permisos → 403
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json");
+                            response.setCharacterEncoding("UTF-8");
+                            response.setStatus(403);
+                            response.getWriter().write("""
+                                    {
+                                        "status": 403,
+                                        "error": "ACCESS_DENIED",
+                                        "mensaje": "No tienes permisos para realizar esta acción.",
+                                        "timestamp": "%s",
+                                        "fieldErrors": null
+                                    }
+                                    """.formatted(LocalDateTime.now()));
+                        }))
+                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -100,8 +110,7 @@ public class SecurityConfig {
                 "Authorization",
                 "Content-Type",
                 "Accept",
-                "X-Requested-With"
-        ));
+                "X-Requested-With"));
         config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

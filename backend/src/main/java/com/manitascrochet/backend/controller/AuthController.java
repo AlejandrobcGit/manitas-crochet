@@ -63,8 +63,7 @@ public class AuthController {
     public ResponseEntity<?> authenticateUser(
             @RequestBody LoginDto loginDto,
             HttpServletResponse response) {
-        System.out.println("loginDTO Username -> : " + loginDto.getUsername());
-        System.out.println("loginDTO Password -> : " + loginDto.getPassword());
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getUsername(),

@@ -1,10 +1,10 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { UserContext } from "../contexts/user.context";
+import { useUser } from "../hooks/useUser";
 import "./LoginForm.css";
 
 function LoginForm() {
-    const { login } = useContext(UserContext);
+    const { login } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
 

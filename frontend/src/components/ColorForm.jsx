@@ -94,7 +94,7 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
         } catch (err) {
 
             setError(
-                err.message ||
+                err.mensaje || err.message ||
                 (
                     esEdicion
                         ? "Error al actualizar el color"

@@ -6,7 +6,7 @@ const UserContext = createContext();
 
 const API_URL = "http://localhost:8080";
 
-function UserProviderWrapper(props) {
+function UserProvider(props) {
 
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true); // ← bloquea el render inicial
@@ -24,8 +24,9 @@ function UserProviderWrapper(props) {
         rol: data.rol,
         id: data.id
     });
-
+       
     const login = async (username, password) => {
+
         const respuesta = await fetch(`${API_URL}/auth/signin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -91,4 +92,4 @@ function UserProviderWrapper(props) {
     );
 }
 
-export { UserContext, UserProviderWrapper };
+export { UserContext, UserProvider };
