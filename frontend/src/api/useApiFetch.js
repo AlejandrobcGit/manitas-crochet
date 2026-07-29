@@ -16,7 +16,10 @@ export const useApiFetch = () => {
     const { user, refresh, setUser } = useUser();
 
     const authFetch = async (url, options = {}) => {
+        const isFormData = options.body instanceof FormData;
+
         const headers = {
+            ...(!isFormData && options.body ? { "Content-Type": "application/json" } : {}),
             ...(options.headers || {}),
             ...(user?.token ? { Authorization: `Bearer ${user.token}` } : {})
         };
@@ -56,6 +59,7 @@ export const useApiFetch = () => {
             }
 
             const retryHeaders = {
+                ...(!isFormData && options.body ? { "Content-Type": "application/json" } : {}),
                 ...(options.headers || {}),
                 Authorization: `Bearer ${newToken}`
             };

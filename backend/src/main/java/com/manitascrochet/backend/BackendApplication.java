@@ -39,7 +39,7 @@ public class BackendApplication {
 						Rol.USER
 				);
 				usuarioRepository.save(user);
-				System.out.println("✅ user admin creado por defecto (user / 12345)");
+				System.out.println("✅ Usuario user creado por defecto (user / 12345)");
 			}
 		};
 	}

@@ -38,16 +38,21 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        //--------------------------------------------------
+                        // --------------------------------------------------
+                        // Usuarios autenticados
+                        // --------------------------------------------------
+                        .requestMatchers(HttpMethod.GET, "/api/favorito/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/favorito/**").authenticated()
+                        // --------------------------------------------------
                         // Escritura solo para ADMIN
-                        //--------------------------------------------------
+                        // --------------------------------------------------
                         .requestMatchers("/auth/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
-                        //--------------------------------------------------
+                        // --------------------------------------------------
                         // Consulta polico para todos
-                        //--------------------------------------------------
+                        // --------------------------------------------------
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated())

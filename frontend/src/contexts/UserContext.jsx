@@ -82,11 +82,28 @@ function UserProvider(props) {
         }
     };
 
+    const signup = async ({ username, email, password }) => {
+        const respuesta = await fetch(`${API_URL}/auth/signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ username, email, password })
+        });
+
+        if (!respuesta.ok) {
+            const apiError = await parseApiError(respuesta);
+            throw apiError;
+        }
+
+        const data = await respuesta.json();
+        return data;
+    };
+
     // ⏳ Mientras se restaura la sesión no renderizamos nada
     if (loading) return null;
 
     return (
-        <UserContext.Provider value={{ user, setUser, login, refresh, logout }}>
+        <UserContext.Provider value={{ user, setUser, login, refresh, logout, signup }}>
             {props.children}
         </UserContext.Provider>
     );

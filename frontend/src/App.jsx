@@ -6,6 +6,7 @@ import AdminPanel from "./pages/AdminPanel";
 import LoginForm from "./components/LoginForm"
 import ProtectedRoute from "./components/ProtectedRoute";
 import NoAutorizado from "./pages/NoAutorizado";
+import SignupForm from "./components/SignupForm";
 
 function App() {
     return (
@@ -38,6 +39,13 @@ function App() {
                 path="/no-autorizado"
                 element={<NoAutorizado />}
             />
+
+            <Route
+                path="/signup"
+                element={<SignupForm />}
+            />
+
+            
 
         </Routes>
     );

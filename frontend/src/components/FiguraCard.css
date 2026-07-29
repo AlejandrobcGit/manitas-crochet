@@ -96,3 +96,50 @@
     font-size: 0.72rem;
     color: var(--color-ink-soft);
 }
+
+
+.figura-card {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s ease, filter 0.25s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.figura-card__favorite {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+
+    width: 36px;
+    height: 36px;
+
+    border: none;
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.92);
+
+    color: var(--color-coral);
+
+    cursor: pointer;
+
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.figura-card__favorite:hover {
+    transform: scale(1.1);
+    background: white;
+}
+
+.figura-card__favorite svg {
+    font-size: 1.1rem;
+}
