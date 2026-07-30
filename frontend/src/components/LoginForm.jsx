@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import "./LoginForm.css";
 
 function LoginForm() {
@@ -33,53 +35,59 @@ function LoginForm() {
     };
 
     return (
-        <div className="login-page">
-            <form className="login-form" onSubmit={handleSubmit}>
+        <>
+            <Header />
 
-                <h1 className="login-form__title">Iniciar sesión</h1>
+            <div className="login-page">
+                <form className="login-form" onSubmit={handleSubmit}>
 
-                {error && (
-                    <p className="login-form__error" role="alert">
-                        {error}
-                    </p>
-                )}
+                    <h1 className="login-form__title">Iniciar sesión</h1>
 
-                <label className="login-form__label" htmlFor="username">
-                    Usuario
-                </label>
-                <input
-                    id="username"
-                    className="login-form__input"
-                    type="text"
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value)}
-                    autoComplete="username"
-                    required
-                />
+                    {error && (
+                        <p className="login-form__error" role="alert">
+                            {error}
+                        </p>
+                    )}
 
-                <label className="login-form__label" htmlFor="password">
-                    Contraseña
-                </label>
-                <input
-                    id="password"
-                    className="login-form__input"
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    autoComplete="current-password"
-                    required
-                />
+                    <label className="login-form__label" htmlFor="username">
+                        Usuario
+                    </label>
+                    <input
+                        id="username"
+                        className="login-form__input"
+                        type="text"
+                        value={username}
+                        onChange={(event) => setUsername(event.target.value)}
+                        autoComplete="username"
+                        required
+                    />
 
-                <button
-                    className="login-form__submit"
-                    type="submit"
-                    disabled={submitting}
-                >
-                    {submitting ? "Entrando..." : "Entrar"}
-                </button>
+                    <label className="login-form__label" htmlFor="password">
+                        Contraseña
+                    </label>
+                    <input
+                        id="password"
+                        className="login-form__input"
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        autoComplete="current-password"
+                        required
+                    />
 
-            </form>
-        </div>
+                    <button
+                        className="login-form__submit"
+                        type="submit"
+                        disabled={submitting}
+                    >
+                        {submitting ? "Entrando..." : "Entrar"}
+                    </button>
+
+                </form>
+            </div>
+            
+            <Footer />
+        </>
     );
 }
 

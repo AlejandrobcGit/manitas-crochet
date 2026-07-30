@@ -1,17 +1,12 @@
 import "./FiguraCard.css";
 import { useNavigate } from "react-router-dom";
-import { useFavoritos } from "../hooks/useFavoritos";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 const API_URL = "http://localhost:8080";
 
-function FiguraCard({ figura }) {
+function FiguraCard({ figura, esFavorito, onToggleFavorito }) {
 
     const navigate = useNavigate();
-
-    const { favoritos, cambiarFavorito } = useFavoritos();
-
-    const esFavorito = favoritos.includes(figura.id);
 
     const imageUrl = figura.imagenPrincipal
         ? `${API_URL}/api/imagenes/${figura.imagenPrincipal}`
@@ -22,7 +17,7 @@ function FiguraCard({ figura }) {
         e.stopPropagation();
 
         try {
-            await cambiarFavorito(figura.id);
+            await onToggleFavorito(figura.id);
         } catch (error) {
             console.error(error);
         }
