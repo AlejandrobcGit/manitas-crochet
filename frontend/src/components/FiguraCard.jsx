@@ -1,6 +1,6 @@
 import "./FiguraCard.css";
 import { useNavigate } from "react-router-dom";
-import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
 
 const API_URL = "http://localhost:8080";
 
@@ -13,7 +13,6 @@ function FiguraCard({ figura, esFavorito, onToggleFavorito }) {
         : null;
 
     const handleFavorito = async (e) => {
-
         e.stopPropagation();
 
         try {
@@ -22,6 +21,15 @@ function FiguraCard({ figura, esFavorito, onToggleFavorito }) {
             console.error(error);
         }
     };
+
+    // Porcentaje de "llenado" de estrellas (0 a 100) para cada una de las 5
+    const media = figura.valoracionMedia ?? 0;
+    const starFillPercents = Array.from({ length: 5 }, (_, i) => {
+        const diff = media - i;
+        if (diff >= 1) return 100;
+        if (diff <= 0) return 0;
+        return diff * 100; // parte decimal para estrella parcial
+    });
 
     return (
         <article
@@ -71,9 +79,42 @@ function FiguraCard({ figura, esFavorito, onToggleFavorito }) {
                         {figura.nombre}
                     </h3>
 
-                    <p className="figura-card__dimensions">
-                        {figura.altura} × {figura.ancho} cm
-                    </p>
+                    <div className="figura-card__footer">
+
+                        <p className="figura-card__dimensions">
+                            {figura.altura} × {figura.ancho} cm
+                        </p>
+
+                        <div
+                            className="figura-card__rating"
+                            aria-label={`Valoración media ${media.toFixed(1).replace(".", ",")} sobre 5, ${figura.totalValoraciones} valoraciones`}
+                        >
+                            <div className="figura-card__stars">
+                                {starFillPercents.map((percent, i) => (
+                                    <span key={i} className="figura-card__star">
+                                        <FaStar className="figura-card__star-bg" />
+                                        <span
+                                            className="figura-card__star-fill"
+                                            style={{ width: `${percent}%` }}
+                                        >
+                                            <FaStar />
+                                        </span>
+                                    </span>
+                                ))}
+                            </div>
+
+                            {figura.totalValoraciones > 0 ? (
+                                <span className="figura-card__rating-text">
+                                    {media.toFixed(1).replace(".", ",")} ({figura.totalValoraciones})
+                                </span>
+                            ) : (
+                                <span className="figura-card__rating-text figura-card__rating-text--empty">
+                                    Sin valoraciones
+                                </span>
+                            )}
+                        </div>
+
+                    </div>
 
                 </div>
 

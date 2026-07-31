@@ -43,6 +43,7 @@ public class SecurityConfig {
                         // --------------------------------------------------
                         .requestMatchers(HttpMethod.GET, "/api/favorito/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/favorito/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/valoraciones/**").authenticated()
                         // --------------------------------------------------
                         // Escritura solo para ADMIN
                         // --------------------------------------------------
@@ -54,6 +55,7 @@ public class SecurityConfig {
                         // Consulta polico para todos
                         // --------------------------------------------------
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/valoraciones/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated())
                 // ─── Handlers para errores de Spring Security ──────────────────

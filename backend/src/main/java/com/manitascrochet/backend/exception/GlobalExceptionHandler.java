@@ -59,6 +59,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", ex.getMessage());
     }
 
+    @ExceptionHandler(ValoracionInvalidaException.class)
+    public ResponseEntity<ApiError> handleValoracionInvalida(ValoracionInvalidaException ex) {
+        return build(HttpStatus.BAD_REQUEST,"VALORACION_INVALIDA",ex.getMessage());
+    }
+
     // ─── Seguridad ─────────────────────────────────────────────────────────────
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -129,7 +134,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 
-    // JSON mal formado (sintaxis inválida, comas sobrantes, tipos incompatibles, etc.)
+    // JSON mal formado (sintaxis inválida, comas sobrantes, tipos incompatibles,
+    // etc.)
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiError> handleJsonInvalido(HttpMessageNotReadableException ex) {
         log.warn("JSON inválido en el request: {}", ex.getMessage());
@@ -226,6 +232,13 @@ public class GlobalExceptionHandler {
 
         public FiguraNoEncontradaException(String id) {
             super("La figura con id '" + id + "' no existe");
+        }
+    }
+
+    public static class ValoracionInvalidaException extends RuntimeException {
+
+        public ValoracionInvalidaException() {
+            super("La puntuación debe estar entre 1 y 5");
         }
     }
 

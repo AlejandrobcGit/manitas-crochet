@@ -3,6 +3,7 @@
     flex-direction: column;
     transition: transform 0.25s ease, filter 0.25s ease;
     cursor: pointer;
+    position: relative;
 }
 
 .figura-card:hover {
@@ -97,15 +98,6 @@
     color: var(--color-ink-soft);
 }
 
-
-.figura-card {
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.25s ease, filter 0.25s ease;
-    cursor: pointer;
-    position: relative;
-}
-
 .figura-card__favorite {
     position: absolute;
     top: 12px;
@@ -142,4 +134,58 @@
 
 .figura-card__favorite svg {
     font-size: 1.1rem;
+}
+
+/* --- Valoración (footer con dimensiones y estrellas) --- */
+
+.figura-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 8px;
+    margin-top: 0.4rem;
+}
+
+.figura-card__rating {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.figura-card__stars {
+    display: flex;
+    gap: 1px;
+}
+
+.figura-card__star {
+    position: relative;
+    display: inline-block;
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+.figura-card__star-bg {
+    color: rgba(201, 183, 160, 0.5);
+}
+
+.figura-card__star-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    display: inline-block;
+    white-space: nowrap;
+    color: var(--color-coral);
+}
+
+.figura-card__rating-text {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--color-ink-soft);
+}
+
+.figura-card__rating-text--empty {
+    font-style: italic;
+    opacity: 0.75;
 }
