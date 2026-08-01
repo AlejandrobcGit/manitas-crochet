@@ -1,0 +1,117 @@
+.comentarios {
+  padding-bottom: 4rem;
+}
+
+.comentarios__title {
+  font-size: clamp(1.4rem, 3vw, 1.8rem);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0 0 1.4rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.comentarios__count {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--color-ink-soft);
+}
+
+.comentarios__vacio {
+  font-size: 0.9rem;
+  color: var(--color-ink-soft);
+  font-style: italic;
+}
+
+.comentarios__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.comentarios__item {
+  background: var(--color-card);
+  border: 1px solid var(--color-ring);
+  border-radius: 14px;
+  padding: 1rem 1.2rem;
+}
+
+.comentarios__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.comentarios__usuario-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comentarios__valoracion {
+  display: inline-flex;
+  align-items: center;
+}
+
+.comentarios__stars {
+  display: flex;
+  gap: 1px;
+}
+
+.comentarios__star {
+  position: relative;
+  display: inline-block;
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.comentarios__star-bg {
+  color: rgba(201, 183, 160, 0.5);
+}
+
+.comentarios__star-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--color-coral);
+}
+
+.comentarios__valoracion--vacia {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  opacity: 0.75;
+}
+
+.comentarios__usuario {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-coral);
+}
+
+.comentarios__fecha {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+
+.comentarios__texto {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--color-ink);
+  margin: 0;
+  white-space: pre-line;
+}

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.manitascrochet.backend.dto.ComentarioDto;
+import com.manitascrochet.backend.dto.ComentarioResponseDto;
 import com.manitascrochet.backend.model.Comentario;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 import com.manitascrochet.backend.service.ComentarioService;
@@ -37,10 +38,10 @@ public class ComentarioController {
     }
 
     @GetMapping("/figura/{figuraId}")
-    public ResponseEntity<List<Comentario>> obtenerComentariosFigura(
+    public ResponseEntity<List<ComentarioResponseDto>> obtenerComentariosFigura(
             @PathVariable String figuraId) {
 
-        List<Comentario> comentarios = comentarioService.obtenerComentariosFigura(figuraId);
+        List<ComentarioResponseDto> comentarios = comentarioService.obtenerComentariosFigura(figuraId);
         return ResponseEntity.ok(comentarios);
     }
 

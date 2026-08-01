@@ -2,10 +2,14 @@ import { useParams, Link } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 
 import { useFiguraDetalle } from "../hooks/useFiguraDetalle";
+import { useUser } from "../hooks/useUser";
 
 import GaleriaImagenes from "../components/GaleriaImagenes";
+import ComentariosFigura from "../components/ComentariosFigura";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+
+
 
 import "./FiguraDetalle.css";
 
@@ -18,6 +22,9 @@ function FiguraDetalle() {
         loading,
         error
     } = useFiguraDetalle(id);
+
+    const { user } = useUser();
+    const esAdmin = user?.rol === "ROLE_ADMIN";
 
     const media = figura?.valoracionMedia ?? 0;
 
@@ -98,9 +105,8 @@ function FiguraDetalle() {
                                     className="detail-info__rating"
                                     aria-label={`Valoración media ${media
                                         .toFixed(1)
-                                        .replace(".", ",")} sobre 5, ${
-                                        figura.totalValoraciones
-                                    } valoraciones`}
+                                        .replace(".", ",")} sobre 5, ${figura.totalValoraciones
+                                        } valoraciones`}
                                 >
 
                                     <div className="detail-info__stars">
@@ -153,7 +159,7 @@ function FiguraDetalle() {
 
                                 </div>
 
-                                {figura.dificultad && (
+                                {esAdmin && figura.dificultad && (
                                     <span className="detail-info__badge">
                                         {figura.dificultad}
                                     </span>
@@ -220,7 +226,7 @@ function FiguraDetalle() {
 
                                 )}
 
-                                {figura.autor && (
+                                {esAdmin && figura.autor && (
                                     <p className="detail-info__autor">
                                         Tejido por {figura.autor}
                                     </p>
@@ -230,6 +236,8 @@ function FiguraDetalle() {
 
                         </section>
 
+                        <ComentariosFigura figuraId={figura.id} />
+                        
                     </>
 
                 )}

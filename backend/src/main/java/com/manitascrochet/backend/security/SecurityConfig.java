@@ -43,7 +43,6 @@ public class SecurityConfig {
                         // --------------------------------------------------
                         .requestMatchers(HttpMethod.GET, "/api/favorito/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/favorito/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/comentarios/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/comentarios/**").authenticated()
                          .requestMatchers(HttpMethod.DELETE, "/api/comentarios/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/valoraciones/**").authenticated()
@@ -58,7 +57,7 @@ public class SecurityConfig {
                         // Consulta polico para todos
                         // --------------------------------------------------
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/valoraciones/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/comentarios/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated())
                 // ─── Handlers para errores de Spring Security ──────────────────

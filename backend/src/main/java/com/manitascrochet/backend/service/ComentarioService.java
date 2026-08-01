@@ -3,13 +3,18 @@ package com.manitascrochet.backend.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.manitascrochet.backend.dto.ComentarioDto;
+import com.manitascrochet.backend.dto.ComentarioResponseDto;
+import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ComentarioNoEncontradoException;
 import com.manitascrochet.backend.model.Comentario;
+import com.manitascrochet.backend.model.Usuario;
 import com.manitascrochet.backend.repository.ComentarioRepository;
+import com.manitascrochet.backend.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 public class ComentarioService {
 
     private final ComentarioRepository comentarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ValoracionService servicioValoracion;
 
     public void eliminarComentario(String comentarioId, String userId) {
 
@@ -27,8 +34,10 @@ public class ComentarioService {
         comentarioRepository.delete(comentario);
     }
 
-    public List<Comentario> obtenerComentariosFigura(String figuraId) {
-        return comentarioRepository.findByFiguraIdOrderByFechaCreacionDesc(figuraId);
+    public List<ComentarioResponseDto> obtenerComentariosFigura(String figuraId) {
+        return comentarioRepository.findByFiguraIdOrderByFechaCreacionDesc(figuraId).stream()
+                .map(this::convertirAResponseDto)
+                .collect(Collectors.toList());
     }
 
     public Comentario guardarComentario(
@@ -60,11 +69,31 @@ public class ComentarioService {
         return comentarioRepository.save(comentario);
     }
 
+
+
     public Comentario obtenerComentarioUsuarioFigura(
             String figuraId,
             String userId) {
 
         return comentarioRepository.findByUsuarioIdAndFiguraId(userId,figuraId)
                 .orElse(null);
+    }
+
+    public ComentarioResponseDto convertirAResponseDto(Comentario comentario) {
+
+        String nombreUsuario = usuarioRepository.findById(comentario.getUsuarioId())
+                .map(Usuario::getUsername)
+                .orElse(comentario.getUsuarioId());
+
+        ValoracionDto valoracion = servicioValoracion.obtenerValoracionUsuario(comentario.getUsuarioId(), comentario.getFiguraId());
+
+        return new ComentarioResponseDto(
+                nombreUsuario,
+                comentario.getFiguraId(),
+                valoracion.getPuntuacion(),
+                comentario.getComentario(),
+                comentario.getFechaCreacion(),
+                comentario.getFechaModificacion()
+        );
     }
 }
