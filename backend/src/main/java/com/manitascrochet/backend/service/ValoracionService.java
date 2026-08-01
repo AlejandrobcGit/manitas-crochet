@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
+import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ValoracionInvalidaException;
 import com.manitascrochet.backend.model.Valoracion;
 import com.manitascrochet.backend.repository.ValoracionRepository;
@@ -19,14 +20,14 @@ public class ValoracionService {
 
     private final ValoracionRepository valoracionRepository;
 
-    public void valorarFigura(
+    public Valoracion valorarFigura(
             String figuraId,
             Integer puntuacion,
             UserDetailsImpl userDetails) {
 
         // Usuario obligatorio
         if (userDetails == null) {
-            return;
+            return null;
         }
 
         // RN-02: la puntuación debe estar entre 1 y 5
@@ -56,6 +57,7 @@ public class ValoracionService {
         }
 
         valoracionRepository.save(valoracion);
+        return valoracion;
     }
 
     public ResumenValoracionDto obtenerResumenValoraciones(
@@ -71,5 +73,19 @@ public class ValoracionService {
         return new ResumenValoracionDto(
                 media,
                 (long) valoraciones.size());
+    }
+
+    public ValoracionDto obtenerValoracionUsuario(
+            String usuarioId, String figuraId) {
+                
+        if (usuarioId == null || figuraId == null) {
+            return new ValoracionDto(0);
+        }
+
+        Valoracion valoracion = valoracionRepository
+                .findByUsuarioIdAndFiguraId(usuarioId, figuraId)
+                .orElse(null);
+
+        return new ValoracionDto(valoracion != null ? valoracion.getPuntuacion() : 0);
     }
 }

@@ -8,11 +8,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
 
 @Data
-@Document(collection = "visualizaciones")
-public class Visualizacion {
+@Document(collection = "comentarios")
+public class Comentario {
     @Id
     String id;
     String usuarioId;
     String figuraId;
-    LocalDateTime fecha;
+    String comentario;
+    LocalDateTime fechaCreacion;
+    LocalDateTime fechaModificacion;
 }

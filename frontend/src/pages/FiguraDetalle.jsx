@@ -19,13 +19,22 @@ function FiguraDetalle() {
         error
     } = useFiguraDetalle(id);
 
-    // Porcentaje de "llenado" de cada una de las 5 estrellas (soporta decimales)
     const media = figura?.valoracionMedia ?? 0;
+
     const starFillPercents = Array.from({ length: 5 }, (_, i) => {
+
         const diff = media - i;
-        if (diff >= 1) return 100;
-        if (diff <= 0) return 0;
+
+        if (diff >= 1) {
+            return 100;
+        }
+
+        if (diff <= 0) {
+            return 0;
+        }
+
         return diff * 100;
+
     });
 
     return (
@@ -58,7 +67,10 @@ function FiguraDetalle() {
 
                     <>
 
-                        <Link to="/#catalogo" className="detail-back">
+                        <Link
+                            to="/#catalogo"
+                            className="detail-back"
+                        >
                             ← Volver al catálogo
                         </Link>
 
@@ -84,32 +96,61 @@ function FiguraDetalle() {
 
                                 <div
                                     className="detail-info__rating"
-                                    aria-label={`Valoración media ${media.toFixed(1).replace(".", ",")} sobre 5, ${figura.totalValoraciones} valoraciones`}
+                                    aria-label={`Valoración media ${media
+                                        .toFixed(1)
+                                        .replace(".", ",")} sobre 5, ${
+                                        figura.totalValoraciones
+                                    } valoraciones`}
                                 >
+
                                     <div className="detail-info__stars">
+
                                         {starFillPercents.map((percent, i) => (
-                                            <span key={i} className="detail-info__star">
+
+                                            <span
+                                                key={i}
+                                                className="detail-info__star"
+                                            >
+
                                                 <FaStar className="detail-info__star-bg" />
+
                                                 <span
                                                     className="detail-info__star-fill"
-                                                    style={{ width: `${percent}%` }}
+                                                    style={{
+                                                        width: `${percent}%`
+                                                    }}
                                                 >
                                                     <FaStar />
                                                 </span>
+
                                             </span>
+
                                         ))}
+
                                     </div>
 
                                     {figura.totalValoraciones > 0 ? (
+
                                         <span className="detail-info__rating-text">
-                                            {media.toFixed(1).replace(".", ",")} · {figura.totalValoraciones}{" "}
-                                            {figura.totalValoraciones === 1 ? "valoración" : "valoraciones"}
+                                            {media
+                                                .toFixed(1)
+                                                .replace(".", ",")}
+                                            {" · "}
+                                            {figura.totalValoraciones}
+                                            {" "}
+                                            {figura.totalValoraciones === 1
+                                                ? "valoración"
+                                                : "valoraciones"}
                                         </span>
+
                                     ) : (
+
                                         <span className="detail-info__rating-text detail-info__rating-text--empty">
                                             Sin valoraciones todavía
                                         </span>
+
                                     )}
+
                                 </div>
 
                                 {figura.dificultad && (
@@ -124,20 +165,30 @@ function FiguraDetalle() {
                                     </p>
                                 )}
 
-                                {(figura.altura || figura.ancho || figura.pesoGramos) && (
+                                {(figura.altura || figura.ancho || figura.peso) && (
+
                                     <div className="detail-info__row">
+
                                         {figura.altura && (
-                                            <span>Alto: {figura.altura} cm</span>
+                                            <span>
+                                                Alto: {figura.altura} cm
+                                            </span>
                                         )}
 
                                         {figura.ancho && (
-                                            <span>Ancho: {figura.ancho} cm</span>
+                                            <span>
+                                                Ancho: {figura.ancho} cm
+                                            </span>
                                         )}
 
                                         {figura.peso && (
-                                            <span>Peso: {figura.peso} g</span>
+                                            <span>
+                                                Peso: {figura.peso} g
+                                            </span>
                                         )}
+
                                     </div>
+
                                 )}
 
                                 {figura.colores?.length > 0 && (
@@ -151,11 +202,16 @@ function FiguraDetalle() {
                                                 className="detail-info__color"
                                                 title={color.nombre}
                                             >
+
                                                 <span
                                                     className="detail-info__swatch"
-                                                    style={{ backgroundColor: color.codigo }}
+                                                    style={{
+                                                        backgroundColor: color.codigo
+                                                    }}
                                                 />
+
                                                 {color.nombre}
+
                                             </span>
 
                                         ))}
@@ -185,6 +241,7 @@ function FiguraDetalle() {
         </div>
 
     );
+
 }
 
 export default FiguraDetalle;

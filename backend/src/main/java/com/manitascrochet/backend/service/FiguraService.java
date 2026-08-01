@@ -15,6 +15,7 @@ import com.manitascrochet.backend.dto.ColorDto;
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
+import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.FiguraNoEncontradaException;
@@ -23,6 +24,7 @@ import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 import com.manitascrochet.backend.repository.ColorRepository;
 import com.manitascrochet.backend.repository.FiguraRepository;
+import com.manitascrochet.backend.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -102,15 +104,15 @@ public class FiguraService {
         }
 
         // Obtener figura por id en formato DTO
-        public FiguraDetalleDto obtenerPorIdDto(String id) {
+        public FiguraDetalleDto obtenerPorIdDto(String id, UserDetailsImpl userDetails) {
 
-                return convertirFiguraDetalleDto(
-                                figuraRepository.findById(id)
-                                                .orElseThrow(() -> new FiguraNoEncontradaException(id)));
+                return figuraRepository.findById(id)
+                                .map(figura -> convertirFiguraDetalleDto(figura, userDetails))
+                                .orElseThrow(() -> new FiguraNoEncontradaException(id));
         }
 
         // Convertir Figura a FiguraDetalleDto
-        private FiguraDetalleDto convertirFiguraDetalleDto(Figura figura) {
+        private FiguraDetalleDto convertirFiguraDetalleDto(Figura figura, UserDetailsImpl userDetails) {
 
                 String categoria = categoriaRepository
                                 .findById(figura.getCategoriaId())
@@ -134,6 +136,9 @@ public class FiguraService {
                 ResumenValoracionDto resumenValoracionDto = valoracionService
                                 .obtenerResumenValoraciones(figura.getId());
 
+                ValoracionDto valoracionUsuario = (userDetails == null)
+                                ? new ValoracionDto(0)
+                                : valoracionService.obtenerValoracionUsuario(userDetails.getId(), figura.getId());
                 return new FiguraDetalleDto(
                                 figura.getId(),
                                 figura.getNombre(),
@@ -148,6 +153,7 @@ public class FiguraService {
                                 figura.getAncho(),
                                 figura.getPeso(),
                                 resumenValoracionDto.getValoracionMedia(),
+                                valoracionUsuario.getPuntuacion(),
                                 resumenValoracionDto.getTotalValoraciones());
         }
 
@@ -209,7 +215,7 @@ public class FiguraService {
                 }
 
                 // Segundo save: ahora sí con los nombres de archivo ya calculados.
-                return convertirFiguraDetalleDto(figuraRepository.save(figuraGuardada));
+                return convertirFiguraDetalleDto(figuraRepository.save(figuraGuardada), null);
         }
 
         // Actualizar figura
@@ -317,7 +323,7 @@ public class FiguraService {
                 figura.setFechaModificacion(
                                 LocalDateTime.now());
 
-                return convertirFiguraDetalleDto(figuraRepository.save(figura));
+                return convertirFiguraDetalleDto(figuraRepository.save(figura), null);
         }
 
         // Eliminar figura

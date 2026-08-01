@@ -53,7 +53,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             CategoriaNoEncontradaException.class,
             ColorNoEncontradoException.class,
-            FiguraNoEncontradaException.class
+            FiguraNoEncontradaException.class,
+            ComentarioNoEncontradoException.class
     })
     public ResponseEntity<ApiError> manejarNoEncontrado(RuntimeException ex) {
         return build(HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", ex.getMessage());
@@ -242,4 +243,10 @@ public class GlobalExceptionHandler {
         }
     }
 
+    public static class ComentarioNoEncontradoException extends RuntimeException {
+
+        public ComentarioNoEncontradoException() {
+            super("No se puede eliminar/actualizar el comentario de otros usuarios");
+        }
+    }
 }

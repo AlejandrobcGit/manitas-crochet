@@ -47,7 +47,7 @@ public class FiguraController {
             @PathVariable String id,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        FiguraDetalleDto figuraDto = figuraService.obtenerPorIdDto(id);
+        FiguraDetalleDto figuraDto = figuraService.obtenerPorIdDto(id, userDetails);
         
         // Si no hay usuario logado, userDetails llega como null (no hay 401,
         // porque el endpoint es público) — el service debe manejarlo
