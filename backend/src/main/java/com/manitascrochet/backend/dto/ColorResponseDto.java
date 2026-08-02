@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ColorDto {
+public class ColorResponseDto {
 
     private String nombre;
 

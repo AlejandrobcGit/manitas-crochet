@@ -11,7 +11,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.manitascrochet.backend.dto.ColorDto;
+import com.manitascrochet.backend.dto.ColorResponseDto;
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
@@ -37,6 +37,8 @@ public class FiguraService {
         private final ColorRepository colorRepository;
         private final FileStorageService fileStorageService;
         private final ValoracionService valoracionService;
+        private final ComentarioService comentarioService;
+        
 
         /*
          * permite trabajar directamente con MongoDB sin pasar por un repositorio
@@ -119,12 +121,12 @@ public class FiguraService {
                                 .map(Categoria::getNombre)
                                 .orElseThrow(() -> new CategoriaNoEncontradaException(figura.getCategoriaId()));
 
-                List<ColorDto> colores = figura.getColoresIds()
+                List<ColorResponseDto> colores = figura.getColoresIds()
                                 .stream()
                                 .map(colorId -> colorRepository.findById(colorId))
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
-                                .map(color -> new ColorDto(
+                                .map(color -> new ColorResponseDto(
                                                 color.getNombre(),
                                                 color.getCodigo()))
                                 .toList();
@@ -329,9 +331,17 @@ public class FiguraService {
         // Eliminar figura
         public void eliminar(String id) {
 
-                figuraRepository.findById(id)
+                Figura figura = figuraRepository.findById(id)
                                 .orElseThrow(() -> new FiguraNoEncontradaException(id));
 
                 figuraRepository.deleteById(id);
+                valoracionService.eliminarValoracionesPorFigura(id);
+                comentarioService.eliminarComentariosPorFigura(id);
+                fileStorageService.delete(figura.getImagenPrincipal());
+                if (figura.getImagenesSecundarias() != null) {
+                        for (String imagen : figura.getImagenesSecundarias()) {
+                                fileStorageService.delete(imagen);
+                        }
+                }
         }
 }

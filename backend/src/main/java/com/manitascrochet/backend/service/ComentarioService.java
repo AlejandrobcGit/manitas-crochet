@@ -96,4 +96,9 @@ public class ComentarioService {
                 comentario.getFechaModificacion()
         );
     }
+
+
+    public void eliminarComentariosPorFigura(String figuraId) {
+        comentarioRepository.deleteByFiguraId(figuraId);
+    }
 }

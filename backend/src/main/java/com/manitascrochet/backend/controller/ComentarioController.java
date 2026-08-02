@@ -19,6 +19,7 @@ import com.manitascrochet.backend.model.Comentario;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 import com.manitascrochet.backend.service.ComentarioService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -47,7 +48,7 @@ public class ComentarioController {
 
     @PostMapping
     public ResponseEntity<Comentario> guardarComentario(
-            @RequestBody ComentarioDto comentarioDto,
+            @Valid @RequestBody ComentarioDto comentarioDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         Comentario guardado = comentarioService.guardarComentario(comentarioDto, userDetails.getId());

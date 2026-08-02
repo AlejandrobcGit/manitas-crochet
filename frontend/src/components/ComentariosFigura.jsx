@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { FaStar } from "react-icons/fa";
 
+import { useApiFetch } from "../api/useApiFetch";
 import { useComentarios } from "../hooks/useComentarios";
+import { useUser } from "../hooks/useUser";
 
 import "./ComentariosFigura.css";
 
@@ -86,6 +89,68 @@ function ValoracionComentario({ valoracion }) {
 function ComentariosFigura({ figuraId }) {
 
     const { comentarios, loading, error, refetch } = useComentarios(figuraId);
+    const { user } = useUser();
+    const authFetch = useApiFetch();
+
+    const [valoracion, setValoracion] = useState(0);
+    const [comentario, setComentario] = useState("");
+    const [submitError, setSubmitError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        const textoComentario = comentario.trim();
+        const hayValoracion = valoracion >= 0;
+
+        if (!textoComentario && !hayValoracion) {
+            setSubmitError("Debes escribir un comentario o elegir una valoración antes de enviar.");
+            return;
+        }
+
+        setSubmitError("");
+        setSubmitting(true);
+
+        try {
+
+            const peticiones = [];
+
+            if (textoComentario) {
+                peticiones.push(
+                    authFetch(`/api/comentarios`, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            figuraId,
+                            comentario: textoComentario
+                        })
+                    })
+                );
+            }
+
+            if (hayValoracion) {
+                console.log("Enviando valoración:", valoracion);
+                peticiones.push(
+                    authFetch(`/api/valoraciones/${figuraId}`, {
+                        method: "POST",
+                        body: JSON.stringify({
+                            puntuacion: valoracion
+                        })
+                    })
+                );
+            }
+
+            await Promise.all(peticiones);
+
+            setValoracion(0);
+            setComentario("");
+            refetch();
+
+        } catch (apiError) {
+            setSubmitError(apiError.mensaje || "No se pudo enviar tu valoración.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
 
@@ -99,6 +164,67 @@ function ComentariosFigura({ figuraId }) {
                     </span>
                 )}
             </h2>
+
+            {user ? (
+                <form className="comentarios__form" onSubmit={handleSubmit}>
+                    <div className="comentarios__form-header">
+                        <label className="comentarios__label">Tu valoración</label>
+                        <span className="comentarios__hint">Opcional</span>
+                    </div>
+
+                    <div className="comentarios__rating-picker" role="radiogroup" aria-label="Selecciona una valoración">
+                        {[1, 2, 3, 4, 5].map(numero => (
+                            <button
+                                key={numero}
+                                type="button"
+                                className={`comentarios__star-button ${valoracion >= numero ? "comentarios__star-button--active" : ""}`}
+                                onClick={() => setValoracion(numero)}
+                                aria-label={`${numero} estrella${numero > 1 ? "s" : ""}`}
+                                aria-pressed={valoracion === numero}
+                            >
+                                <FaStar />
+                            </button>
+                        ))}
+                    </div>
+
+                    {valoracion > 0 && (
+                        <button
+                            type="button"
+                            className="comentarios__clear-rating"
+                            onClick={() => setValoracion(0)}
+                        >
+                            Quitar valoración
+                        </button>
+                    )}
+
+                    <label className="comentarios__label" htmlFor="comentario-figura">
+                        Comentario
+                    </label>
+                    <textarea
+                        id="comentario-figura"
+                        className="comentarios__textarea"
+                        value={comentario}
+                        onChange={(event) => setComentario(event.target.value)}
+                        rows={4}
+                        maxLength={500}
+                        placeholder="Escribe tu opinión sobre la figura. Puedes dejarlo vacío si solo quieres valorar."
+                    />
+
+                    {submitError && (
+                        <p className="comentarios__error" role="alert">
+                            {submitError}
+                        </p>
+                    )}
+
+                    <button type="submit" className="comentarios__submit" disabled={submitting}>
+                        {submitting ? "Enviando..." : "Enviar valoración"}
+                    </button>
+                </form>
+            ) : (
+                <p className="comentarios__login">
+                    Inicia sesión para dejar tu valoración y comentario.
+                </p>
+            )}
 
             {loading && (
                 <p className="catalog-status">

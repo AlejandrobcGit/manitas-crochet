@@ -26,7 +26,7 @@ public class FiguraDetalleDto {
 
   private List<String> imagenesSecundarias;
 
-  private List<ColorDto> colores;
+  private List<ColorResponseDto> colores;
 
   private Integer altura;
 

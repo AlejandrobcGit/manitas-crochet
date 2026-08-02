@@ -30,8 +30,8 @@ public class ValoracionService {
             return null;
         }
 
-        // RN-02: la puntuación debe estar entre 1 y 5
-        if (puntuacion == null || puntuacion < 1 || puntuacion > 5) {
+        // RN-02: la puntuación debe estar entre 0 y 5
+        if (puntuacion == null || puntuacion < 0 || puntuacion > 5) {
             throw new ValoracionInvalidaException();
         }
 
@@ -87,5 +87,9 @@ public class ValoracionService {
                 .orElse(null);
 
         return new ValoracionDto(valoracion != null ? valoracion.getPuntuacion() : 0);
+    }
+
+    public void eliminarValoracionesPorFigura(String figuraId) {
+        valoracionRepository.deleteByFiguraId(figuraId);
     }
 }

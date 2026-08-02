@@ -30,6 +30,7 @@ import com.manitascrochet.backend.security.UserDetailsServiceImpl;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
@@ -61,7 +62,7 @@ public class AuthController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(
-            @RequestBody LoginDto loginDto,
+            @Valid @RequestBody LoginDto loginDto,
             HttpServletResponse response) {
 
         Authentication authentication = authenticationManager.authenticate(
@@ -162,7 +163,7 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(
-            @RequestBody SignupDto signUpRequest) {
+            @Valid @RequestBody SignupDto signUpRequest) {
 
         if (usuarioRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new UsernameAlreadyExistsException("Ya existe un usuario con ese nombre.");
@@ -190,7 +191,7 @@ public class AuthController {
 
     @PostMapping("/admin/crear-admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> crearAdmin(@RequestBody SignupDto signUpRequest) {
+    public ResponseEntity<?> crearAdmin(@Valid @RequestBody SignupDto signUpRequest) {
 
         if (usuarioRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new UsernameAlreadyExistsException("Ya existe un usuario con ese nombre.");

@@ -19,6 +19,128 @@
   color: var(--color-ink-soft);
 }
 
+.comentarios__form {
+  background: var(--color-card);
+  border: 1px solid var(--color-ring);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.comentarios__form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.comentarios__label {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+}
+
+.comentarios__hint {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-ink-soft);
+}
+
+.comentarios__rating-picker {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.comentarios__star-button {
+  appearance: none;
+  border: 1px solid rgba(201, 183, 160, 0.6);
+  background: transparent;
+  color: rgba(201, 183, 160, 0.7);
+  border-radius: 10px;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comentarios__star-button:hover,
+.comentarios__star-button:focus-visible {
+  border-color: var(--color-coral);
+  color: var(--color-coral);
+  outline: none;
+}
+
+.comentarios__star-button--active {
+  background: rgba(244, 124, 95, 0.12);
+  border-color: var(--color-coral);
+  color: var(--color-coral);
+}
+
+.comentarios__clear-rating {
+  align-self: flex-start;
+  background: transparent;
+  border: none;
+  color: var(--color-coral);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0;
+  cursor: pointer;
+}
+
+.comentarios__textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border: 1px solid var(--color-ring);
+  border-radius: 12px;
+  padding: 0.8rem 0.9rem;
+  font: inherit;
+  color: var(--color-ink);
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.comentarios__textarea:focus {
+  outline: 2px solid rgba(244, 124, 95, 0.25);
+  border-color: var(--color-coral);
+}
+
+.comentarios__error {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #b42318;
+  font-weight: 600;
+}
+
+.comentarios__submit {
+  align-self: flex-start;
+  border: none;
+  background: var(--color-coral);
+  color: white;
+  border-radius: 999px;
+  padding: 0.75rem 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.comentarios__submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.comentarios__login {
+  font-size: 0.9rem;
+  color: var(--color-ink-soft);
+  margin: 0 0 1.25rem;
+}
+
 .comentarios__vacio {
   font-size: 0.9rem;
   color: var(--color-ink-soft);

@@ -3,6 +3,7 @@ package com.manitascrochet.backend.controller;
 import java.util.List;
 
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
+import com.manitascrochet.backend.dto.FiguraRequestDto;
 import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 import com.manitascrochet.backend.service.FiguraService;
@@ -32,6 +33,7 @@ public class FiguraController {
 
     private final FiguraService figuraService;
     private final VisualizacionService visualizacionService;
+
 
     // GET /api/figuras
     @GetMapping
@@ -61,11 +63,22 @@ public class FiguraController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public FiguraDetalleDto crearFigura(
 
-            @RequestPart("data") @Valid Figura figura,
+            @RequestPart("data") @Valid FiguraRequestDto figuraRequestDto,
 
             @RequestPart("imagenPrincipal") MultipartFile imagenPrincipal,
 
             @RequestPart(value = "imagenesSecundarias", required = false) List<MultipartFile> imagenesSecundarias) {
+
+        Figura figura = new Figura();
+        figura.setNombre(figuraRequestDto.getNombre());
+        figura.setDescripcion(figuraRequestDto.getDescripcion());   
+        figura.setCategoriaId(figuraRequestDto.getCategoriaId());
+        figura.setDificultad(figuraRequestDto.getDificultad());
+        figura.setAutor(figuraRequestDto.getAutor());
+        figura.setColoresIds(figuraRequestDto.getColoresIds());
+        figura.setAltura(figuraRequestDto.getAltura());
+        figura.setAncho(figuraRequestDto.getAncho());
+        figura.setPeso(figuraRequestDto.getPeso());
 
         return figuraService.crear(
                 figura,
@@ -79,11 +92,22 @@ public class FiguraController {
     public FiguraDetalleDto actualizar(
             @PathVariable String id,
 
-            @RequestPart("data") @Valid Figura figura,
+            @RequestPart("data")@Valid FiguraRequestDto figuraRequestDto,
 
             @RequestPart(value = "imagenPrincipal", required = false) MultipartFile imagenPrincipal,
 
             @RequestPart(value = "imagenesSecundarias", required = false) List<MultipartFile> imagenesSecundarias) {
+
+        Figura figura = new Figura();
+        figura.setNombre(figuraRequestDto.getNombre());
+        figura.setDescripcion(figuraRequestDto.getDescripcion());
+        figura.setCategoriaId(figuraRequestDto.getCategoriaId());
+        figura.setDificultad(figuraRequestDto.getDificultad());
+        figura.setAutor(figuraRequestDto.getAutor());
+        figura.setColoresIds(figuraRequestDto.getColoresIds());
+        figura.setAltura(figuraRequestDto.getAltura());
+        figura.setAncho(figuraRequestDto.getAncho());
+        figura.setPeso(figuraRequestDto.getPeso());
 
         return figuraService.actualizar(id, figura,
                 imagenPrincipal,

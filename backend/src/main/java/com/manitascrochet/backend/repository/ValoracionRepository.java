@@ -14,4 +14,5 @@ public interface ValoracionRepository extends MongoRepository<Valoracion, String
             String figuraId);
 
     List<Valoracion> findByFiguraId(String figuraId);
+    void deleteByFiguraId(String figuraId);
 }

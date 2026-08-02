@@ -13,6 +13,7 @@ import com.manitascrochet.backend.model.Valoracion;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 import com.manitascrochet.backend.service.ValoracionService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -26,7 +27,7 @@ public class ValoracionController {
     @PostMapping("/{figuraId}")
     public Valoracion valorarFigura(
             @PathVariable String figuraId,
-            @RequestBody ValoracionDto  valoracionDto,
+            @Valid @RequestBody ValoracionDto  valoracionDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return valoracionService.valorarFigura(
