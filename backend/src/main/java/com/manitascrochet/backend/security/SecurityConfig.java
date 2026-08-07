@@ -44,8 +44,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/favorito/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/favorito/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/comentarios/**").authenticated()
-                         .requestMatchers(HttpMethod.DELETE, "/api/comentarios/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/comentarios/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/valoraciones/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/auth/enviarcorreoverificar").authenticated()
                         // --------------------------------------------------
                         // Escritura solo para ADMIN
                         // --------------------------------------------------

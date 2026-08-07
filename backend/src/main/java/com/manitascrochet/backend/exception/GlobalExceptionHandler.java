@@ -10,6 +10,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -23,6 +25,7 @@ import com.manitascrochet.backend.exception.security.EmailAlreadyExistsException
 import com.manitascrochet.backend.exception.security.InvalidRefreshTokenException;
 import com.manitascrochet.backend.exception.security.UsernameAlreadyExistsException;
 
+import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
@@ -62,7 +65,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ValoracionInvalidaException.class)
     public ResponseEntity<ApiError> handleValoracionInvalida(ValoracionInvalidaException ex) {
-        return build(HttpStatus.BAD_REQUEST,"VALORACION_INVALIDA",ex.getMessage());
+        return build(HttpStatus.BAD_REQUEST, "VALORACION_INVALIDA", ex.getMessage());
     }
 
     // ─── Seguridad ─────────────────────────────────────────────────────────────
@@ -78,7 +81,32 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.FORBIDDEN, "ACCESS_DENIED", "No tienes permisos para realizar esta acción.");
     }
 
+    @ExceptionHandler(EmailNotFoundException.class)
+    public ResponseEntity<ApiError> handleEmailNotFound(EmailNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, "EMAIL_NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(TokenInvalidoException.class)
+    public ResponseEntity<ApiError> handleTokenInvalido(TokenInvalidoException ex) {
+        return build(HttpStatus.BAD_REQUEST, "TOKEN_INVALIDO", ex.getMessage());
+    }
+
+    @ExceptionHandler(TokenYaUsadoException.class)
+    public ResponseEntity<ApiError> handleTokenYaUsado(TokenYaUsadoException ex) {
+        return build(HttpStatus.BAD_REQUEST, "TOKEN_YA_USADO", ex.getMessage());
+    }
+
+    @ExceptionHandler(TokenExpiradoException.class)
+    public ResponseEntity<ApiError> handleTokenExpirado(TokenExpiradoException ex) {
+        return build(HttpStatus.BAD_REQUEST, "TOKEN_EXPIRADO", ex.getMessage());
+    }
+
     // ─── Autenticación / Registro ──────────────────────────────────────────────
+
+    @ExceptionHandler(UsuarioNotFoundException.class)
+    public ResponseEntity<ApiError> handleUsuarioNotFound(UsuarioNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, "USUARIO_NOT_FOUND", ex.getMessage());
+    }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     public ResponseEntity<ApiError> handleUsernameExists(UsernameAlreadyExistsException ex) {
@@ -114,7 +142,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 
-    // error de Formularios multipart ej: /api/book/update
+    // error de Formularios multipart
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
@@ -142,6 +170,29 @@ public class GlobalExceptionHandler {
         log.warn("JSON inválido en el request: {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, "JSON_INVALIDO",
                 "El cuerpo de la petición no es válido. Verifica los campos enviados.");
+    }
+
+    // ─── Errores para el correo electronico
+    // ─────────────────────────────────────────────────
+    @ExceptionHandler(MailAuthenticationException.class)
+    public ResponseEntity<ApiError> handleMailAuthenticationException(MailAuthenticationException ex) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_AUTH_ERROR",
+                "Error de configuración del servicio de correo.");
+    }
+
+    @ExceptionHandler(MailException.class)
+    public ResponseEntity<ApiError> handleMailException(MailException ex) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR", "No se pudo enviar el correo electrónico.");
+    }
+
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<ApiError> handleMessagingException(MessagingException ex) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR", "Error al enviar el correo electrónico.");
+    }
+
+    @ExceptionHandler(EmailYaVerificadoException.class)
+    public ResponseEntity<ApiError> handleEmailYaVerificado(EmailYaVerificadoException ex) {
+        return build(HttpStatus.CONFLICT, "EMAIL_YA_VERIFICADO", ex.getMessage());
     }
 
     // ─── Errores de request ────────────────────────────────────────────────────
@@ -247,6 +298,48 @@ public class GlobalExceptionHandler {
 
         public ComentarioNoEncontradoException() {
             super("No se puede eliminar/actualizar el comentario de otros usuarios");
+        }
+    }
+
+    public static class EmailNotFoundException extends RuntimeException {
+
+        public EmailNotFoundException(String email) {
+            super("El usuario con email '" + email + "' no existe");
+        }
+    }
+
+    public static class TokenInvalidoException extends RuntimeException {
+
+        public TokenInvalidoException() {
+            super("El token de verificación es inválido");
+        }
+    }
+
+    public static class TokenYaUsadoException extends RuntimeException {
+
+        public TokenYaUsadoException() {
+            super("El token de verificación ya ha sido usado");
+        }
+    }
+
+    public static class TokenExpiradoException extends RuntimeException {
+
+        public TokenExpiradoException() {
+            super("El token de verificación ha expirado");
+        }
+    }
+
+    public static class UsuarioNotFoundException extends RuntimeException {
+
+        public UsuarioNotFoundException(String userId) {
+            super("El usuario con id '" + userId + "' no existe");
+        }
+    }
+
+    public static class EmailYaVerificadoException extends RuntimeException {
+
+        public EmailYaVerificadoException() {
+            super("Este correo ya fue verificado anteriormente");
         }
     }
 }

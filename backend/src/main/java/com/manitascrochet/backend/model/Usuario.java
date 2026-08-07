@@ -24,4 +24,6 @@ public class Usuario {
   private String password;
 
   private Rol rol;
+
+  private boolean emailVerificado;
 }

@@ -27,7 +27,8 @@ public class BackendApplication {
 						"admin",
 						"admin@manitascrochet.com",
 						encoder.encode("12345"),
-						Rol.ADMIN
+						Rol.ADMIN,
+						false
 				);
 				usuarioRepository.save(admin);
 				System.out.println("✅ Usuario admin creado por defecto (admin / 12345)");
@@ -36,7 +37,8 @@ public class BackendApplication {
 						"user",
 						"user@manitascrochet.com",
 						encoder.encode("12345"),
-						Rol.USER
+						Rol.USER,
+						false
 				);
 				usuarioRepository.save(user);
 				System.out.println("✅ Usuario user creado por defecto (user / 12345)");

@@ -1,17 +1,22 @@
 package com.manitascrochet.backend.controller;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.manitascrochet.backend.dto.security.JwtResponseDto;
@@ -27,7 +32,9 @@ import com.manitascrochet.backend.repository.UsuarioRepository;
 import com.manitascrochet.backend.security.JwtUtils;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 import com.manitascrochet.backend.security.UserDetailsServiceImpl;
+import com.manitascrochet.backend.service.VerificacionEmailService;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -41,19 +48,22 @@ public class AuthController {
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final VerificacionEmailService verificacionEmailService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             UsuarioRepository usuarioRepository,
             PasswordEncoder encoder,
             JwtUtils jwtUtils,
-            UserDetailsServiceImpl userDetailsServiceImpl) {
+            UserDetailsServiceImpl userDetailsServiceImpl,
+            VerificacionEmailService verificacionEmailService) {
 
         this.authenticationManager = authenticationManager;
         this.usuarioRepository = usuarioRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
         this.userDetailsServiceImpl = userDetailsServiceImpl;
+        this.verificacionEmailService = verificacionEmailService;
     }
 
     // ---------------------------------------------------------
@@ -178,7 +188,8 @@ public class AuthController {
                 signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()),
-                Rol.USER);
+                Rol.USER,
+                false);
 
         usuarioRepository.save(user);
 
@@ -206,7 +217,8 @@ public class AuthController {
                 signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()),
-                Rol.ADMIN);
+                Rol.ADMIN,
+                false);
 
         usuarioRepository.save(admin);
 
@@ -229,5 +241,26 @@ public class AuthController {
         response.addCookie(cookie);
 
         return ResponseEntity.ok(new MessageResponse("Logout exitoso"));
+    }
+
+    // ---------------------------------------------------------
+    // Verificación correo
+    // ---------------------------------------------------------
+    @GetMapping("/enviarcorreoverificar")
+    public ResponseEntity<Map<String, String>> EnviarCorreoverificar(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) throws MessagingException {
+
+        verificacionEmailService.enviarCorreoVerificacion(userDetails.getUsername());
+
+        return ResponseEntity.ok(Map.of("status", "success"));
+    }
+
+    @GetMapping("/verificar")
+    public ResponseEntity<Map<String, String>> verificar(
+            @RequestParam String token) throws MessagingException {
+
+        verificacionEmailService.verificarCuenta(token);
+
+        return ResponseEntity.ok(Map.of("status", "success"));
     }
 }
