@@ -29,6 +29,8 @@ public class UserDetailsImpl implements UserDetails {
   @JsonIgnore
   private String password;
 
+  private boolean emailVerificado;
+
   private Collection<? extends GrantedAuthority> authorities;
 
   public static UserDetailsImpl build(Usuario user) {
@@ -39,6 +41,7 @@ public class UserDetailsImpl implements UserDetails {
         user.getUsername(),
         user.getEmail(),
         user.getPassword(),
+        user.isEmailVerificado(),
         authorities);
   }
 

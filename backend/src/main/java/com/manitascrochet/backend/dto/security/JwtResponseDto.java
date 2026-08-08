@@ -17,6 +17,7 @@ public class JwtResponseDto {
   private String nombre;
   private String email;
   private String rol;
+  private boolean emailVerificado;
 
   // 🔥 Constructor corto para /refresh
   public JwtResponseDto(String accessToken, String tokenType) {

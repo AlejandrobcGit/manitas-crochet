@@ -63,6 +63,8 @@ function Inicio() {
                                 <span>Buscar por nombre</span>
                                 <input
                                     type="text"
+                                    id="catalog-search"
+                                    name="catalogSearch"
                                     className="catalog-search"
                                     placeholder="Escribe un nombre..."
                                     value={nombre}
@@ -75,6 +77,8 @@ function Inicio() {
                                     <label className="catalog-field">
                                         <span>Categoría</span>
                                         <select
+                                            id="catalog-category"
+                                            name="catalogCategory"
                                             className="catalog-select"
                                             value={categoriaId}
                                             onChange={(e) => setCategoriaId(e.target.value)}

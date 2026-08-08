@@ -1,8 +1,19 @@
 import "./Header.css";
 import { useUser } from "../hooks/useUser";
+import { useApiFetch } from "../api/useApiFetch";
 
 function Header() {
     const { user, logout } = useUser();
+    const apiFetch = useApiFetch();
+
+    const emailVerificado = async () => {
+        try {
+            const response = await apiFetch("/auth/enviarcorreoverificar");
+        } catch (error) {
+            console.error("Error verifying email:", error);
+        }
+    };
+
     return (
         <header className="header">
             <div className="header__inner">
@@ -31,6 +42,20 @@ function Header() {
                                         <span className="header__user-email">{user.email}</span>
                                     </button>
                                     <div className="header__user-dropdown">
+                                        {user.emailVerificado ? (
+                                            <span className="header__verification-status">
+                                                Correo verificado
+                                            </span>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                className="header__link header__link--button"
+                                                onClick={emailVerificado}
+                                            >
+                                                Verificar correo
+                                            </button>
+                                        )}
+
                                         <button
                                             type="button"
                                             className="header__link header__link--button"

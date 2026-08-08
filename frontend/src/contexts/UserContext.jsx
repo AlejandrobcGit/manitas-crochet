@@ -22,7 +22,8 @@ function UserProvider(props) {
         username: data.nombre,
         email: data.email,
         rol: data.rol,
-        id: data.id
+        id: data.id,
+        emailVerificado: data.emailVerificado
     });
        
     const login = async (username, password) => {

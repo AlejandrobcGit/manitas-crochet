@@ -113,6 +113,7 @@
     right: 0;
     top: 100%;
     margin-top: 0.35rem;
+    min-width: 220px; /* más ancho */
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
@@ -128,11 +129,25 @@
     z-index: 10;
 }
 
+.header__verification-status {
+    display: block;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    color: #16a34a;
+    white-space: nowrap; /* evita el salto de línea */
+}
+
+.header__user-dropdown .header__link--button {
+    width: 100%;
+    text-align: left;
+}
+
 .header__user-menu:hover .header__user-dropdown,
 .header__user-menu:focus-within .header__user-dropdown {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
+    white-space: nowrap; /* evita "Cerrar sesión" en dos líneas */
 }
 
 .header__link {

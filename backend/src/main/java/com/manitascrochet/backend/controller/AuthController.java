@@ -109,7 +109,8 @@ public class AuthController {
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
-                rol));
+                rol,
+                userDetails.isEmailVerificado()));
     }
 
     // ---------------------------------------------------------
@@ -164,7 +165,8 @@ public class AuthController {
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
-                rol));
+                rol,
+                userDetails.isEmailVerificado()));
     }
 
     // ---------------------------------------------------------
