@@ -4,70 +4,79 @@
     width: 100%;
     margin-top: auto;
     z-index: 20;
-    padding: 0.45rem 1rem 0.4rem;
+    padding: 0.3rem 1rem;
     box-shadow: 0 -6px 20px rgba(67, 59, 52, 0.12);
+    line-height: 1.1;
 }
 
 .footer__inner {
     width: min(900px, 100%);
     margin: 0 auto;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.4rem 1rem; /* reducido */
-    padding-bottom: 0.35rem; /* reducido */
-    border-bottom: 1px dashed rgba(242, 236, 220, 0.25);
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .footer__brand {
-    max-width: 280px;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 .footer__logo-mark {
-    font-size: 1rem;
-    margin-right: 0.25rem;
+    font-size: 0.9rem;
+    margin-right: 0.15rem;
 }
 
 .footer__logo-text {
     font-family: var(--font-display);
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 .footer__tagline {
-    margin-top: 0.2rem;
-    font-size: 0.72rem;
+    margin: 0;
+    font-size: 0.68rem;
     color: #f5e8d0;
     font-weight: 600;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .footer__heading {
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-mustard);
-    margin-bottom: 0.3rem;
+    display: none;
 }
 
 .footer__links {
     display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
+    flex-direction: row;
+    gap: 0.7rem;
+    flex-shrink: 0;
 }
 
 .footer__link {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     text-decoration: none;
     color: #fdf3e6;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .footer__copy {
-    text-align: center;
+    text-align: right;
     font-family: var(--font-mono);
     font-size: 0.62rem;
     color: #f5e8d0;
-    margin: 0.35rem 0 0;
+    margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
 }

@@ -1,0 +1,104 @@
+.verificar-container {
+  min-height: calc(100vh - 160px); /* deja lugar a header/footer */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.verificar-card {
+  background: var(--color-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+  padding: 3rem 2.5rem;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid rgba(201, 183, 160, 0.35);
+}
+
+.verificar-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+
+.verificar-icon.success {
+  background: rgba(143, 159, 127, 0.16); /* sage suave */
+  color: var(--color-sage);
+}
+
+.verificar-icon.error {
+  background: rgba(217, 135, 107, 0.16); /* coral suave */
+  color: var(--color-coral);
+}
+
+.verificar-icon.loading {
+  background: rgba(200, 169, 108, 0.16); /* mostaza suave */
+  color: var(--color-mustard);
+}
+
+.verificar-titulo {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 0.75rem;
+}
+
+.verificar-mensaje {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.verificar-token {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-soft);
+  background: var(--color-cream);
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  border: 1px dashed var(--color-ring);
+}
+
+.verificar-btn {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.85rem 2rem;
+  border-radius: 999px;
+  background: var(--color-coral);
+  color: var(--color-cream);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 8px 20px rgba(217, 135, 107, 0.28);
+}
+
+.verificar-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+.verificar-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-ring);
+  border-top-color: var(--color-mustard);
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to { transform: rotate(360deg); }
+}

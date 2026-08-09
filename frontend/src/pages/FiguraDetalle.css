@@ -35,7 +35,8 @@
 
 @media (min-width: 640px) {
   .galeria {
-    flex-direction: row-reverse; /* miniaturas a la izquierda, principal a la derecha */
+    flex-direction: row-reverse;
+    /* miniaturas a la izquierda, principal a la derecha */
     align-items: flex-start;
   }
 }
@@ -137,7 +138,8 @@
   line-height: 1.6;
   color: var(--color-ink-soft);
   margin-bottom: 1.4rem;
-  white-space: pre-line; /* ← Esto hace que React respete \n y \n\n */
+  white-space: pre-line;
+  /* ← Esto hace que React respete \n y \n\n */
 }
 
 .detail-info__row {
@@ -175,4 +177,56 @@
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--color-ink-soft);
+}
+
+/* --- Valoración (mismos colores que figura-card__rating) --- */
+
+.detail-info__rating {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  margin: 0 0 1rem;
+}
+
+.detail-info__stars {
+  display: flex;
+  gap: 2px;
+  padding: 0.35rem 0.6rem;
+  background: var(--color-card);
+  border: 1px solid rgba(201, 183, 160, 0.4);
+  border-radius: 999px;
+}
+
+.detail-info__star {
+  position: relative;
+  display: inline-block;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.detail-info__star-bg {
+  color: rgba(201, 183, 160, 0.5);
+}
+
+.detail-info__star-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  display: inline-block;
+  white-space: nowrap;
+  color: var(--color-coral);
+}
+
+.detail-info__rating-text {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-ink-soft);
+  margin-left: 0.6rem;
+}
+
+.detail-info__rating-text--empty {
+  font-style: italic;
+  opacity: 0.75;
 }

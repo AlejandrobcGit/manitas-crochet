@@ -16,6 +16,10 @@ public class FiguraListadoDto {
     private String imagenPrincipal;
 
     private int altura;
-    
+
     private int ancho;
-}
+
+    private Double valoracionMedia;
+
+    private Long totalValoraciones;
+}   

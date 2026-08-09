@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.manitascrochet.backend.dto.CategoriaRequestDto;
 import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.service.CategoriaService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -39,7 +41,9 @@ public class CategoriaController {
 
     // POST /api/categorias
     @PostMapping
-    public Categoria crear(@RequestBody Categoria categoria) {
+    public Categoria crear(@Valid @RequestBody CategoriaRequestDto categoriaRequestDto) {
+        Categoria categoria = new Categoria();
+        categoria.setNombre(categoriaRequestDto.getNombre());
         return categoriaService.guardar(categoria);
     }
 
@@ -47,8 +51,10 @@ public class CategoriaController {
     @PutMapping("/{id}")
     public Categoria actualizar(
             @PathVariable String id,
-            @RequestBody Categoria categoria) {
+            @Valid @RequestBody CategoriaRequestDto categoriaRequestDto) {
 
+        Categoria categoria = new Categoria();
+        categoria.setNombre(categoriaRequestDto.getNombre());
         return categoriaService.actualizar(id, categoria);
     }
 

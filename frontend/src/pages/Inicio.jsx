@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 import { useFiguras } from "../hooks/useFiguras";
 import { useCategorias } from "../hooks/useCategorias";
 import { useDebounce } from "../hooks/useDebounce";
+import { useFavoritos } from "../hooks/useFavoritos";
 
 import FiguraCard from "../components/FiguraCard";
 import Header from "../components/Header";
@@ -24,8 +26,11 @@ function Inicio() {
         loading: loadingCategorias
     } = useCategorias();
 
+    const { favoritos, cambiarFavorito } = useFavoritos();
+
     const [nombre, setNombre] = useState("");
     const [categoriaId, setCategoriaId] = useState("");
+    const [soloFavoritos, setSoloFavoritos] = useState(false);
 
     const nombreDebounced = useDebounce(nombre, 400);
 
@@ -33,6 +38,12 @@ function Inicio() {
     useEffect(() => {
         recargarFiguras(nombreDebounced, categoriaId);
     }, [nombreDebounced, categoriaId]);
+
+    // El filtro de favoritos se aplica en el cliente sobre lo que ya trajo el backend
+    const figurasMostradas = useMemo(() => {
+        if (!soloFavoritos) return figuras;
+        return figuras.filter((figura) => favoritos.includes(figura.id));
+    }, [figuras, favoritos, soloFavoritos]);
 
     return (
 
@@ -52,6 +63,8 @@ function Inicio() {
                                 <span>Buscar por nombre</span>
                                 <input
                                     type="text"
+                                    id="catalog-search"
+                                    name="catalogSearch"
                                     className="catalog-search"
                                     placeholder="Escribe un nombre..."
                                     value={nombre}
@@ -64,6 +77,8 @@ function Inicio() {
                                     <label className="catalog-field">
                                         <span>Categoría</span>
                                         <select
+                                            id="catalog-category"
+                                            name="catalogCategory"
                                             className="catalog-select"
                                             value={categoriaId}
                                             onChange={(e) => setCategoriaId(e.target.value)}
@@ -81,10 +96,24 @@ function Inicio() {
 
                                     <button
                                         type="button"
+                                        className={`catalog-favorite-toggle ${soloFavoritos ? "catalog-favorite-toggle--active" : ""}`}
+                                        onClick={() => setSoloFavoritos((prev) => !prev)}
+                                        aria-pressed={soloFavoritos}
+                                    >
+                                        {soloFavoritos
+                                            ? <FaHeart />
+                                            : <FaRegHeart />
+                                        }
+                                        <span>Favoritos</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
                                         className="catalog-clear"
                                         onClick={() => {
                                             setNombre("");
                                             setCategoriaId("");
+                                            setSoloFavoritos(false);
                                         }}
                                     >
                                         Limpiar filtros
@@ -112,10 +141,12 @@ function Inicio() {
 
                                 <div className="catalog-grid">
 
-                                    {figuras.map(figura => (
+                                    {figurasMostradas.map(figura => (
                                         <FiguraCard
                                             key={figura.id}
                                             figura={figura}
+                                            esFavorito={favoritos.includes(figura.id)}
+                                            onToggleFavorito={cambiarFavorito}
                                         />
                                     ))}
 
@@ -125,7 +156,7 @@ function Inicio() {
 
                         {!loading &&
                             !error &&
-                            figuras.length === 0 && (
+                            figurasMostradas.length === 0 && (
 
                                 <p className="catalog-status">
                                     No se encontraron figuras.

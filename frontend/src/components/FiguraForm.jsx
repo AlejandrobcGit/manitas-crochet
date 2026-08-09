@@ -15,7 +15,7 @@ const DIFICULTADES = [
     "AVANZADO"
 ];
 
-function FiguraForm({ onVolver,onEditar, esEdicion = false, figuraId = null }) {
+function FiguraForm({ onVolver, onEditar, esEdicion = false, figuraId = null }) {
 
     const apiFetch = useApiFetch();
 
@@ -88,7 +88,7 @@ function FiguraForm({ onVolver,onEditar, esEdicion = false, figuraId = null }) {
 
             } catch (err) {
 
-                setErrorOpciones("No se pudieron cargar categorías/colores");
+                setErrorOpciones(err.mensaje || err.message || "No se pudieron cargar categorías/colores")
 
             } finally {
 
@@ -371,7 +371,7 @@ function FiguraForm({ onVolver,onEditar, esEdicion = false, figuraId = null }) {
                 ? "PUT"
                 : "POST";
 
-                const response = await apiFetch(endpoint, {
+            const response = await apiFetch(endpoint, {
                 method,
                 body: formData
             });
@@ -391,12 +391,8 @@ function FiguraForm({ onVolver,onEditar, esEdicion = false, figuraId = null }) {
         } catch (err) {
 
             setError(
-                err.message ||
-                (
-                    esEdicion
-                        ? "Error al actualizar la figura"
-                        : "Error al crear la figura"
-                )
+                err.mensaje || err.message ||
+                (esEdicion ? "Error al actualizar la figura" : "Error al crear la figura")
             );
 
         } finally {

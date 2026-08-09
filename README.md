@@ -4,18 +4,36 @@
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?logo=springboot&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![MongoDB](https://img.shields.io/badge/MongoDB-NoSQL-47A248?logo=mongodb&logoColor=white)
-![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-yellow)
+![Estado](https://img.shields.io/badge/Estado-Versi%C3%B3n%202-yellow)
 ![Licencia](https://img.shields.io/badge/Licencia-MIT-blue)
 
-Manitas Crochet es una aplicación full stack para gestionar un catálogo digital de figuras de crochet y amigurumis. El proyecto combina un backend en Spring Boot con un frontend en React y Vite, permitiendo explorar, buscar y administrar piezas con imágenes y metadatos.
+Manitas Crochet es una aplicación full stack para publicar y gestionar un catálogo digital de figuras de crochet y amigurumis. La segunda versión amplía el MVP inicial con cuentas de usuario, seguridad, favoritos, valoraciones, comentarios y varias imágenes por figura.
 
-## ✨ Qué incluye actualmente
+## ✨ Funcionalidades
+
+### Catálogo público
 
 - Catálogo público de figuras con tarjetas y detalle.
-- Búsqueda por nombre y filtrado por categoría o dificultad.
-- Panel de administración para crear, editar y eliminar figuras, colores y categorías.
-- Subida y visualización de imágenes asociadas a cada figura.
-- API REST para consumo desde el frontend.
+- Búsqueda por nombre y filtrado por categoría.
+- Filtro local de favoritos.
+- Página de detalle con descripción, dificultad, autor, colores, dimensiones, galería de imágenes y valoraciones.
+- Comentarios públicos asociados a cada figura.
+
+### Usuarios y seguridad
+
+- Registro e inicio de sesión.
+- Autenticación mediante JWT y refresh token almacenado en cookie HTTP-only.
+- Roles `USER` y `ADMIN`, con protección del panel de administración.
+- Verificación de correo electrónico.
+- Recuperación y restablecimiento de contraseña mediante correo.
+- Cierre de sesión y renovación automática de la sesión.
+
+### Administración
+
+- CRUD de figuras, categorías y colores.
+- Gestión de dificultad, autor, materiales y dimensiones.
+- Carga de una imagen principal y varias imágenes secundarias.
+- Gestión de favoritos y valoraciones desde el catálogo.
 
 ## 🏗️ Arquitectura
 
@@ -31,10 +49,10 @@ React / Vite
 
 ## 🛠️ Tecnologías principales
 
-- Backend: Java 21, Spring Boot 3.5.16, Spring Data MongoDB, Maven, Lombok, Validation.
-- Frontend: React 19, Vite 8, React Router 7, CSS personalizado.
+- Backend: Java 21, Spring Boot 3.5.16, Spring Web, Spring Security, Spring Data MongoDB, Validation, JWT, Java Mail y Maven.
+- Frontend: React 19, Vite 8, React Router 7, React Icons, Fetch API y CSS personalizado.
 - Base de datos: MongoDB.
-- Almacenamiento de archivos: sistema local de imágenes en el backend.
+- Almacenamiento de archivos: sistema local de imágenes en `backend/uploadDir/`.
 
 ## 📁 Estructura del repositorio
 
@@ -48,18 +66,25 @@ manitas-crochet/
 
 ## ▶️ Inicio rápido
 
-### 1. Backend
+### 1. Configurar el backend
 
 Requisitos:
 - Java 21
 - Maven
-- MongoDB accesible mediante la variable de entorno MONGODB_URI
+- MongoDB accesible mediante la variable de entorno `MONGODB_URI`.
+- Cuenta SMTP, necesaria para verificación de correo y recuperación de contraseña.
 
 Variables de entorno necesarias:
 
 ```bash
 MONGODB_URI=mongodb://localhost:27017/manitas-crochet
 SERVER_PORT=8080
+SERVER_ADDRESS=localhost
+APP_PROTOCOLO=http
+APP_FRONTEND_URL=http://localhost:5173
+jwt.secret=una-clave-secreta-larga
+EMAIL_ADDRESS=tu-cuenta@gmail.com
+EMAIL_PASSWORD=tu-contraseña-de-aplicación
 ```
 
 Ejecutar:
@@ -96,37 +121,19 @@ La aplicación quedará disponible en:
 http://localhost:5173
 ```
 
-## 🔗 Puntos principales del sistema
+## 🔗 Rutas principales
 
-- Frontend público: inicio y detalle de figuras.
-- Panel admin: rutas bajo /administracion.
-- API base del backend: /api/figuras, /api/categorias, /api/color, /api/imagenes.
+- Frontend público: `/` y `/figuras/:id`.
+- Autenticación: `/login`, `/signup`, `/verificar-email` y `/recuperar-contrasena`.
+- Panel de administración: `/administracion`.
+- API: `/auth/**`, `/api/figuras`, `/api/categorias`, `/api/color`, `/api/imagenes`, `/api/favorito`, `/api/valoraciones` y `/api/comentarios`.
 
-## 📌 Estado actual
+## 📌 Evolución de versiones
 
-El proyecto ya cuenta con:
-- CRUD de figuras.
-- Gestión de categorías, colores y dificultades.
-- Gestión de imágenes.
-- Interfaz de administración funcional.
+- **Versión 1:** catálogo, búsqueda, filtros, CRUD de figuras, categorías, colores e imágenes.
+- **Versión 2:** autenticación y autorización, verificación de correo, recuperación de contraseña, favoritos, valoraciones, comentarios y galería con varias imágenes.
 
-## �️ Roadmap
-
-### Versión 1.0
-- [x] Catálogo público de figuras
-- [x] Búsqueda y filtros básicos
-- [x] Gestión de figuras desde el panel de administración
-- [x] Gestión de categorías y colores
-- [x] Subida y visualización de imágenes
-
-### Próximas mejoras
-- [ ] Autenticación de usuarios
-- [ ] Favoritos y valoraciones
-- [ ] Mejoras en la experiencia de administración
-- [ ] Optimización de imágenes y rendimiento
-- [ ] Despliegue en producción
-
-## �👤 Autor
+## 👤 Autor
 
 Proyecto desarrollado como ejercicio de portfolio y aprendizaje full stack.
 

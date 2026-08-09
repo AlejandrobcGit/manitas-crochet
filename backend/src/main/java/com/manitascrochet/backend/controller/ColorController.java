@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.manitascrochet.backend.dto.ColorResquestDto;
 import com.manitascrochet.backend.model.Color;
 import com.manitascrochet.backend.service.ColorService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -40,7 +42,10 @@ public class ColorController {
 
     // POST /api/color
     @PostMapping
-    public Color crear(@RequestBody Color color) {
+    public Color crear(@Valid @RequestBody ColorResquestDto ColorDto) {
+        Color color = new Color();
+        color.setNombre(ColorDto.getNombre());  
+        color.setCodigo(ColorDto.getCodigo());
         return colorService.guardar(color);
     }
 
@@ -48,8 +53,11 @@ public class ColorController {
     @PutMapping("/{id}")
     public Color actualizar(
             @PathVariable String id,
-            @RequestBody Color color) {
+            @Valid @RequestBody ColorResquestDto ColorDto) {
 
+        Color color = new Color();
+        color.setNombre(ColorDto.getNombre());
+        color.setCodigo(ColorDto.getCodigo());
         return colorService.actualizar(id, color);
     }
 

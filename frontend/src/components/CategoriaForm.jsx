@@ -86,7 +86,7 @@ function CategoriaForm({ onVolver, onEditar, esEdicion = false, categoria = null
         } catch (err) {
 
             setError(
-                err.message ||
+                err.mensaje || err.message ||
                 (
                     esEdicion
                         ? "Error al actualizar el categoria"

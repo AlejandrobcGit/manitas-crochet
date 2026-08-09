@@ -11,9 +11,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.manitascrochet.backend.dto.ColorDto;
+import com.manitascrochet.backend.dto.ColorResponseDto;
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
+import com.manitascrochet.backend.dto.ResumenValoracionDto;
+import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.FiguraNoEncontradaException;
@@ -22,6 +24,7 @@ import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 import com.manitascrochet.backend.repository.ColorRepository;
 import com.manitascrochet.backend.repository.FiguraRepository;
+import com.manitascrochet.backend.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +36,9 @@ public class FiguraService {
         private final CategoriaRepository categoriaRepository;
         private final ColorRepository colorRepository;
         private final FileStorageService fileStorageService;
+        private final ValoracionService valoracionService;
+        private final ComentarioService comentarioService;
+        
 
         /*
          * permite trabajar directamente con MongoDB sin pasar por un repositorio
@@ -56,7 +62,7 @@ public class FiguraService {
                 if (categoriaId != null && !categoriaId.isBlank()) {
                         criterios.add(Criteria.where("categoriaId").is(categoriaId)); // filtro → exacto
                 }
-                // Combina todos los filtros antes de ejecutar la consulta.   
+                // Combina todos los filtros antes de ejecutar la consulta.
                 if (!criterios.isEmpty()) {
                         query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
                 }
@@ -79,13 +85,18 @@ public class FiguraService {
                         figura.setImagenPrincipal("default.png");
                 }
 
+                ResumenValoracionDto resumenValoracionDto = valoracionService
+                                .obtenerResumenValoraciones(figura.getId());
+
                 return new FiguraListadoDto(
                                 figura.getId(),
                                 figura.getNombre(),
                                 categoria,
                                 figura.getImagenPrincipal(),
                                 figura.getAltura(),
-                                figura.getAncho());
+                                figura.getAncho(),
+                                resumenValoracionDto.getValoracionMedia(),
+                                resumenValoracionDto.getTotalValoraciones());
         }
 
         // Obtener figura por id
@@ -95,27 +106,27 @@ public class FiguraService {
         }
 
         // Obtener figura por id en formato DTO
-        public FiguraDetalleDto obtenerPorIdDto(String id) {
+        public FiguraDetalleDto obtenerPorIdDto(String id, UserDetailsImpl userDetails) {
 
-                return convertirFiguraDetalleDto(
-                                figuraRepository.findById(id)
-                                                .orElseThrow(() -> new FiguraNoEncontradaException(id)));
+                return figuraRepository.findById(id)
+                                .map(figura -> convertirFiguraDetalleDto(figura, userDetails))
+                                .orElseThrow(() -> new FiguraNoEncontradaException(id));
         }
 
         // Convertir Figura a FiguraDetalleDto
-        private FiguraDetalleDto convertirFiguraDetalleDto(Figura figura) {
+        private FiguraDetalleDto convertirFiguraDetalleDto(Figura figura, UserDetailsImpl userDetails) {
 
                 String categoria = categoriaRepository
                                 .findById(figura.getCategoriaId())
                                 .map(Categoria::getNombre)
                                 .orElseThrow(() -> new CategoriaNoEncontradaException(figura.getCategoriaId()));
 
-                List<ColorDto> colores = figura.getColoresIds()
+                List<ColorResponseDto> colores = figura.getColoresIds()
                                 .stream()
                                 .map(colorId -> colorRepository.findById(colorId))
                                 .filter(Optional::isPresent)
                                 .map(Optional::get)
-                                .map(color -> new ColorDto(
+                                .map(color -> new ColorResponseDto(
                                                 color.getNombre(),
                                                 color.getCodigo()))
                                 .toList();
@@ -123,7 +134,13 @@ public class FiguraService {
                 if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
                         figura.setImagenPrincipal("default.png");
                 }
-                
+
+                ResumenValoracionDto resumenValoracionDto = valoracionService
+                                .obtenerResumenValoraciones(figura.getId());
+
+                ValoracionDto valoracionUsuario = (userDetails == null)
+                                ? new ValoracionDto(0)
+                                : valoracionService.obtenerValoracionUsuario(userDetails.getId(), figura.getId());
                 return new FiguraDetalleDto(
                                 figura.getId(),
                                 figura.getNombre(),
@@ -136,7 +153,10 @@ public class FiguraService {
                                 colores,
                                 figura.getAltura(),
                                 figura.getAncho(),
-                                figura.getPeso());
+                                figura.getPeso(),
+                                resumenValoracionDto.getValoracionMedia(),
+                                valoracionUsuario.getPuntuacion(),
+                                resumenValoracionDto.getTotalValoraciones());
         }
 
         // Crear figura
@@ -197,7 +217,7 @@ public class FiguraService {
                 }
 
                 // Segundo save: ahora sí con los nombres de archivo ya calculados.
-                return convertirFiguraDetalleDto(figuraRepository.save(figuraGuardada));
+                return convertirFiguraDetalleDto(figuraRepository.save(figuraGuardada), null);
         }
 
         // Actualizar figura
@@ -305,15 +325,23 @@ public class FiguraService {
                 figura.setFechaModificacion(
                                 LocalDateTime.now());
 
-                return convertirFiguraDetalleDto(figuraRepository.save(figura));
+                return convertirFiguraDetalleDto(figuraRepository.save(figura), null);
         }
 
         // Eliminar figura
         public void eliminar(String id) {
 
-                figuraRepository.findById(id)
+                Figura figura = figuraRepository.findById(id)
                                 .orElseThrow(() -> new FiguraNoEncontradaException(id));
 
                 figuraRepository.deleteById(id);
+                valoracionService.eliminarValoracionesPorFigura(id);
+                comentarioService.eliminarComentariosPorFigura(id);
+                fileStorageService.delete(figura.getImagenPrincipal());
+                if (figura.getImagenesSecundarias() != null) {
+                        for (String imagen : figura.getImagenesSecundarias()) {
+                                fileStorageService.delete(imagen);
+                        }
+                }
         }
 }

@@ -30,7 +30,7 @@ public class CategoriaService {
 
     // Obtener todas las categorias
     public List<Categoria> obtenerTodas(String nombre) {
-        System.out.println("Servicio Categoria Nombre -> " + nombre);
+
         Query query = new Query();
 
         if (nombre != null && !nombre.isBlank()) {
