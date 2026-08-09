@@ -1,5 +1,5 @@
 .login-page {
-    min-height: 100vh;
+     min-height: calc(100vh - 36px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -86,4 +86,34 @@
     border-radius: 8px;
     padding: 0.5rem 0.75rem;
     margin: 0;
+}
+
+.login-form__forgot-link {
+    background: none;
+    border: none;
+    color: #3366cc;
+    font-size: 0.875rem;
+    text-align: center;
+    cursor: pointer;
+    padding: 0.5rem 0;
+    text-decoration: underline;
+}
+
+.login-form__forgot-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.login-form__forgot-message {
+    font-size: 0.9rem;
+    color: #2e7d32;
+}
+
+.login-form__submit--secondary {
+    background-color: #f0f0f0;
+    color: #333;
 }

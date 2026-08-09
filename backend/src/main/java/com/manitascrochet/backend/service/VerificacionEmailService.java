@@ -9,11 +9,14 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.EmailNotFoundException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.EmailYaVerificadoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenExpiradoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenInvalidoException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenInvalidoRecuperacionException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenYaUsadoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.UsuarioNotFoundException;
 import com.manitascrochet.backend.model.TokenVerificacion;
@@ -28,11 +31,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VerificacionEmailService {
 
-        private final TokenVerificacionRepository tokenRepository;
+        private final TokenVerificacionRepository tokenVerificacionRepository;
         private final EmailService emailService;
         private final UsuarioRepository usuarioRepository;
         private final MongoTemplate mongoTemplate; // necesario para el findAndModify atómico
-
+        private final PasswordEncoder passwordEncoder;
 
         @Value("${APP_FRONTEND_URL}") // Obtiene el dirección del servidor desde aplicaciones.properties
         private String app_frontend_url;
@@ -58,7 +61,7 @@ public class VerificacionEmailService {
                                 .usado(false)
                                 .build();
 
-                tokenRepository.save(tokenVerificacion);
+                tokenVerificacionRepository.save(tokenVerificacion);
 
                 String enlace = protocolo + "://" + app_frontend_url + "/verificar-email?token=" + token;
 
@@ -87,39 +90,6 @@ public class VerificacionEmailService {
                                 mensajeHtml);
         }
 
-        /*
-         * 
-         * He cambiado el codigo para evitar la condición de carrera (race condition)
-         * 
-         * public void verificarCuenta(String token) {
-         * 
-         * TokenVerificacion tokenVerificacion = tokenRepository.findByToken(token)
-         * .orElseThrow(() -> new TokenInvalidoException());
-         * 
-         * if (tokenVerificacion.isUsado()) {
-         * throw new TokenYaUsadoException();
-         * }
-         * 
-         * if (tokenVerificacion.getFechaExpiracion()
-         * .isBefore(LocalDateTime.now())) {
-         * 
-         * throw new TokenExpiradoException();
-         * }
-         * 
-         * Usuario usuario =
-         * usuarioRepository.findById(tokenVerificacion.getUsuarioId())
-         * .orElseThrow(() -> new UsuarioNotFoundException(
-         * tokenVerificacion.getUsuarioId()));
-         * 
-         * usuario.setEmailVerificado(true);
-         * 
-         * tokenVerificacion.setUsado(true);
-         * 
-         * usuarioRepository.save(usuario);
-         * tokenRepository.save(tokenVerificacion);
-         * }
-         */
-
         public void verificarCuenta(String token) {
 
                 // 1) Intento atómico: solo marca usado=true si sigue sin usar Y no expiró.
@@ -141,7 +111,7 @@ public class VerificacionEmailService {
                 // Hacemos una lectura aparte SOLO para dar un mensaje de error preciso
                 // (esta lectura ya no tiene riesgo de carrera: no escribe nada).
                 if (tokenVerificacion == null) {
-                        TokenVerificacion existente = tokenRepository.findByToken(token)
+                        TokenVerificacion existente = tokenVerificacionRepository.findByToken(token)
                                         .orElseThrow(() -> new TokenInvalidoException());
 
                         if (existente.isUsado()) {
@@ -170,6 +140,72 @@ public class VerificacionEmailService {
 
                 usuario.setEmailVerificado(true);
                 usuarioRepository.save(usuario);
+        }
+
+        // ---------------------------------------------------------
+        // Recuperar contraseña
+        // ---------------------------------------------------------
+
+        public void enviarCorreoRecuperacion(String email) throws MessagingException {
+                Usuario usuario = usuarioRepository.findByEmail(email)
+                                .orElseThrow(() -> new EmailNotFoundException(email));
+
+                String token = UUID.randomUUID().toString();
+
+                TokenVerificacion tokenVerificacion = TokenVerificacion.builder()
+                                .usuarioId(usuario.getId())
+                                .token(token)
+                                .fechaExpiracion(LocalDateTime.now().plusMinutes(5))
+                                .usado(false)
+                                .build();
+
+                tokenVerificacionRepository.save(tokenVerificacion);
+
+                String enlace = protocolo + "://" + app_frontend_url + "/recuperar-contrasena?token=" + token;
+
+                String mensajeHtml = String.format(
+                                """
+                                                <!DOCTYPE html>
+                                                <html>
+                                                <body style="font-family: Arial, sans-serif; color: #333;">
+                                                    <h2>Bienvenido a Manitas Crochet</h2>
+                                                    <p>Para recuperar tu contraseña, haz clic en el siguiente enlace:</p>
+                                                    <p>
+                                                        <a href="%s" style="background-color: #d63384; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                                                            Recuperar contraseña
+                                                        </a>
+                                                    </p>
+                                                    <p>O copia y pega este enlace en tu navegador:</p>
+                                                    <p>%s</p>
+                                                    <p style="font-size: 0.85em; color: #777;">Este enlace expira en 5 minutos. Si no solicitaste este cambio, puedes ignorar este correo.</p>
+                                                </body>
+                                                </html>
+                                                """,
+                                enlace, enlace);
+
+                emailService.enviar(
+                                usuario.getEmail(),
+                                "Manitas Crochet - Recuperación de contraseña",
+                                mensajeHtml);
+        }
+
+        public void restablecerContrasena(String token, String nuevaContrasena) {
+                TokenVerificacion tokenVerificacion = tokenVerificacionRepository.findByToken(token)
+                                .orElseThrow(TokenInvalidoException::new);
+
+                if (tokenVerificacion.isUsado()
+                                || tokenVerificacion.getFechaExpiracion().isBefore(LocalDateTime.now())) {
+                        throw new TokenInvalidoRecuperacionException();
+                }
+
+                Usuario usuario = usuarioRepository.findById(tokenVerificacion.getUsuarioId())
+                                .orElseThrow(TokenInvalidoRecuperacionException::new);
+
+                usuario.setPassword(passwordEncoder.encode(nuevaContrasena));
+                usuarioRepository.save(usuario);
+
+                tokenVerificacion.setUsado(true);
+                tokenVerificacionRepository.save(tokenVerificacion);
         }
 
 }

@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NoAutorizado from "./pages/NoAutorizado";
 import SignupForm from "./components/SignupForm";
 import VerificarEmail from "./pages/VerificarEmail";
+import ResetPasswordForm from "./pages/ResetPasswordForm";
 
 function App() {
     return (
@@ -45,9 +46,13 @@ function App() {
                 path="/signup"
                 element={<SignupForm />}
             />
-            
-             <Route path="/verificar-email" 
-             element={<VerificarEmail />} />
+
+            <Route path="/verificar-email"
+                element={<VerificarEmail />} />
+
+            <Route path="/recuperar-contrasena"
+                element={<ResetPasswordForm />}
+            />
         </Routes>
     );
 }

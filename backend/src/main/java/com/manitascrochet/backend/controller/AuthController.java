@@ -22,7 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.manitascrochet.backend.dto.security.JwtResponseDto;
 import com.manitascrochet.backend.dto.security.LoginDto;
 import com.manitascrochet.backend.dto.security.MessageResponse;
+import com.manitascrochet.backend.dto.security.ResetPasswordRequest;
 import com.manitascrochet.backend.dto.security.SignupDto;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.EmailNotFoundException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenInvalidoException;
 import com.manitascrochet.backend.exception.security.EmailAlreadyExistsException;
 import com.manitascrochet.backend.exception.security.InvalidRefreshTokenException;
 import com.manitascrochet.backend.exception.security.UsernameAlreadyExistsException;
@@ -38,7 +41,11 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -243,6 +250,46 @@ public class AuthController {
         response.addCookie(cookie);
 
         return ResponseEntity.ok(new MessageResponse("Logout exitoso"));
+    }
+
+    // ---------------------------------------------------------
+    // Recuperar contraseña
+    // ---------------------------------------------------------
+
+    @PostMapping("/enviarCorreoRecuperar-contrasena")
+    public ResponseEntity<?> enviarCorreoRecuperarContrasena(
+            @RequestParam @Email(message = "El formato del correo no es válido") @NotBlank(message = "El correo es obligatorio") String email) {
+
+        try {
+            verificacionEmailService.enviarCorreoRecuperacion(email);
+        } catch (EmailNotFoundException ex) {
+            // No revelamos que el correo no existe: solo lo registramos internamente
+            log.info("Solicitud de recuperación para correo no registrado: {}", email);
+        } catch (MessagingException ex) {
+            // Falló el envío del correo (SMTP caído, etc). No se expone al cliente.
+            log.error("Error al enviar correo de recuperación a {}: {}", email, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            // Cualquier otro error inesperado (ej. fallo al guardar el token en BD)
+            log.error("Error inesperado en recuperación de contraseña para {}: {}", email, ex.getMessage(), ex);
+        }
+
+        // Respuesta siempre idéntica, exista o no la cuenta,
+        // para evitar enumeración de usuarios.
+        return ResponseEntity.ok(
+                new MessageResponse(
+                        "Si existe una cuenta asociada a ese correo, se ha enviado un email con instrucciones de recuperación"));
+    }
+
+    @PostMapping("/restablecer-contrasena")
+    public ResponseEntity<?> restablecerContrasena(@RequestBody @Valid ResetPasswordRequest request) {
+        try {
+            verificacionEmailService.restablecerContrasena(request.getToken(), request.getNuevaContrasena());
+            return ResponseEntity.ok(new MessageResponse("Contraseña actualizada correctamente"));
+        } catch (TokenInvalidoException ex) {
+            log.info("Intento de restablecer contraseña con token inválido/expirado");
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("El enlace no es válido o ha expirado. Solicita uno nuevo."));
+        }
     }
 
     // ---------------------------------------------------------

@@ -96,8 +96,9 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "TOKEN_YA_USADO", ex.getMessage());
     }
 
-    @ExceptionHandler(TokenExpiradoException.class)
-    public ResponseEntity<ApiError> handleTokenExpirado(TokenExpiradoException ex) {
+    @ExceptionHandler({ TokenExpiradoException.class,
+                        TokenInvalidoRecuperacionException.class })
+    public ResponseEntity<ApiError> handleTokenExpirado(RuntimeException ex) {
         return build(HttpStatus.BAD_REQUEST, "TOKEN_EXPIRADO", ex.getMessage());
     }
 
@@ -326,6 +327,12 @@ public class GlobalExceptionHandler {
 
         public TokenExpiradoException() {
             super("El token de verificación ha expirado");
+        }
+    }
+
+    public static class TokenInvalidoRecuperacionException extends RuntimeException {
+        public TokenInvalidoRecuperacionException() {
+            super("El token de recuperación no es válido o ha expirado");
         }
     }
 
