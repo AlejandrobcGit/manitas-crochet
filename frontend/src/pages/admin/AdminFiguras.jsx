@@ -10,8 +10,6 @@ import "./AdminFiguras.css";
 import AdminFigurasTable from "../../components/AdminFigurasTable";
 import FiguraForm from "../../components/FiguraForm";
 
-const API_URL = "http://localhost:8080";
-
 function AdminFiguras() {
     const {
         figuras,
@@ -57,7 +55,7 @@ function AdminFiguras() {
     // Cada vez que cambie la busqueda (debounced) o la categoria, pedimos al backend
     useEffect(() => {
         recargarFiguras(nombreDebounced, categoriaId);
-    }, [nombreDebounced, categoriaId]);
+    }, [nombreDebounced, categoriaId, recargarFiguras]);
 
     return (
         <>

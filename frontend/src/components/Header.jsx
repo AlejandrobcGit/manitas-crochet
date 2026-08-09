@@ -8,7 +8,7 @@ function Header() {
 
     const emailVerificado = async () => {
         try {
-            const response = await apiFetch("/auth/enviarcorreoverificar");
+            /*const response = */ await apiFetch("/auth/enviarcorreoverificar");
         } catch (error) {
             console.error("Error verifying email:", error);
         }

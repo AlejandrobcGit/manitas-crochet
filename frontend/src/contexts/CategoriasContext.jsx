@@ -1,7 +1,6 @@
-import { createContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useApiFetch } from "../api/useApiFetch";
-
-export const CategoriasContext = createContext();
+import { CategoriasContext } from "./CategoriasContextDefinition";
 
 export function CategoriasProvider({ children }) {
 
@@ -11,7 +10,7 @@ export function CategoriasProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const cargarCategorias = async (nombre = "") => {
+    const cargarCategorias = useCallback(async (nombre = "") => {
 
         try {
 
@@ -45,11 +44,11 @@ export function CategoriasProvider({ children }) {
             setLoading(false);
 
         }
-    };
+    }, [apiFetch]);
 
     useEffect(() => {
         cargarCategorias();
-    }, []);
+    }, [cargarCategorias]);
 
     return (
         <CategoriasContext.Provider

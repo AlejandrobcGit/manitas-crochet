@@ -9,7 +9,6 @@ import "./AdminCategorias.css";
 import AdminCategoriasTable from "../../components/AdminCategoriasTable";
 import CategoriaForm from "../../components/CategoriaForm";
 
-const API_URL = "http://localhost:8080";
 
 function AdminCategorias() {
     const {
@@ -22,7 +21,6 @@ function AdminCategorias() {
     const apiFetch = useApiFetch();
 
     const [nombre, setNombre] = useState("");
-    const [codigo, setCodigo] = useState("");
     const [modo, setModo] = useState("LISTADO");
     const [categoriaSeleccionado, setCategoriaSeleccionado] = useState(null);
 
@@ -51,7 +49,7 @@ function AdminCategorias() {
     // Cada vez que cambie la busqueda (debounced) o la categoria, pedimos al backend
     useEffect(() => {
         recargarCategorias(nombreDebounced);
-    }, [nombreDebounced]);
+    }, [nombreDebounced, recargarCategorias]);
 
     return (
         <>

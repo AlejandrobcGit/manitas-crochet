@@ -1,7 +1,6 @@
-import { createContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useApiFetch } from "../api/useApiFetch";
-
-export const ColoresContext = createContext();
+import { ColoresContext } from "./ColoresContextDefinition";
 
 export function ColoresProvider({ children }) {
 
@@ -11,7 +10,7 @@ export function ColoresProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const cargarColores = async (nombre = "", codigo = "") => {
+    const cargarColores = useCallback(async (nombre = "", codigo = "") => {
 
         try {
 
@@ -46,11 +45,11 @@ export function ColoresProvider({ children }) {
             setLoading(false);
 
         }
-    };
+    }, [apiFetch]);
 
     useEffect(() => {
         cargarColores();
-    }, []);
+    }, [cargarColores]);
 
     return (
         <ColoresContext.Provider

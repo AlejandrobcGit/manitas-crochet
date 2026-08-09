@@ -1,7 +1,6 @@
-import { createContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useApiFetch } from "../api/useApiFetch";
-
-export const FigurasContext = createContext();
+import { FigurasContext } from "./FigurasContextDefinition";
 
 export function FigurasProvider({ children }) {
 
@@ -11,7 +10,7 @@ export function FigurasProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const cargarFiguras = async (nombre = "", categoriaId = "") => {
+    const cargarFiguras = useCallback(async (nombre = "", categoriaId = "") => {
 
         try {
 
@@ -45,11 +44,11 @@ export function FigurasProvider({ children }) {
             setLoading(false);
 
         }
-    };
+    }, [apiFetch]);
 
     useEffect(() => {
         cargarFiguras();
-    }, []);
+    }, [cargarFiguras]);
 
     return (
         <FigurasContext.Provider

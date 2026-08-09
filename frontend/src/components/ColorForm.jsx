@@ -1,28 +1,18 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
 
 import { useApiFetch } from "../api/useApiFetch";
-import { ColoresContext } from "../contexts/ColoresContext";
+import { ColoresContext } from "../contexts/ColoresContextDefinition";
 
 import "./ColorForm.css";
 
-const API_URL = "http://localhost:8080";
-
-/* debe buscarse desde backend */
-const DIFICULTADES = [
-    "PRINCIPIANTE",
-    "INTERMEDIO",
-    "AVANZADO"
-];
-
-function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" }) {
+function ColorForm({ onVolver, esEdicion = false, color = "#000000" }) {
 
     const apiFetch = useApiFetch();
 
     const { recargarColores } = useContext(ColoresContext);
     const [nombre, setNombre] = useState("");
     const [codigo, setCodigo] = useState(color);
-    const [cargandoColor, setCargandoColor] = useState(false);
+    const [cargandoColor] = useState(false);
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState(null);
 
@@ -36,7 +26,7 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
         setNombre(color.nombre)
         setCodigo(color.codigo)
 
-    }, [esEdicion]);
+    }, [esEdicion, color]);
 
 
     const resetForm = () => {
@@ -81,7 +71,7 @@ function ColorForm({ onVolver, onEditar, esEdicion = false, color = "#000000" })
                 body: JSON.stringify(colorEditar)
             });
 
-            const colorGuardada = await response.json();
+            /*const colorGuardada =*/ await response.json();
 
             await recargarColores?.();
 

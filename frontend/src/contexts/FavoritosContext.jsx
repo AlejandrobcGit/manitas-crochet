@@ -1,8 +1,7 @@
-import { createContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useUser } from "../hooks/useUser";
 import { useApiFetch } from "../api/useApiFetch";
-
-const FavoritosContext = createContext();
+import { FavoritosContext } from "./FavoritosContextDefinition";
 
 function FavoritosProvider({ children }) {
 
@@ -12,18 +11,7 @@ function FavoritosProvider({ children }) {
 
     const [favoritos, setFavoritos] = useState([]);
 
-    useEffect(() => {
-
-        if (!user) {
-            setFavoritos([]);
-            return;
-        }
-
-        cargarFavoritos();
-
-    }, [user]);
-
-    const cargarFavoritos = async () => {
+    const cargarFavoritos = useCallback(async () => {
 
         try {
 
@@ -39,7 +27,18 @@ function FavoritosProvider({ children }) {
 
             setFavoritos([]);
         }
-    };
+    }, [authFetch]);
+
+    useEffect(() => {
+
+        if (!user) {
+            setFavoritos([]);
+            return;
+        }
+
+        cargarFavoritos();
+
+    }, [user, cargarFavoritos]);
 
     const cambiarFavorito = async (figuraId) => {
 
@@ -89,6 +88,5 @@ function FavoritosProvider({ children }) {
 }
 
 export {
-    FavoritosContext,
     FavoritosProvider
 };

@@ -2,7 +2,7 @@ import "./FiguraCard.css";
 import { useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
 
-const API_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL;
 
 function FiguraCard({ figura, esFavorito, onToggleFavorito }) {
 

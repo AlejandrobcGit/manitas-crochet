@@ -18,15 +18,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final AuthTokenFilter authTokenFilter;
+    private final List<String> allowedOrigins;
 
-    public SecurityConfig(AuthTokenFilter authTokenFilter) {
+    public SecurityConfig(
+            AuthTokenFilter authTokenFilter,
+            @Value("${app.cors.allowed-origins}") List<String> allowedOrigins) {
         this.authTokenFilter = authTokenFilter;
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Bean
@@ -113,7 +118,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:*"));
+        config.setAllowedOriginPatterns(allowedOrigins);
         config.setAllowCredentials(true);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of(

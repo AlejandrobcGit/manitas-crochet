@@ -37,7 +37,7 @@ function Inicio() {
     // Cada vez que cambie la busqueda (debounced) o la categoria, pedimos al backend
     useEffect(() => {
         recargarFiguras(nombreDebounced, categoriaId);
-    }, [nombreDebounced, categoriaId]);
+    }, [nombreDebounced, categoriaId, recargarFiguras]);
 
     // El filtro de favoritos se aplica en el cliente sobre lo que ya trajo el backend
     const figurasMostradas = useMemo(() => {

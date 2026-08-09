@@ -41,7 +41,7 @@ export function useFiguraDetalle(id) {
 
         cargarFigura();
 
-    }, [id]);
+    }, [id, apiFetch]);
 
     return { figura, loading, error };
 }

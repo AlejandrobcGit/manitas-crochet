@@ -3,7 +3,7 @@ import { useState } from "react";
 // TODO: ajusta esto a como resuelve las URLs tu FiguraCard actual
 // (ej. import.meta.env.VITE_API_URL + "/uploads/")
 
-const API_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL;
 const API_IMG_URL = "/api/imagenes/";
 
 function GaleriaImagenes({ imagenPrincipal, imagenesSecundarias = [], nombre }) {

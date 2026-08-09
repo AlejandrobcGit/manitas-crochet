@@ -1,21 +1,18 @@
-import { createContext, useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { parseApiError } from "../api/parseApiError";
+import { UserContext } from "./UserContextDefinition";
 
-const UserContext = createContext();
-
-const API_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL;
 
 function UserProvider(props) {
 
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true); // ← bloquea el render inicial
-    const navigate = useNavigate();
+    // undefined = comprobando sesión
+    // null = no autenticado
+    // objeto = autenticado
+    const [user, setUser] = useState(undefined);
 
-    // 🔄 Recuperar sesión automáticamente al cargar la app
-    useEffect(() => {
-        refresh().finally(() => setLoading(false)); // ← cuando termine, desbloquea
-    }, []);
+    const navigate = useNavigate();
 
     const buildUserFromResponse = (data) => ({
         token: data.accessToken,
@@ -25,7 +22,7 @@ function UserProvider(props) {
         id: data.id,
         emailVerificado: data.emailVerificado
     });
-       
+
     const login = async (username, password) => {
 
         const respuesta = await fetch(`${API_URL}/auth/signin`, {
@@ -37,7 +34,7 @@ function UserProvider(props) {
 
         if (!respuesta.ok) {
             const apiError = await parseApiError(respuesta);
-            throw apiError;   // ← el componente lo recibe en el catch
+            throw apiError;
         }
 
         const data = await respuesta.json();
@@ -45,7 +42,7 @@ function UserProvider(props) {
         setUser(buildUserFromResponse(data));
     };
 
-    const refresh = async () => {
+    const refresh = useCallback(async () => {
         try {
             const respuesta = await fetch(`${API_URL}/auth/refresh`, {
                 method: "POST",
@@ -63,11 +60,15 @@ function UserProvider(props) {
 
             return data.accessToken;
 
-        } catch (error) {
+        } catch {
             setUser(null);
             return null;
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        refresh();
+    }, [refresh]);
 
     const logout = async () => {
         try {
@@ -96,18 +97,28 @@ function UserProvider(props) {
             throw apiError;
         }
 
-        const data = await respuesta.json();
-        return data;
+        return await respuesta.json();
     };
 
-    // ⏳ Mientras se restaura la sesión no renderizamos nada
-    if (loading) return null;
+    // Esperando respuesta del refresh
+    if (user === undefined) {
+        return <div>Cargando...</div>;
+    }
 
     return (
-        <UserContext.Provider value={{ user, setUser, login, refresh, logout, signup }}>
+        <UserContext.Provider
+            value={{
+                user,
+                setUser,
+                login,
+                refresh,
+                logout,
+                signup
+            }}
+        >
             {props.children}
         </UserContext.Provider>
     );
 }
 
-export { UserContext, UserProvider };
+export { UserProvider };

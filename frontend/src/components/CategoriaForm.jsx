@@ -1,41 +1,30 @@
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
 
 import { useApiFetch } from "../api/useApiFetch";
-import { CategoriasContext } from "../contexts/CategoriasContext";
+import { CategoriasContext } from "../contexts/CategoriasContextDefinition";
 
 import "./CategoriaForm.css";
 
-const API_URL = "http://localhost:8080";
-
-/* debe buscarse desde backend */
-const DIFICULTADES = [
-    "PRINCIPIANTE",
-    "INTERMEDIO",
-    "AVANZADO"
-];
-
-function CategoriaForm({ onVolver, onEditar, esEdicion = false, categoria = null}) {
+function CategoriaForm({ onVolver, esEdicion = false, categoria = null }) {
 
     const apiFetch = useApiFetch();
 
     const { recargarCategorias } = useContext(CategoriasContext);
     const [nombre, setNombre] = useState("");
-    const [cargandoCategoria, setCargandoCategoria] = useState(false);
+    const [cargandoCategoria] = useState(false);
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState(null);
 
 
     useEffect(() => {
 
-        if (!esEdicion) {
+        if (!esEdicion || !categoria) {
             return;
         }
 
-        setNombre(categoria.nombre)
+        setNombre(categoria.nombre);
 
-
-    }, [esEdicion]);
+    }, [esEdicion, categoria]);
 
 
     const resetForm = () => {
@@ -73,7 +62,9 @@ function CategoriaForm({ onVolver, onEditar, esEdicion = false, categoria = null
                 body: JSON.stringify(categoriaEditar)
             });
 
-            const categoriaGuardada = await response.json();
+            /*const categoriaGuardada = */
+
+            await response.json();
 
             await recargarCategorias?.();
 

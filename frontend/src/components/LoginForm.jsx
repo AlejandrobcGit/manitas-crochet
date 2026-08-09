@@ -55,7 +55,7 @@ function LoginForm() {
 
             const queryString = params.toString();
 
-            const response =
+            /*const response =*/
                 await apiFetch(`/auth/enviarCorreoRecuperar-contrasena?${queryString}`, {
                     method: "POST"
                 });

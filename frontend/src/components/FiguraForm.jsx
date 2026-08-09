@@ -1,12 +1,11 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
 
 import { useApiFetch } from "../api/useApiFetch";
-import { FigurasContext } from "../contexts/FigurasContext";
+import { FigurasContext } from "../contexts/FigurasContextDefinition";
 
 import "./FiguraForm.css";
 
-const API_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL;
 
 /* debe buscarse desde backend */
 const DIFICULTADES = [
@@ -15,7 +14,7 @@ const DIFICULTADES = [
     "AVANZADO"
 ];
 
-function FiguraForm({ onVolver, onEditar, esEdicion = false, figuraId = null }) {
+function FiguraForm({ onVolver, esEdicion = false, figuraId = null }) {
 
     const apiFetch = useApiFetch();
 
@@ -98,7 +97,7 @@ function FiguraForm({ onVolver, onEditar, esEdicion = false, figuraId = null }) 
 
         cargarOpciones();
 
-    }, []);
+    }, [apiFetch]);
 
     useEffect(() => {
 
@@ -185,7 +184,7 @@ function FiguraForm({ onVolver, onEditar, esEdicion = false, figuraId = null }) 
 
         cargarFigura();
 
-    }, [esEdicion, categorias, coloresDisponibles]);
+    }, [apiFetch, esEdicion, figuraId, categorias, coloresDisponibles]);
 
     useEffect(() => {
 
@@ -376,7 +375,7 @@ function FiguraForm({ onVolver, onEditar, esEdicion = false, figuraId = null }) 
                 body: formData
             });
 
-            const figuraGuardada = await response.json();
+           /* const figuraGuardada = */ await response.json();
 
             await recargarFiguras?.();
 

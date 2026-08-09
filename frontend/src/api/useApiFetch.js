@@ -1,9 +1,8 @@
-    import { useContext } from "react";
+    import { useCallback } from "react";
     import { useUser } from "../hooks/useUser";
     import { parseApiError } from "./parseApiError";
 
-    //const API_URL = import.meta.env.VITE_API_URL;
-    const API_URL = "http://localhost:8080";
+    const API_URL = import.meta.env.VITE_API_URL;
 
     const NO_RETRY_CODES = [
         "BAD_CREDENTIALS",
@@ -15,7 +14,7 @@
     export const useApiFetch = () => {
         const { user, refresh, setUser } = useUser();
 
-        const authFetch = async (url, options = {}) => {
+        const authFetch = useCallback(async (url, options = {}) => {
             const isFormData = options.body instanceof FormData;
 
             const headers = {
@@ -78,7 +77,7 @@
             }
 
             return response;
-        };
+        }, [user, refresh, setUser]);
 
         return authFetch;
     };

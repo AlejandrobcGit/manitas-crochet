@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 import { useColores } from "../../hooks/useColores";
-import { useCategorias } from "../../hooks/useCategorias";
 import { useDebounce } from "../../hooks/useDebounce";
 import { useApiFetch } from "../../api/useApiFetch";
 
@@ -9,8 +8,6 @@ import "./AdminColores.css";
 
 import AdminColoresTable from "../../components/AdminColoresTable";
 import ColorForm from "../../components/ColorForm";
-
-const API_URL = "http://localhost:8080";
 
 function AdminColores() {
     const {
@@ -53,7 +50,7 @@ function AdminColores() {
     // Cada vez que cambie la busqueda (debounced) o la categoria, pedimos al backend
     useEffect(() => {
         recargarColores(nombreDebounced, codigoDebounced);
-    }, [nombreDebounced, codigoDebounced]);
+    }, [nombreDebounced, codigoDebounced, recargarColores]);
 
     return (
         <>
