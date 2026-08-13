@@ -2,6 +2,7 @@ package com.manitascrochet.backend.controller;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,7 +39,6 @@ import com.manitascrochet.backend.security.UserDetailsServiceImpl;
 import com.manitascrochet.backend.service.VerificacionEmailService;
 
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -56,6 +56,15 @@ public class AuthController {
     private final JwtUtils jwtUtils;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
     private final VerificacionEmailService verificacionEmailService;
+
+    @Value("${app.cookie.secure:true}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.http-only:true}")
+    private boolean cookieHttpOnly;
+
+    @Value("${app.cookie.same-site:Lax}")
+    private String cookieSameSite;
 
     public AuthController(
             AuthenticationManager authenticationManager,
@@ -93,9 +102,9 @@ public class AuthController {
         String refreshToken = jwtUtils.generateRefreshToken(authentication);
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .httpOnly(cookieHttpOnly)
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
                 .build();
@@ -151,9 +160,9 @@ public class AuthController {
         String newRefreshToken = jwtUtils.generateRefreshTokenFromUsername(username);
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .httpOnly(cookieHttpOnly)
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
                 .path("/")
                 .maxAge(7 * 24 * 60 * 60)
                 .build();
@@ -241,13 +250,15 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
 
-        Cookie cookie = new Cookie("refreshToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(cookieHttpOnly)
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
+                .path("/")
+                .maxAge(0)
+                .build();
 
-        response.addCookie(cookie);
+        response.addHeader("Set-Cookie", deleteCookie.toString());
 
         return ResponseEntity.ok(new MessageResponse("Logout exitoso"));
     }
