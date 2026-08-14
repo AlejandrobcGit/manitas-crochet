@@ -8,9 +8,19 @@ function FiguraCard({ figura, esFavorito, onToggleFavorito }) {
 
     const navigate = useNavigate();
 
-    const imageUrl = figura.imagenPrincipal
-        ? `${API_URL}/api/imagenes/${figura.imagenPrincipal}`
-        : null;
+    const optimizeImage = (
+        url,
+        transformation = "tr:w-600,q-auto,f-auto"
+    ) => {
+        if (!url) return null;
+
+        return url.replace(
+            "https://ik.imagekit.io/8hlhxb9hx/",
+            `https://ik.imagekit.io/8hlhxb9hx/${transformation}/`
+        );
+    };
+
+    const imageUrl = optimizeImage(figura.imagenPrincipal);
 
     const handleFavorito = async (e) => {
         e.stopPropagation();

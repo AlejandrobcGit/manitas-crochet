@@ -5,14 +5,39 @@ import { FigurasContext } from "../contexts/FigurasContextDefinition";
 
 import "./FiguraForm.css";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 /* debe buscarse desde backend */
 const DIFICULTADES = [
     "PRINCIPIANTE",
     "INTERMEDIO",
     "AVANZADO"
 ];
+
+// ImageKit: tr=w-<ancho>,h-<alto>,fo-auto,q-<calidad>
+function getImagenOptimizada(url, anchoCss, altoCss) {
+
+    if (!url) {
+        return url;
+    }
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // cap en 2x
+
+    const ancho = Math.round(anchoCss * dpr);
+    const alto = Math.round((altoCss ?? anchoCss) * dpr);
+
+    const separador = url.includes("?") ? "&" : "?";
+
+    return `${url}${separador}tr=w-${ancho},h-${alto},fo-auto,q-70`;
+}
+
+// Evita optimizar previews locales (blob:) generadas al elegir un archivo nuevo
+function urlPreview(url, anchoCss, altoCss) {
+
+    if (!url || url.startsWith("blob:")) {
+        return url;
+    }
+
+    return getImagenOptimizada(url, anchoCss, altoCss);
+}
 
 function FiguraForm({ onVolver, esEdicion = false, figuraId = null }) {
 
@@ -50,18 +75,7 @@ function FiguraForm({ onVolver, esEdicion = false, figuraId = null }) {
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState(null);
 
-    const crearUrlImagen = (filename) => {
-
-        if (!filename) {
-            return null;
-        }
-
-        if (filename.startsWith("http")) {
-            return filename;
-        }
-
-        return `${API_URL}/api/imagenes/${filename}`;
-    };
+    const crearUrlImagen = (url) => url || null;
 
     useEffect(() => {
 
@@ -687,7 +701,7 @@ function FiguraForm({ onVolver, esEdicion = false, figuraId = null }) {
                         {imagenPrincipalPreview && (
                             <img
                                 className="form-preview form-preview--principal"
-                                src={imagenPrincipalPreview}
+                                src={urlPreview(imagenPrincipalPreview, 320, 260)}
                                 alt="Vista previa imagen principal"
                             />
                         )}
@@ -709,7 +723,7 @@ function FiguraForm({ onVolver, esEdicion = false, figuraId = null }) {
                                     <img
                                         key={index}
                                         className="form-preview"
-                                        src={src}
+                                        src={urlPreview(src, 100, 100)}
                                         alt={`Vista previa secundaria ${index + 1}`}
                                     />
                                 ))}

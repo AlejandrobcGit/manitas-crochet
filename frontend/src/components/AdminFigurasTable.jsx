@@ -2,7 +2,14 @@
 
 import "./AdminFigurasTable.css";
 
-const API_URL = import.meta.env.VITE_API_URL;
+// ImageKit: tr=w-<ancho>,h-<alto>,fo-auto,q-<calidad>
+function getImagenOptimizada(url, sizeCss) {
+    if (!url) return url;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // cap en 2x
+    const size = Math.round(sizeCss * dpr);
+    const separador = url.includes("?") ? "&" : "?";
+    return `${url}${separador}tr=w-${size},h-${size},fo-auto,q-70`;
+}
 
 function AdminFigurasTable({
     figuras,
@@ -29,18 +36,15 @@ function AdminFigurasTable({
 
                     {figuras.map(figura => {
 
-                        const imageUrl = figura.imagenPrincipal
-                            ? `${API_URL}/api/imagenes/${figura.imagenPrincipal}`
-                            : null;
-
                         return (
                             <tr key={figura.id}>
                                 <td>
 
                                     <img
-                                        src={imageUrl}
+                                        src={getImagenOptimizada(figura.imagenPrincipal, 60)}
                                         alt={figura.nombre}
                                         className="admin-tabla__imagen"
+                                        loading="lazy"
                                     />
 
                                 </td>

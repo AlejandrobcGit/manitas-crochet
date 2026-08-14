@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.manitascrochet.backend.dto.ColorResponseDto;
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
+import com.manitascrochet.backend.dto.ImageUploadResultDto;
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
 import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
@@ -35,10 +36,11 @@ public class FiguraService {
         private final FiguraRepository figuraRepository;
         private final CategoriaRepository categoriaRepository;
         private final ColorRepository colorRepository;
-        private final FileStorageService fileStorageService;
+        private final ImageService imageService;
+        // si elimnara el FileStorageService, cuando imageUpload esta lito
+        // private final FileStorageService fileStorageService;
         private final ValoracionService valoracionService;
         private final ComentarioService comentarioService;
-        
 
         /*
          * permite trabajar directamente con MongoDB sin pasar por un repositorio
@@ -82,7 +84,7 @@ public class FiguraService {
                                 .orElseThrow(() -> new CategoriaNoEncontradaException(figura.getCategoriaId()));
 
                 if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
-                        figura.setImagenPrincipal("default.png");
+                        figura.setImagenPrincipal("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
                 }
 
                 ResumenValoracionDto resumenValoracionDto = valoracionService
@@ -132,7 +134,7 @@ public class FiguraService {
                                 .toList();
 
                 if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
-                        figura.setImagenPrincipal("default.png");
+                        figura.setImagenPrincipal("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
                 }
 
                 ResumenValoracionDto resumenValoracionDto = valoracionService
@@ -183,18 +185,27 @@ public class FiguraService {
                 // Guardar imagen principal
                 if (imagenPrincipal != null && !imagenPrincipal.isEmpty()) {
 
-                        String filename = fileStorageService.store(
-                                        imagenPrincipal,
-                                        figuraGuardada.getId(),
-                                        figuraGuardada.getNombre());
+                        /*
+                         * String filename = fileStorageService.store(
+                         * imagenPrincipal,
+                         * figuraGuardada.getId(),
+                         * figuraGuardada.getNombre());
+                         */
 
-                        figuraGuardada.setImagenPrincipal(filename);
+                        ImageUploadResultDto imageUploadResultDto = imageService.uploadImage(
+                                        figuraGuardada.getId(),
+                                        figuraGuardada.getNombre(),
+                                        imagenPrincipal);
+
+                        figuraGuardada.setImagenPrincipal(imageUploadResultDto.getUrl());
+                        figuraGuardada.setFileId_imagenPrincipal(imageUploadResultDto.getFileId());
                 }
 
                 // Guardar imágenes secundarias, cada una con un sufijo -1, -2, -3...
                 if (imagenesSecundarias != null && !imagenesSecundarias.isEmpty()) {
 
                         List<String> nombresImagenes = new ArrayList<>();
+                        List<String> fileIdImagenes = new ArrayList<>();
                         int indice = 1;
 
                         for (MultipartFile imagen : imagenesSecundarias) {
@@ -203,17 +214,26 @@ public class FiguraService {
 
                                         String nombreDiferenciado = figuraGuardada.getNombre() + "-" + indice;
 
-                                        String filename = fileStorageService.store(
-                                                        imagen,
+                                        /*
+                                         * String filename = fileStorageService.store(
+                                         * imagen,
+                                         * figuraGuardada.getId(),
+                                         * nombreDiferenciado);
+                                         */
+                                        ImageUploadResultDto imageUploadResultDto = imageService.uploadImage(
                                                         figuraGuardada.getId(),
-                                                        nombreDiferenciado);
+                                                        nombreDiferenciado,
+                                                        imagen);
 
-                                        nombresImagenes.add(filename);
+                                        nombresImagenes.add(imageUploadResultDto.getUrl());
+                                        fileIdImagenes.add(imageUploadResultDto.getFileId());
                                         indice++;
                                 }
                         }
 
                         figuraGuardada.setImagenesSecundarias(nombresImagenes);
+                        figuraGuardada.setFileId_imagenesSecundarias(fileIdImagenes);
+
                 }
 
                 // Segundo save: ahora sí con los nombres de archivo ya calculados.
@@ -262,40 +282,34 @@ public class FiguraService {
 
                 if (imagenPrincipal != null && !imagenPrincipal.isEmpty()) {
 
-                        // Borrar imagen anterior
-                        if (figura.getImagenPrincipal() != null &&
-                                        !figura.getImagenPrincipal().isBlank()) {
+                        // Guardar nuevo y borrar anterior
+                        String previousFileId = figura.getFileId_imagenPrincipal();
 
-                                fileStorageService.delete(
-                                                figura.getImagenPrincipal());
-                        }
-
-                        String filename = fileStorageService.store(
-                                        imagenPrincipal,
+                        ImageUploadResultDto imageUploadResultDto = imageService.uploadImage(
                                         figura.getId(),
-                                        figura.getNombre());
+                                        figura.getNombre(),
+                                        imagenPrincipal);
 
-                        figura.setImagenPrincipal(filename);
+                        figura.setImagenPrincipal(imageUploadResultDto.getUrl());
+                        figura.setFileId_imagenPrincipal(imageUploadResultDto.getFileId());
+
+                        if (previousFileId != null && !previousFileId.isBlank()) {
+                                imageService.deleteImage(previousFileId);
+                        }
                 }
 
                 // ----------------------------------------------------
                 // IMÁGENES SECUNDARIAS
                 // ----------------------------------------------------
 
-                if (imagenesSecundarias != null &&
-                                !imagenesSecundarias.isEmpty()) {
+                if (imagenesSecundarias != null && !imagenesSecundarias.isEmpty()) {
 
-                        // Borrar imágenes secundarias anteriores
-                        if (figura.getImagenesSecundarias() != null) {
-
-                                for (String imagen : figura.getImagenesSecundarias()) {
-
-                                        fileStorageService.delete(imagen);
-                                }
-                        }
+                        List<String> previousFileIds = figura.getFileId_imagenesSecundarias() == null
+                                        ? new ArrayList<>()
+                                        : new ArrayList<>(figura.getFileId_imagenesSecundarias());
 
                         List<String> nombresImagenes = new ArrayList<>();
-
+                        List<String> fileIdImagenes = new ArrayList<>();
                         int indice = 1;
 
                         for (MultipartFile imagen : imagenesSecundarias) {
@@ -304,26 +318,32 @@ public class FiguraService {
 
                                         String nombreDiferenciado = figura.getNombre() + "-" + indice;
 
-                                        String filename = fileStorageService.store(
-                                                        imagen,
+                                        ImageUploadResultDto imageUploadResultDto = imageService.uploadImage(
                                                         figura.getId(),
-                                                        nombreDiferenciado);
+                                                        nombreDiferenciado,
+                                                        imagen);
 
-                                        nombresImagenes.add(filename);
-
+                                        nombresImagenes.add(imageUploadResultDto.getUrl());
+                                        fileIdImagenes.add(imageUploadResultDto.getFileId());
                                         indice++;
                                 }
                         }
 
                         figura.setImagenesSecundarias(nombresImagenes);
+                        figura.setFileId_imagenesSecundarias(fileIdImagenes);
+
+                        // Borrar imágenes secundarias anteriores
+                        for (String imagenId : previousFileIds) {
+                                imageService.deleteImage(imagenId);
+                        }
+
                 }
 
                 // ----------------------------------------------------
                 // FECHA MODIFICACIÓN
                 // ----------------------------------------------------
 
-                figura.setFechaModificacion(
-                                LocalDateTime.now());
+                figura.setFechaModificacion(LocalDateTime.now());
 
                 return convertirFiguraDetalleDto(figuraRepository.save(figura), null);
         }
@@ -334,14 +354,26 @@ public class FiguraService {
                 Figura figura = figuraRepository.findById(id)
                                 .orElseThrow(() -> new FiguraNoEncontradaException(id));
 
-                figuraRepository.deleteById(id);
-                valoracionService.eliminarValoracionesPorFigura(id);
-                comentarioService.eliminarComentariosPorFigura(id);
-                fileStorageService.delete(figura.getImagenPrincipal());
-                if (figura.getImagenesSecundarias() != null) {
-                        for (String imagen : figura.getImagenesSecundarias()) {
-                                fileStorageService.delete(imagen);
+                // 1. Borrar imagen principal de ImageKit
+                if (figura.getFileId_imagenPrincipal() != null
+                                && !figura.getFileId_imagenPrincipal().isBlank()) {
+                        imageService.deleteImage(figura.getFileId_imagenPrincipal());
+                }
+
+                // 2. Borrar imágenes secundarias de ImageKit
+                if (figura.getFileId_imagenesSecundarias() != null) {
+                        for (String fileId : figura.getFileId_imagenesSecundarias()) {
+                                if (fileId != null && !fileId.isBlank()) {
+                                        imageService.deleteImage(fileId);
+                                }
                         }
                 }
+
+                // 3. Borrar datos relacionados
+                valoracionService.eliminarValoracionesPorFigura(id);
+                comentarioService.eliminarComentariosPorFigura(id);
+
+                // 4. Borrar figura
+                figuraRepository.deleteById(id);
         }
 }

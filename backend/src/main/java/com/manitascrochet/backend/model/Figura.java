@@ -26,8 +26,12 @@ public class Figura {
     private String autor;
 
     private String imagenPrincipal;
+    
+    private String fileId_imagenPrincipal;
 
     private List<String> imagenesSecundarias;
+
+    private List<String> fileId_imagenesSecundarias;
 
     private List<String> coloresIds;
 

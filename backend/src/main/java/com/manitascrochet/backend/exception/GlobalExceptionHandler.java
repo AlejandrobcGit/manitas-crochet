@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +18,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.manitascrochet.backend.exception.security.EmailAlreadyExistsException;
 import com.manitascrochet.backend.exception.security.InvalidRefreshTokenException;
@@ -27,11 +26,13 @@ import com.manitascrochet.backend.exception.security.UsernameAlreadyExistsExcept
 
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+   // private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // ─── Model : Figuras ───────────────────────────────────────────────────────
 
@@ -68,6 +69,36 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "VALORACION_INVALIDA", ex.getMessage());
     }
 
+    // ─── ImageKit ─────────────────────────────────────────────────────────────
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ApiError> handleInvalidImage(InvalidImageException ex) {
+        return build(HttpStatus.BAD_REQUEST, "INVALID_IMAGE", ex.getMessage());
+    }
+
+    @ExceptionHandler(ImageProcessingException.class)
+    public ResponseEntity<ApiError> handleImageProcessing(ImageProcessingException ex) {
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, "IMAGE_PROCESSING_ERROR", ex.getMessage());
+    }
+
+    @ExceptionHandler(ImageUploadException.class)
+    public ResponseEntity<ApiError> handleImageUpload(ImageUploadException ex) {
+        log.error("Error al subir imagen: {}", ex.getMessage(), ex);
+        return build(HttpStatus.BAD_GATEWAY, "IMAGE_UPLOAD_ERROR", ex.getMessage());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, "FILE_TOO_LARGE", "El archivo supera el tamaño máximo permitido");
+    }
+
+    @ExceptionHandler(ImageDeleteException.class)
+    public ResponseEntity<ApiError> handleImageDelete(ImageDeleteException ex) {
+        return build(HttpStatus.BAD_GATEWAY, "IMAGE_DELETE_FAILED", "No se pudo eliminar la imagen");
+    }
+
+
+
     // ─── Seguridad ─────────────────────────────────────────────────────────────
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -97,7 +128,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({ TokenExpiradoException.class,
-                        TokenInvalidoRecuperacionException.class })
+            TokenInvalidoRecuperacionException.class })
     public ResponseEntity<ApiError> handleTokenExpirado(RuntimeException ex) {
         return build(HttpStatus.BAD_REQUEST, "TOKEN_EXPIRADO", ex.getMessage());
     }
@@ -347,6 +378,49 @@ public class GlobalExceptionHandler {
 
         public EmailYaVerificadoException() {
             super("Este correo ya fue verificado anteriormente");
+        }
+    }
+
+    public static class ImageProcessingException extends RuntimeException {
+
+        public ImageProcessingException(String message) {
+            super(message);
+        }
+
+        public ImageProcessingException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    public static class ImageUploadException extends RuntimeException {
+
+        public ImageUploadException(String message) {
+            super(message);
+        }
+
+        public ImageUploadException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    public static class InvalidImageException extends RuntimeException {
+
+        public InvalidImageException(String message) {
+            super(message);
+        }
+
+        public InvalidImageException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    public static class ImageDeleteException extends RuntimeException {
+        public ImageDeleteException(String message) {
+            super(message);
+        }
+
+        public ImageDeleteException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 }

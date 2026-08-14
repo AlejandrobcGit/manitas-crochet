@@ -1,10 +1,11 @@
 import { useState } from "react";
 
-// TODO: ajusta esto a como resuelve las URLs tu FiguraCard actual
-// (ej. import.meta.env.VITE_API_URL + "/uploads/")
-
-const API_URL = import.meta.env.VITE_API_URL;
-const API_IMG_URL = "/api/imagenes/";
+// ImageKit: tr=w-<ancho>,h-<alto>,fo-auto,q-<calidad>
+function getImagenOptimizada(url, size) {
+    if (!url) return url;
+    const separador = url.includes("?") ? "&" : "?";
+    return `${url}${separador}tr=w-${size},h-${size},fo-auto,q-80`;
+}
 
 function GaleriaImagenes({ imagenPrincipal, imagenesSecundarias = [], nombre }) {
 
@@ -18,8 +19,9 @@ function GaleriaImagenes({ imagenPrincipal, imagenesSecundarias = [], nombre }) 
 
             <div className="galeria__principal">
                 <img
-                    src={API_URL + API_IMG_URL + imagenes[seleccionada]}
+                    src={getImagenOptimizada(imagenes[seleccionada], 800)}
                     alt={nombre}
+                    fetchPriority="high"
                 />
             </div>
 
@@ -43,8 +45,9 @@ function GaleriaImagenes({ imagenPrincipal, imagenesSecundarias = [], nombre }) 
                             onClick={() => setSeleccionada(index)}
                         >
                             <img
-                                src={API_URL + API_IMG_URL + img}
+                                src={getImagenOptimizada(img, 150)}
                                 alt={`${nombre} vista ${index + 1}`}
+                                loading="lazy"
                             />
                         </button>
 

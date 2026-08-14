@@ -123,7 +123,7 @@ class FiguraServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getCategoria()).isEqualTo("Animales");
-        assertThat(result.get(0).getImagenPrincipal()).isEqualTo("default.png");
+        assertThat(result.get(0).getImagenPrincipal()).isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
         assertThat(result.get(0).getValoracionMedia()).isEqualTo(4.5);
         assertThat(result.get(0).getTotalValoraciones()).isEqualTo(2L);
 
@@ -245,7 +245,7 @@ class FiguraServiceTest {
 
         var result = service.obtenerPorIdDto("f1", null);
 
-        assertThat(result.getImagenPrincipal()).isEqualTo("default.png");
+        assertThat(result.getImagenPrincipal()).isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
     }
 
     @Test
@@ -333,7 +333,7 @@ class FiguraServiceTest {
         var result = service.crear(f, null, null);
 
         assertThat(result).isNotNull();
-        assertThat(result.getImagenPrincipal()).isEqualTo("default.png");
+        assertThat(result.getImagenPrincipal()).isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
 
         verify(files, never()).store(any(), anyString(), anyString());
         verify(figuras, times(2)).save(any(Figura.class));
