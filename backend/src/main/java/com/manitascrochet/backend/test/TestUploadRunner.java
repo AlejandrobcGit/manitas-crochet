@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import com.manitascrochet.backend.dto.ImageUploadResultDto;
 import com.manitascrochet.backend.service.ImageService;
-import com.manitascrochet.backend.util.ByteArrayMultipartFile;
 
 import lombok.RequiredArgsConstructor;
 

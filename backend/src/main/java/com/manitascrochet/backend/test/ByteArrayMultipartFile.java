@@ -1,4 +1,4 @@
-package com.manitascrochet.backend.util;
+package com.manitascrochet.backend.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

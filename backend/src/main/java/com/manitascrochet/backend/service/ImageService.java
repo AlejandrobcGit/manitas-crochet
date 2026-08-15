@@ -28,8 +28,6 @@ public class ImageService {
 
     /**
      * Valida, comprime a WebP y sube la imagen a ImageKit.
-     * /**
-     * Valida, comprime a WebP y sube la imagen a ImageKit.
      *
      * @param file   imagen recibida
      * @param folder carpeta destino en ImageKit
@@ -40,7 +38,7 @@ public class ImageService {
         validate(file);
 
         byte[] compressedBytes = compressionService.compress(file);
-        System.out.println("ImageService.uploadImage: originalContentType=" + file.getContentType() + ", originalSize=" + (file == null ? 0 : file.getSize()) + ", compressedSize=" + (compressedBytes == null ? 0 : compressedBytes.length));
+        System.out.println("ImageService.uploadImage: originalContentType=" + file.getContentType() + ", originalSize=" + file.getSize() + ", compressedSize=" + (compressedBytes == null ? 0 : compressedBytes.length));
 
         String fileName = generateFileName(figureId, titulo, file);
 
@@ -50,9 +48,7 @@ public class ImageService {
                 System.out.println("ImageService: compresión devolvió 0 bytes, usando bytes originales como fallback");
                 compressedBytes = file.getBytes();
                 String ext = getExtensionFromContentType(file.getContentType());
-                if (ext != null && !ext.isBlank()) {
-                    fileName = fileName.replaceFirst("\\.[^\\.]+$", "." + ext);
-                }
+                fileName = fileName.replaceFirst("\\.[^\\.]+$", "." + ext);
                 System.out.println("ImageService: fallback fileName=" + fileName + ", size=" + (compressedBytes == null ? 0 : compressedBytes.length));
             } catch (Exception e) {
                 System.out.println("ImageService: error al obtener bytes originales para fallback: " + e.getMessage());

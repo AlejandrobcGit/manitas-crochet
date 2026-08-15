@@ -30,7 +30,7 @@ public class ComentarioService {
 
         Comentario comentario = comentarioRepository.findByIdAndUsuarioId(comentarioId, userId)
                 .orElseThrow(() -> new ComentarioNoEncontradoException());
-        System.out.println(""+ comentario.getId() + " " + comentario.getUsuarioId());
+
         comentarioRepository.delete(comentario);
     }
 

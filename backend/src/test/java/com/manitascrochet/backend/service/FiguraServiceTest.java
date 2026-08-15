@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,6 +23,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.mock.web.MockMultipartFile;
 
+import com.manitascrochet.backend.dto.FiguraDetalleDto;
+import com.manitascrochet.backend.dto.FiguraListadoDto;
+import com.manitascrochet.backend.dto.ImageUploadResultDto;
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
 import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
@@ -49,7 +53,7 @@ class FiguraServiceTest {
     ColorRepository colores;
 
     @Mock
-    FileStorageService files;
+    ImageService imageService;
 
     @Mock
     ValoracionService ratings;
@@ -99,6 +103,79 @@ class FiguraServiceTest {
         return new ResumenValoracionDto(media, total);
     }
 
+    // ---------------------------------------------------------------
+    // obtenerTodasDto
+    // ---------------------------------------------------------------
+
+    @Test
+    void obtenerTodasDtoSinFiltros_devuelveListaMapeada() {
+        Figura f = figura();
+        f.setImagenPrincipal("oso.png");
+
+        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
+        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(4.5, 10L));
+
+        List<FiguraListadoDto> resultado = service.obtenerTodasDto(null, null);
+
+        assertThat(resultado).hasSize(1);
+        FiguraListadoDto dto = resultado.get(0);
+        assertThat(dto.getId()).isEqualTo("f1");
+        assertThat(dto.getCategoria()).isEqualTo("Animales");
+        assertThat(dto.getImagenPrincipal()).isEqualTo("oso.png");
+        assertThat(dto.getValoracionMedia()).isEqualTo(4.5);
+        assertThat(dto.getTotalValoraciones()).isEqualTo(10L);
+    }
+
+    @Test
+    void obtenerTodasDtoUsaImagenPorDefectoCuandoEsBlank() {
+        Figura f = figura();
+        f.setImagenPrincipal("   ");
+
+        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
+        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
+
+        List<FiguraListadoDto> resultado = service.obtenerTodasDto(null, null);
+
+        assertThat(resultado.get(0).getImagenPrincipal())
+                .isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
+    }
+
+    @Test
+    void obtenerTodasDtoConFiltros_delegaEnMongoTemplate() {
+        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of());
+
+        List<FiguraListadoDto> resultado = service.obtenerTodasDto("oso", "c1");
+
+        assertThat(resultado).isEmpty();
+        verify(mongo, times(1)).find(any(Query.class), eq(Figura.class));
+    }
+
+    @Test
+    void obtenerTodasDtoListaVacia_noConsultaCategoriaNiValoraciones() {
+        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of());
+
+        List<FiguraListadoDto> resultado = service.obtenerTodasDto("", "");
+
+        assertThat(resultado).isEmpty();
+        verify(categorias, never()).findById(anyString());
+        verify(ratings, never()).obtenerResumenValoraciones(anyString());
+    }
+
+    @Test
+    void obtenerTodasDtoFallaSiCategoriaNoExiste() {
+        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(figura()));
+        when(categorias.findById("c1")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.obtenerTodasDto(null, null))
+                .isInstanceOf(CategoriaNoEncontradaException.class);
+    }
+
+    // ---------------------------------------------------------------
+    // obtenerPorId
+    // ---------------------------------------------------------------
+
     @Test
     void obtienePorIdYFallaAusente() {
         Figura f = figura();
@@ -111,63 +188,91 @@ class FiguraServiceTest {
                 .isInstanceOf(FiguraNoEncontradaException.class);
     }
 
+    // ---------------------------------------------------------------
+    // obtenerPorIdDto
+    // ---------------------------------------------------------------
+
     @Test
-    void transformaListadoConCategoriaValoracionEImagenPorDefecto() {
+    void obtenerPorIdDtoConUsuarioAutenticado_incluyeValoracionUsuario() {
         Figura f = figura();
+        f.setColoresIds(List.of("rojo"));
 
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        UserDetailsImpl userDetails = mock(UserDetailsImpl.class);
+        when(userDetails.getId()).thenReturn("u1");
+
+        when(figuras.findById("f1")).thenReturn(Optional.of(f));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(4.5, 2L));
+        when(colores.findById("rojo")).thenReturn(Optional.of(color("rojo", "Rojo", "#ff0000")));
+        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(4.0, 5L));
+        when(ratings.obtenerValoracionUsuario("u1", "f1")).thenReturn(new ValoracionDto(5));
 
-        var result = service.obtenerTodasDto("oso", "c1");
+        FiguraDetalleDto dto = service.obtenerPorIdDto("f1", userDetails);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getCategoria()).isEqualTo("Animales");
-        assertThat(result.get(0).getImagenPrincipal()).isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
-        assertThat(result.get(0).getValoracionMedia()).isEqualTo(4.5);
-        assertThat(result.get(0).getTotalValoraciones()).isEqualTo(2L);
-
-        verify(mongo).find(any(Query.class), eq(Figura.class));
+        assertThat(dto.getColores()).hasSize(1);
+        assertThat(dto.getValoracionUsuario()).isEqualTo(5);
+        assertThat(dto.getValoracionMedia()).isEqualTo(4.0);
     }
 
     @Test
-    void obtenerTodasDtoSinFiltrosTambienConsultaMongo() {
-        // Cubre las ramas false de nombre != null && !blank,
-        // categoriaId != null && !blank y !criterios.isEmpty().
+    void obtenerPorIdDtoSinUsuario_valoracionUsuarioCero() {
         Figura f = figura();
-        f.setImagenPrincipal("oso.png");
 
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        when(figuras.findById("f1")).thenReturn(Optional.of(f));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(3.0, 1L));
+        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 
-        var result = service.obtenerTodasDto(null, "   ");
+        FiguraDetalleDto dto = service.obtenerPorIdDto("f1", null);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getImagenPrincipal()).isEqualTo("oso.png");
-
-        verify(mongo).find(any(Query.class), eq(Figura.class));
+        assertThat(dto.getValoracionUsuario()).isEqualTo(0);
+        verify(ratings, never()).obtenerValoracionUsuario(anyString(), anyString());
     }
 
     @Test
-    void obtenerTodasDtoFallaSiCategoriaNoExisteAlConvertirListado() {
-        // Cubre el orElseThrow privado de convertirFiguraListadoDto.
+    void obtenerPorIdDtoOmiteColorInexistente() {
+        Figura f = figura();
+        f.setColoresIds(List.of("rojo", "verde"));
+
+        when(figuras.findById("f1")).thenReturn(Optional.of(f));
+        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
+        when(colores.findById("rojo")).thenReturn(Optional.of(color("rojo", "Rojo", "#ff0000")));
+        when(colores.findById("verde")).thenReturn(Optional.empty());
+        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
+
+        FiguraDetalleDto dto = service.obtenerPorIdDto("f1", null);
+
+        assertThat(dto.getColores()).hasSize(1);
+    }
+
+    @Test
+    void obtenerPorIdDtoFallaSiFiguraNoExiste() {
+        when(figuras.findById("x")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.obtenerPorIdDto("x", null))
+                .isInstanceOf(FiguraNoEncontradaException.class);
+    }
+
+    @Test
+    void obtenerPorIdDtoFallaSiCategoriaNoExiste() {
         Figura f = figura();
 
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        when(figuras.findById("f1")).thenReturn(Optional.of(f));
         when(categorias.findById("c1")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.obtenerTodasDto(null, null))
+        assertThatThrownBy(() -> service.obtenerPorIdDto("f1", null))
                 .isInstanceOf(CategoriaNoEncontradaException.class);
-
-        verify(ratings, never()).obtenerResumenValoraciones(anyString());
     }
 
+    // ---------------------------------------------------------------
+    // eliminar
+    // ---------------------------------------------------------------
+
     @Test
-    void eliminaFiguraYSusDependencias() {
+    void eliminarFiguraYSusDependencias() {
         Figura f = figura();
         f.setImagenPrincipal("main.png");
+        f.setFileId_imagenPrincipal("main-file-id");
         f.setImagenesSecundarias(List.of("a.png", "b.png"));
+        f.setFileId_imagenesSecundarias(List.of("a-file-id", "b-file-id"));
 
         when(figuras.findById("f1")).thenReturn(Optional.of(f));
 
@@ -176,147 +281,46 @@ class FiguraServiceTest {
         verify(figuras).deleteById("f1");
         verify(ratings).eliminarValoracionesPorFigura("f1");
         verify(comments).eliminarComentariosPorFigura("f1");
-        verify(files).delete("main.png");
-        verify(files).delete("a.png");
-        verify(files).delete("b.png");
+        verify(imageService).deleteImage("main-file-id");
+        verify(imageService).deleteImage("a-file-id");
+        verify(imageService).deleteImage("b-file-id");
     }
 
     @Test
-    void eliminarFiguraSinImagenesSecundariasNoIteraSecundarias() {
-        // Cubre la rama false de imagenesSecundarias != null.
+    void eliminarSinImagenesNoLlamaDeleteImage() {
         Figura f = figura();
-        f.setImagenPrincipal("main.png");
-        f.setImagenesSecundarias(null);
+        f.setFileId_imagenPrincipal(null);
+        f.setFileId_imagenesSecundarias(null);
 
         when(figuras.findById("f1")).thenReturn(Optional.of(f));
 
         service.eliminar("f1");
 
+        verify(imageService, never()).deleteImage(anyString());
         verify(figuras).deleteById("f1");
-        verify(files).delete("main.png");
-        verify(files, never()).delete("a.png");
-        verify(files, never()).delete("b.png");
+        verify(ratings).eliminarValoracionesPorFigura("f1");
+        verify(comments).eliminarComentariosPorFigura("f1");
     }
 
     @Test
     void eliminarFallaSiFiguraNoExiste() {
-        // Cubre el orElseThrow de eliminar.
         when(figuras.findById("x")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.eliminar("x"))
                 .isInstanceOf(FiguraNoEncontradaException.class);
 
         verify(figuras, never()).deleteById(anyString());
-        verify(files, never()).delete(anyString());
+        verify(ratings, never()).eliminarValoracionesPorFigura(anyString());
+        verify(comments, never()).eliminarComentariosPorFigura(anyString());
+        verify(imageService, never()).deleteImage(anyString());
     }
 
-    @Test
-    void obtieneDetalleParaInvitadoYUsuarioConColores() {
-        Figura f = figura();
-        f.setColoresIds(List.of("rojo", "inexistente"));
-
-        Color rojo = color("rojo", "Rojo", "#ff0000");
-
-        when(figuras.findById("f1")).thenReturn(Optional.of(f));
-        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(colores.findById("rojo")).thenReturn(Optional.of(rojo));
-        when(colores.findById("inexistente")).thenReturn(Optional.empty());
-        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(4.0, 1L));
-
-        assertThat(service.obtenerPorIdDto("f1", null).getColores()).hasSize(1);
-
-        UserDetailsImpl user = new UserDetailsImpl();
-        user.setId("u1");
-
-        when(ratings.obtenerValoracionUsuario("u1", "f1")).thenReturn(new ValoracionDto(5));
-
-        assertThat(service.obtenerPorIdDto("f1", user).getValoracionUsuario()).isEqualTo(5);
-    }
-
-    @Test
-    void obtenerDetalleUsaImagenPorDefectoSiImagenPrincipalEsNull() {
-        // Ya cubrías imagen en blanco. Este caso cubre la rama null.
-        Figura f = figura();
-        f.setImagenPrincipal(null);
-
-        when(figuras.findById("f1")).thenReturn(Optional.of(f));
-        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
-
-        var result = service.obtenerPorIdDto("f1", null);
-
-        assertThat(result.getImagenPrincipal()).isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
-    }
-
-    @Test
-    void obtenerDetalleFallaSiFiguraNoExiste() {
-        // Cubre el orElseThrow de obtenerPorIdDto.
-        when(figuras.findById("x")).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.obtenerPorIdDto("x", null))
-                .isInstanceOf(FiguraNoEncontradaException.class);
-    }
-
-    @Test
-    void obtenerDetalleFallaSiCategoriaNoExiste() {
-        // Cubre el orElseThrow privado de convertirFiguraDetalleDto.
-        Figura f = figura();
-
-        when(figuras.findById("f1")).thenReturn(Optional.of(f));
-        when(categorias.findById("c1")).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> service.obtenerPorIdDto("f1", null))
-                .isInstanceOf(CategoriaNoEncontradaException.class);
-
-        verify(ratings, never()).obtenerResumenValoraciones(anyString());
-    }
-
-    @Test
-    void crearGuardaImagenPrincipalYSecundariasNoVacias() {
-        Figura f = figura();
-        f.setColoresIds(List.of("rojo"));
-
-        MockMultipartFile principal = new MockMultipartFile(
-                "principal",
-                "principal.png",
-                "image/png",
-                new byte[] { 1 });
-
-        MockMultipartFile secundaria = new MockMultipartFile(
-                "secundaria",
-                "secundaria.png",
-                "image/png",
-                new byte[] { 2 });
-
-        MockMultipartFile vacia = new MockMultipartFile(
-                "vacia",
-                "",
-                "image/png",
-                new byte[0]);
-
-        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(colores.findById("rojo")).thenReturn(Optional.of(color("rojo", "Rojo", "#ff0000")));
-
-        when(figuras.save(any(Figura.class))).thenAnswer(invocation -> {
-            Figura saved = invocation.getArgument(0);
-            saved.setId("f1");
-            return saved;
-        });
-
-        when(files.store(any(), eq("f1"), anyString())).thenReturn("imagen.png");
-        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
-
-        assertThat(service.crear(f, principal, List.of(vacia, secundaria))).isNotNull();
-
-        verify(files).store(principal, "f1", "Oso");
-        verify(files).store(secundaria, "f1", "Oso-1");
-        verify(figuras, times(2)).save(any(Figura.class));
-    }
+    // ---------------------------------------------------------------
+    // crear
+    // ---------------------------------------------------------------
 
     @Test
     void crearSinImagenesNoLlamaStorage() {
-        // Cubre las ramas false de imagenPrincipal != null && !empty
-        // e imagenesSecundarias != null && !empty.
         Figura f = figura();
         f.setColoresIds(List.of());
 
@@ -335,13 +339,12 @@ class FiguraServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getImagenPrincipal()).isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
 
-        verify(files, never()).store(any(), anyString(), anyString());
+        verify(imageService, never()).uploadImage(anyString(), anyString(), any());
         verify(figuras, times(2)).save(any(Figura.class));
     }
 
     @Test
     void crearConPrincipalVaciaYSecundariasVaciasNoGuardaArchivos() {
-        // Cubre que MultipartFile vacío no se almacena.
         Figura f = figura();
 
         MockMultipartFile principalVacia = new MockMultipartFile(
@@ -363,7 +366,7 @@ class FiguraServiceTest {
         var result = service.crear(f, principalVacia, List.of());
 
         assertThat(result).isNotNull();
-        verify(files, never()).store(any(), anyString(), anyString());
+        verify(imageService, never()).uploadImage(anyString(), anyString(), any());
     }
 
     @Test
@@ -384,10 +387,52 @@ class FiguraServiceTest {
     }
 
     @Test
+    void crearGuardaImagenPrincipalYSecundariasNoVacias() {
+        Figura f = figura();
+        f.setColoresIds(List.of("rojo"));
+
+        MockMultipartFile principal = new MockMultipartFile(
+                "principal",
+                "principal.png",
+                "image/png",
+                new byte[] { 1 });
+
+        MockMultipartFile secundaria = new MockMultipartFile(
+                "secundaria",
+                "secundaria.png",
+                "image/png",
+                new byte[] { 2 });
+
+        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
+        when(colores.findById("rojo")).thenReturn(Optional.of(color("rojo", "Rojo", "#ff0000")));
+
+        when(figuras.save(any(Figura.class))).thenAnswer(invocation -> {
+            Figura saved = invocation.getArgument(0);
+            saved.setId("f1");
+            return saved;
+        });
+
+        when(imageService.uploadImage(anyString(), anyString(), any())).thenReturn(new ImageUploadResultDto("imagen.png","file-id-1"));
+        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
+
+        assertThat(service.crear(f, principal, List.of(secundaria))).isNotNull();
+
+        verify(imageService).uploadImage(anyString(), anyString(), eq(principal));
+        verify(imageService).uploadImage(anyString(), anyString(), eq(secundaria));
+        verify(figuras, times(2)).save(any(Figura.class));
+    }
+
+    // ---------------------------------------------------------------
+    // actualizar
+    // ---------------------------------------------------------------
+
+    @Test
     void actualizarReemplazaImagenesYEliminaLasAnteriores() {
         Figura actual = figura();
         actual.setImagenPrincipal("anterior.png");
+        actual.setFileId_imagenPrincipal("anterior-file-id");
         actual.setImagenesSecundarias(List.of("sec-a.png"));
+        actual.setFileId_imagenesSecundarias(List.of("prev-sec-a-file-id"));
 
         Figura cambios = figura();
         cambios.setNombre("Gato");
@@ -407,22 +452,21 @@ class FiguraServiceTest {
 
         when(figuras.findById("f1")).thenReturn(Optional.of(actual));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(files.store(any(), eq("f1"), anyString())).thenReturn("nueva.png");
+        when(imageService.uploadImage(anyString(), anyString(), any())).thenReturn(new ImageUploadResultDto("nueva.png","new-file-id"));
         when(figuras.save(actual)).thenReturn(actual);
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 
         assertThat(service.actualizar("f1", cambios, principal, List.of(secundaria))).isNotNull();
 
-        verify(files).delete("anterior.png");
-        verify(files).delete("sec-a.png");
-        verify(files).store(principal, "f1", "Gato");
-        verify(files).store(secundaria, "f1", "Gato-1");
+        verify(imageService).deleteImage("anterior-file-id");
+        verify(imageService).deleteImage("prev-sec-a-file-id");
+        verify(imageService).uploadImage(anyString(), anyString(), eq(principal));
+        verify(imageService).uploadImage(anyString(), anyString(), eq(secundaria));
         verify(figuras).save(actual);
     }
 
     @Test
     void actualizarValidaColoresExistentesYActualizaSinImagenes() {
-        // Cubre el for de colores en actualizar y las ramas false de imágenes.
         Figura actual = figura();
 
         Figura cambios = figura();
@@ -441,14 +485,13 @@ class FiguraServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getNombre()).isEqualTo("Conejo");
 
-        verify(files, never()).store(any(), anyString(), anyString());
-        verify(files, never()).delete(anyString());
+        verify(imageService, never()).uploadImage(anyString(), anyString(), any());
+        verify(imageService, never()).deleteImage(anyString());
         verify(figuras).save(actual);
     }
 
     @Test
     void actualizarFallaSiFiguraNoExiste() {
-        // Cubre el orElseThrow inicial de actualizar.
         Figura cambios = figura();
 
         when(figuras.findById("x")).thenReturn(Optional.empty());
@@ -462,7 +505,6 @@ class FiguraServiceTest {
 
     @Test
     void actualizarFallaSiCategoriaNoExiste() {
-        // Cubre la rama no cubierta de categoría inexistente en actualizar.
         Figura actual = figura();
         Figura cambios = figura();
 
@@ -477,7 +519,6 @@ class FiguraServiceTest {
 
     @Test
     void actualizarFallaSiColorNoExiste() {
-        // Cubre ColorNoEncontradoException dentro de actualizar.
         Figura actual = figura();
 
         Figura cambios = figura();
@@ -491,12 +532,11 @@ class FiguraServiceTest {
                 .isInstanceOf(ColorNoEncontradoException.class);
 
         verify(figuras, never()).save(any(Figura.class));
-        verify(files, never()).store(any(), anyString(), anyString());
+        verify(imageService, never()).uploadImage(anyString(), anyString(), any());
     }
 
     @Test
     void actualizarConImagenPrincipalNuevaPeroAnteriorNullNoBorraAnterior() {
-        // Cubre la rama false de figura.getImagenPrincipal() != null.
         Figura actual = figura();
         actual.setImagenPrincipal(null);
 
@@ -511,7 +551,7 @@ class FiguraServiceTest {
 
         when(figuras.findById("f1")).thenReturn(Optional.of(actual));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(files.store(principal, "f1", "Gato")).thenReturn("gato.png");
+        when(imageService.uploadImage(anyString(), anyString(), any())).thenReturn(new ImageUploadResultDto("gato.png","gato-file-id"));
         when(figuras.save(actual)).thenReturn(actual);
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 
@@ -519,42 +559,12 @@ class FiguraServiceTest {
 
         assertThat(result.getImagenPrincipal()).isEqualTo("gato.png");
 
-        verify(files, never()).delete(anyString());
-        verify(files).store(principal, "f1", "Gato");
-    }
-
-    @Test
-    void actualizarConImagenPrincipalNuevaPeroAnteriorBlankNoBorraAnterior() {
-        // Cubre la rama false de !figura.getImagenPrincipal().isBlank().
-        Figura actual = figura();
-        actual.setImagenPrincipal("   ");
-
-        Figura cambios = figura();
-        cambios.setNombre("Gato");
-
-        MockMultipartFile principal = new MockMultipartFile(
-                "principal",
-                "principal.png",
-                "image/png",
-                new byte[] { 1 });
-
-        when(figuras.findById("f1")).thenReturn(Optional.of(actual));
-        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(files.store(principal, "f1", "Gato")).thenReturn("gato.png");
-        when(figuras.save(actual)).thenReturn(actual);
-        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
-
-        var result = service.actualizar("f1", cambios, principal, null);
-
-        assertThat(result.getImagenPrincipal()).isEqualTo("gato.png");
-
-        verify(files, never()).delete(anyString());
-        verify(files).store(principal, "f1", "Gato");
+        verify(imageService, never()).deleteImage(anyString());
+        verify(imageService).uploadImage(anyString(), anyString(), eq(principal));
     }
 
     @Test
     void actualizarConSecundariasNuevasPeroAnterioresNullNoBorraAnteriores() {
-        // Cubre la rama false de figura.getImagenesSecundarias() != null.
         Figura actual = figura();
         actual.setImagenesSecundarias(null);
 
@@ -569,7 +579,7 @@ class FiguraServiceTest {
 
         when(figuras.findById("f1")).thenReturn(Optional.of(actual));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(files.store(secundaria, "f1", "Zorro-1")).thenReturn("zorro-1.png");
+        when(imageService.uploadImage(anyString(), anyString(), any())).thenReturn(new ImageUploadResultDto("zorro-1.png","zorro-file-id"));
         when(figuras.save(actual)).thenReturn(actual);
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 
@@ -577,15 +587,15 @@ class FiguraServiceTest {
 
         assertThat(result.getImagenesSecundarias()).containsExactly("zorro-1.png");
 
-        verify(files, never()).delete(anyString());
-        verify(files).store(secundaria, "f1", "Zorro-1");
+        verify(imageService, never()).deleteImage(anyString());
+        verify(imageService).uploadImage(anyString(), anyString(), eq(secundaria));
     }
 
     @Test
     void actualizarConSecundariaVaciaNoLaGuarda() {
-        // Cubre la rama false de if (!imagen.isEmpty()) en actualizar.
         Figura actual = figura();
         actual.setImagenesSecundarias(List.of("antigua.png"));
+        actual.setFileId_imagenesSecundarias(List.of("antigua-file-id"));
 
         Figura cambios = figura();
         cambios.setNombre("Pato");
@@ -605,16 +615,16 @@ class FiguraServiceTest {
 
         assertThat(result.getImagenesSecundarias()).isEmpty();
 
-        verify(files).delete("antigua.png");
-        verify(files, never()).store(any(), anyString(), anyString());
+        verify(imageService).deleteImage("antigua-file-id");
+        verify(imageService, never()).uploadImage(anyString(), anyString(), any());
     }
 
     @Test
     void actualizarConListaSecundariasVaciaNoBorraNiGuardaSecundarias() {
-        // Cubre la rama false de !imagenesSecundarias.isEmpty().
         Figura actual = figura();
         actual.setImagenPrincipal("main.png");
         actual.setImagenesSecundarias(List.of("antigua.png"));
+        actual.setFileId_imagenesSecundarias(List.of("antigua-file-id"));
 
         Figura cambios = figura();
         cambios.setNombre("Pez");
@@ -629,7 +639,7 @@ class FiguraServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getImagenesSecundarias()).containsExactly("antigua.png");
 
-        verify(files, never()).delete("antigua.png");
-        verify(files, never()).store(any(), anyString(), anyString());
+        verify(imageService, never()).deleteImage("antigua-file-id");
+        verify(imageService, never()).uploadImage(anyString(), anyString(), any());
     }
 }

@@ -194,6 +194,8 @@
 								<exclude>com/manitascrochet/backend/dto/**</exclude>
 								<!-- Clase principal de Spring Boot -->
 								<exclude>com/manitascrochet/backend/*Application.class</exclude>
+								<!-- Clase de prueba de carga e imagenes en ImageKit -->
+								<exclude>com/manitascrochet/backend/test/**</exclude>
 							</excludes>
 						</configuration>
 					</execution>
