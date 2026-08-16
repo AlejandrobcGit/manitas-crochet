@@ -17,9 +17,9 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
-
-@Bean
-	CommandLineRunner initAdmin(UsuarioRepository usuarioRepository, PasswordEncoder encoder) {
+	@Bean
+	@SuppressWarnings("unused")
+	public CommandLineRunner initAdmin(UsuarioRepository usuarioRepository, PasswordEncoder encoder) {
 		return args -> {
 			if (usuarioRepository.count() == 0) {
 				Usuario admin = new Usuario(
@@ -28,8 +28,7 @@ public class BackendApplication {
 						"admin@manitascrochet.com",
 						encoder.encode("12345"),
 						Rol.ADMIN,
-						false
-				);
+						false);
 				usuarioRepository.save(admin);
 				System.out.println("✅ Usuario admin creado por defecto (admin / 12345)");
 				Usuario user = new Usuario(
@@ -38,8 +37,7 @@ public class BackendApplication {
 						"user@manitascrochet.com",
 						encoder.encode("12345"),
 						Rol.USER,
-						false
-				);
+						false);
 				usuarioRepository.save(user);
 				System.out.println("✅ Usuario user creado por defecto (user / 12345)");
 			}

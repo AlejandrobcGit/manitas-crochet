@@ -3,6 +3,7 @@ package com.manitascrochet.backend.security;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,7 +19,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @EnableMethodSecurity
@@ -56,6 +56,7 @@ public class SecurityConfig {
                         // Escritura solo para ADMIN
                         // --------------------------------------------------
                         .requestMatchers("/auth/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/dashboard/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
@@ -63,7 +64,6 @@ public class SecurityConfig {
                         // Consulta polico para todos
                         // --------------------------------------------------
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/comentarios/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                         .anyRequest().authenticated())
                 // ─── Handlers para errores de Spring Security ──────────────────

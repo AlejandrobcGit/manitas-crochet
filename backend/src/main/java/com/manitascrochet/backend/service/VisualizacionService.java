@@ -17,24 +17,23 @@ public class VisualizacionService {
 
     private final VisualizacionRepository visualizacionRepository;
 
-    public void marcarVisualizacion(String figuraId, UserDetailsImpl userDetails) {
-        
-        // Si no hay usuario autenticado, no se guarda visualización
-        if (userDetails == null) {
-            return;
-        }
-   
-        // RN-04: los ADMIN no generan visualización
-        if (userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_" + Rol.ADMIN.name()))) {
-            return;
-        }
+public void marcarVisualizacion(String figuraId, UserDetailsImpl userDetails) {
 
-        Visualizacion visualizacion = new Visualizacion();
-        visualizacion.setUsuarioId(userDetails.getId());
-        visualizacion.setFiguraId(figuraId);
-        visualizacion.setFecha(LocalDateTime.now());
-
-        visualizacionRepository.save(visualizacion);
+    if (userDetails != null &&
+        userDetails.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_" + Rol.ADMIN.name()))) {
+        return;
     }
+
+    Visualizacion visualizacion = new Visualizacion();
+
+    if (userDetails != null) {
+        visualizacion.setUsuarioId(userDetails.getId());
+    }
+
+    visualizacion.setFiguraId(figuraId);
+    visualizacion.setFecha(LocalDateTime.now());
+
+    visualizacionRepository.save(visualizacion);
+}
 }

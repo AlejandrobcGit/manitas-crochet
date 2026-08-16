@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import AdminFiguras from "./admin/AdminFiguras";
 import AdminCategorias from "./admin/AdminCategorias";
 import AdminColores from "./admin/AdminColores";
-import AdminEstadisticas from "./admin/AdminEstadisticas";
+import DashboardPage from "./admin/DashboardPage";
 
 import "./AdminPanel.css";
 
@@ -28,7 +28,7 @@ function AdminPanel() {
                 return <AdminColores />;
 
             case "estadisticas":
-                return <AdminEstadisticas />;
+                return <DashboardPage />;
 
             default:
                 return <AdminFiguras />;

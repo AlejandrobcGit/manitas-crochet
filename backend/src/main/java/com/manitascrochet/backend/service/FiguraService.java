@@ -66,7 +66,7 @@ public class FiguraService {
                 }
                 // Combina todos los filtros antes de ejecutar la consulta.
                 if (!criterios.isEmpty()) {
-                        query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
+                        query.addCriteria(new Criteria().andOperator(criterios.toArray(Criteria[]::new)));
                 }
 
                 return mongoTemplate.find(query, Figura.class)

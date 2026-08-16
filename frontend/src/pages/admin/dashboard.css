@@ -1,0 +1,250 @@
+.dashboard-page {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 5rem 0.9rem 3rem;
+}
+
+.dashboard-header {
+  padding-bottom: 2rem;
+}
+
+.dashboard-header__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.8rem;
+  color: var(--color-ink);
+}
+
+
+/* --- Panel base, tomado de .catalog-panel --- */
+
+.dashboard-panel {
+  background: rgba(251, 248, 240, 0.94);
+  border: 1px solid rgba(46, 42, 36, 0.1);
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  box-shadow: 0 20px 40px rgba(46, 42, 36, 0.08);
+}
+
+.dashboard-section {
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-section__title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: var(--color-ink);
+}
+
+.dashboard-tabs {
+  padding-bottom: 1.2rem;
+  justify-content: flex-start;
+}
+
+.dashboard-empty,
+.dashboard-note {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.dashboard-note {
+  margin: 1rem 0 0;
+}
+
+/* --- KPIs --- */
+
+.dashboard-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
+}
+
+.dashboard-kpi__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  line-height: 1;
+}
+
+.dashboard-kpi__label {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+}
+
+@media (min-width: 640px) {
+  .dashboard-kpis {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-kpis {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* --- Ranking table --- */
+
+.dashboard-table-wrap {
+  overflow-x: auto;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 480px;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  text-align: left;
+  padding: 0.65rem 0.7rem;
+  border-bottom: 1px solid rgba(46, 42, 36, 0.1);
+}
+
+.dashboard-table th {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-soft);
+  font-weight: 600;
+}
+
+.dashboard-table td {
+  color: var(--color-ink);
+  font-size: 0.95rem;
+}
+
+.dashboard-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dashboard-table tbody tr:hover td {
+  background: rgba(110, 130, 102, 0.06);
+}
+
+.dashboard-table__rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  margin-right: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-sage);
+  color: var(--color-card);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+/* --- Tendencias --- */
+
+.dashboard-trending {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dashboard-trending__item {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 2fr auto;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.dashboard-trending__name {
+  display: flex;
+  align-items: center;
+  color: var(--color-ink);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-trending__bar-track {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba(46, 42, 36, 0.08);
+  overflow: hidden;
+}
+
+.dashboard-trending__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-coral);
+}
+
+.dashboard-trending__value {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  text-align: right;
+}
+
+/* --- Evolución temporal --- */
+
+.dashboard-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  height: 220px;
+  padding-top: 1.5rem;
+}
+
+.dashboard-chart__column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.dashboard-chart__value {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-ink);
+}
+
+.dashboard-chart__bar {
+  width: 2.75rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: var(--color-sage);
+  transition: height 0.3s ease;
+}
+
+.dashboard-chart__label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-ink-soft);
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 640px) {
+  .dashboard-page {
+    padding: 5rem 0.8rem 3rem;
+  }
+
+  .dashboard-panel {
+    padding: 0.95rem;
+  }
+
+  .dashboard-trending__item {
+    grid-template-columns: minmax(90px, 1fr) 1.5fr auto;
+  }
+}

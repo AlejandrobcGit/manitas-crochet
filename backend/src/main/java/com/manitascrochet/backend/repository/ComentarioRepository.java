@@ -12,4 +12,5 @@ public interface ComentarioRepository extends MongoRepository<Comentario, String
     Optional<Comentario> findByIdAndUsuarioId(String id, String usuarioId);
     Optional<Comentario> findByUsuarioIdAndFiguraId(String usuarioId, String figuraId);
     void deleteByFiguraId(String figuraId);
+    long countByFiguraId(String figuraId);
 }

@@ -37,6 +37,6 @@ public class FiguraDetalleDto {
   private Double valoracionMedia;
 
   private Integer valoracionUsuario;
-  
+
   private Long totalValoraciones;
 }

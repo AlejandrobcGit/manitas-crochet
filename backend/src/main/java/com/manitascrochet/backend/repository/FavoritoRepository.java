@@ -9,4 +9,5 @@ import com.manitascrochet.backend.model.Favorito;
 public interface FavoritoRepository extends MongoRepository<Favorito, String> {
     Favorito findByUsuarioIdAndFiguraIdAndActivoTrue (String usuario,String figuraId);
     List<Favorito> findByUsuarioIdAndActivoTrue(String usuarioId);
+    long countByFiguraId(String figuraId);
 }
