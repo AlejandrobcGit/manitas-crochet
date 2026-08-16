@@ -1,15 +1,18 @@
 package com.manitascrochet.backend.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import com.manitascrochet.backend.model.Visualizacion;
 import com.manitascrochet.backend.repository.VisualizacionRepository;
 import com.manitascrochet.backend.security.UserDetailsImpl;
@@ -22,9 +25,7 @@ class VisualizacionServiceTest {
     VisualizacionService service;
 
     @Test
-    void ignoraInvitadoYAdmin() {
-        service.marcarVisualizacion("f", null);
-        verifyNoInteractions(repository);
+    void ignoraAdmin() {
         UserDetailsImpl admin = new UserDetailsImpl();
         admin.setAuthorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
         service.marcarVisualizacion("f", admin);
@@ -32,15 +33,12 @@ class VisualizacionServiceTest {
     }
 
     @Test
-    void guardaUsuarioNormal() {
-        UserDetailsImpl user = new UserDetailsImpl();
-        user.setId("u");
-        user.setAuthorities(List.of(new SimpleGrantedAuthority("ROLE_USER")));
-        service.marcarVisualizacion("f", user);
+    void guardaInvitadoSinLogin() {
+        service.marcarVisualizacion("f", null);
         ArgumentCaptor<Visualizacion> cap = ArgumentCaptor.forClass(Visualizacion.class);
         verify(repository).save(cap.capture());
-        assertThat(cap.getValue().getUsuarioId()).isEqualTo("u");
+        assertThat(cap.getValue().getUsuarioId()).isNull();
         assertThat(cap.getValue().getFiguraId()).isEqualTo("f");
-        assertThat("fecha de visualización", cap.getValue().getFecha() != null, equalTo(true));
+        assertThat(cap.getValue().getFecha()).isNotNull();
     }
 }

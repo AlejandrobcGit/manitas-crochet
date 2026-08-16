@@ -9,6 +9,7 @@ import org.bson.Document;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
@@ -40,16 +41,16 @@ public class DashboardSevice {
                 Double puntuacionPromedio = obtenerPuntuacionPromedio();
 
                 List<Top10> top10Visualizaciones = enriquecer(
-                                agruparYOrdenar(Visualizacion.class, "figuraId", "visualizacion"));
+                                        agruparYOrdenar(Visualizacion.class, "figuraId", "visualizacion"));
 
-                List<Top10> top10Favoritos = enriquecer(
-                                agruparYOrdenar(Favorito.class, "figuraId", "favoritos"));
+                        List<Top10> top10Favoritos = enriquecer(
+                                        agruparYOrdenar(Favorito.class, "figuraId", "favoritos"));
 
-                List<Top10> top10Comentarios = enriquecer(
-                                agruparYOrdenar(Comentario.class, "figuraId", "comentarios"));
+                        List<Top10> top10Comentarios = enriquecer(
+                                        agruparYOrdenar(Comentario.class, "figuraId", "comentarios"));
 
-                // Este ya viene de otra colección/campo distinto (puntuacion en vez de conteo)
-                List<Top10> top10Valoracion = enriquecer(top10PorValoracion());
+                        // Este ya viene de otra colección/campo distinto (puntuacion en vez de conteo)
+                        List<Top10> top10Valoracion = enriquecer(top10PorValoracion());
 
                 List<Document> trending = trendingFigures();
 
@@ -298,8 +299,13 @@ public class DashboardSevice {
                                 Aggregation.match(Criteria.where("figuraId").is(figuraId)),
                                 Aggregation.group().avg("puntuacion").as("promedio"));
 
-                Document document = mongoTemplate.aggregate(aggregation, "valoraciones", Document.class)
-                                .getUniqueMappedResult();
+                AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "valoraciones",
+                                Document.class);
+
+                if (results == null)
+                        return 0.0;
+
+                Document document = results.getUniqueMappedResult();
 
                 return document != null ? document.getDouble("promedio") : 0.0;
         }
