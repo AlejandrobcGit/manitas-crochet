@@ -4,12 +4,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +22,7 @@ import com.manitascrochet.backend.dto.DashboardResponseDto;
 import com.manitascrochet.backend.dto.Top10;
 import com.manitascrochet.backend.model.Comentario;
 import com.manitascrochet.backend.model.Favorito;
+import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.model.Valoracion;
 import com.manitascrochet.backend.model.Visualizacion;
 import com.manitascrochet.backend.repository.ComentarioRepository;
@@ -36,75 +42,93 @@ public class DashboardSevice {
         private final ComentarioRepository comentarioRepository;
         private final MongoTemplate mongoTemplate;
 
+        // Bean definido en DashboardAsyncConfig (ver archivo adjunto).
+        // Si no querés paralelizar, podés quitar este campo y llamar los métodos
+        // de forma secuencial como en la versión original.
+        @Qualifier("dashboardExecutor")
+        private final Executor dashboardExecutor;
+
+        @Cacheable(value = "dashboardKpis", key = "'kpis'")
         public DashboardResponseDto getKpis() {
 
-                Double puntuacionPromedio = obtenerPuntuacionPromedio();
+                // ---------- Se disparan todas las agregaciones en paralelo ----------
 
-                List<Top10> top10Visualizaciones = enriquecer(
-                                        agruparYOrdenar(Visualizacion.class, "figuraId", "visualizacion"));
+                CompletableFuture<List<Top10>> fTop10Visualizaciones = CompletableFuture.supplyAsync(
+                                () -> enriquecer(agruparYOrdenar(Visualizacion.class, "figuraId", "visualizacion")),
+                                dashboardExecutor);
 
-                        List<Top10> top10Favoritos = enriquecer(
-                                        agruparYOrdenar(Favorito.class, "figuraId", "favoritos"));
+                CompletableFuture<List<Top10>> fTop10Favoritos = CompletableFuture.supplyAsync(
+                                () -> enriquecer(agruparYOrdenar(Favorito.class, "figuraId", "favoritos")),
+                                dashboardExecutor);
 
-                        List<Top10> top10Comentarios = enriquecer(
-                                        agruparYOrdenar(Comentario.class, "figuraId", "comentarios"));
+                CompletableFuture<List<Top10>> fTop10Comentarios = CompletableFuture.supplyAsync(
+                                () -> enriquecer(agruparYOrdenar(Comentario.class, "figuraId", "comentarios")),
+                                dashboardExecutor);
 
-                        // Este ya viene de otra colección/campo distinto (puntuacion en vez de conteo)
-                        List<Top10> top10Valoracion = enriquecer(top10PorValoracion());
+                CompletableFuture<List<Top10>> fTop10Valoracion = CompletableFuture.supplyAsync(
+                                () -> enriquecer(top10PorValoracion()),
+                                dashboardExecutor);
 
-                List<Document> trending = trendingFigures();
+                CompletableFuture<List<Document>> fTrending = CompletableFuture.supplyAsync(
+                                this::trendingFigurasConNombre, dashboardExecutor);
 
-                trending.forEach(doc -> {
+                CompletableFuture<List<Document>> fEvolucionVisualizaciones = CompletableFuture.supplyAsync(
+                                () -> evolucionMensual(Visualizacion.class, "visualizaciones", "fecha"),
+                                dashboardExecutor);
 
-                        String figuraId = doc.getString("_id");
+                CompletableFuture<List<Document>> fEvolucionFavoritos = CompletableFuture.supplyAsync(
+                                () -> evolucionMensual(Favorito.class, "favoritos", "fechaAlta",
+                                                Criteria.where("activo").is(true)),
+                                dashboardExecutor);
 
-                        figuraRepository.findById(figuraId)
-                                        .ifPresent(figura -> doc.put("figura", figura.getNombre()));
-                        doc.remove("_id");
-                });
+                CompletableFuture<List<Document>> fEvolucionComentarios = CompletableFuture.supplyAsync(
+                                () -> evolucionMensual(Comentario.class, "comentarios", "fechaModificacion"),
+                                dashboardExecutor);
 
-                // Calculo de evoluciones mensuales
+                CompletableFuture<List<Document>> fEvolucionValoraciones = CompletableFuture.supplyAsync(
+                                () -> evolucionMensual(Valoracion.class, "valoraciones", "fecha"),
+                                dashboardExecutor);
 
-                List<Document> evolucionVisualizaciones = evolucionMensual(
-                                Visualizacion.class,
-                                "visualizaciones",
-                                "fecha");
+                CompletableFuture<Double> fPuntuacionPromedio = CompletableFuture.supplyAsync(
+                                this::obtenerPuntuacionPromedio, dashboardExecutor);
 
-                List<Document> evolucionFavoritos = evolucionMensual(
-                                Favorito.class,
-                                "favoritos",
-                                "fechaAlta",
-                                Criteria.where("activo").is(true));
+                CompletableFuture<Long> fCountFiguras = CompletableFuture.supplyAsync(
+                                figuraRepository::count, dashboardExecutor);
+                CompletableFuture<Long> fCountVisualizaciones = CompletableFuture.supplyAsync(
+                                visualizacionRepository::count, dashboardExecutor);
+                CompletableFuture<Long> fCountFavoritos = CompletableFuture.supplyAsync(
+                                favoritoRepository::count, dashboardExecutor);
+                CompletableFuture<Long> fCountComentarios = CompletableFuture.supplyAsync(
+                                comentarioRepository::count, dashboardExecutor);
 
-                List<Document> evolucionComentarios = evolucionMensual(
-                                Comentario.class,
-                                "comentarios",
-                                "fechaModificacion");
+                CompletableFuture.allOf(
+                                fTop10Visualizaciones, fTop10Favoritos, fTop10Comentarios, fTop10Valoracion,
+                                fTrending, fEvolucionVisualizaciones, fEvolucionFavoritos, fEvolucionComentarios,
+                                fEvolucionValoraciones, fPuntuacionPromedio,
+                                fCountFiguras, fCountVisualizaciones, fCountFavoritos, fCountComentarios)
+                                .join();
 
-                List<Document> evolucionValoraciones = evolucionMensual(
-                                Valoracion.class,
-                                "valoraciones",
-                                "fecha");
+                Double puntuacionPromedio = fPuntuacionPromedio.join();
 
                 return new DashboardResponseDto(
-                                figuraRepository.count(),
-                                visualizacionRepository.count(),
-                                favoritoRepository.count(),
-                                comentarioRepository.count(),
-                                Math.round(puntuacionPromedio * 100) / (double) 100,
-                                top10Visualizaciones,
-                                top10Favoritos,
-                                top10Valoracion,
-                                top10Comentarios,
-                                trending,
-                                evolucionVisualizaciones,
-                                evolucionFavoritos,
-                                evolucionComentarios,
-                                evolucionValoraciones);
+                                fCountFiguras.join(),
+                                fCountVisualizaciones.join(),
+                                fCountFavoritos.join(),
+                                fCountComentarios.join(),
+                                redondear(puntuacionPromedio),
+                                fTop10Visualizaciones.join(),
+                                fTop10Favoritos.join(),
+                                fTop10Valoracion.join(),
+                                fTop10Comentarios.join(),
+                                fTrending.join(),
+                                fEvolucionVisualizaciones.join(),
+                                fEvolucionFavoritos.join(),
+                                fEvolucionComentarios.join(),
+                                fEvolucionValoraciones.join());
         }
 
-        // ---------- Agregaciones "count por figuraId", genérica para Visualizacion y
-        // Favorito ----------
+        // ---------- Agregaciones "count por figuraId", genérica para Visualizacion,
+        // Favorito y Comentario ----------
 
         private <T> List<Document> agruparYOrdenar(
                         Class<T> coleccion,
@@ -157,9 +181,10 @@ public class DashboardSevice {
                                 .getMappedResults();
         }
 
-        // ---------- Top 10 por vistas los ultimos 30 días
+        // ---------- Top 10 por vistas los últimos 30 días, con nombre resuelto en
+        // batch (antes: 1 findById por cada uno de los 10 resultados) ----------
 
-        private List<Document> trendingFigures() {
+        private List<Document> trendingFigurasConNombre() {
 
                 Aggregation aggregation = Aggregation.newAggregation(
 
@@ -178,11 +203,26 @@ public class DashboardSevice {
 
                                 Aggregation.limit(10));
 
-                return mongoTemplate.aggregate(
+                List<Document> trending = mongoTemplate.aggregate(
                                 aggregation,
                                 Visualizacion.class,
                                 Document.class)
                                 .getMappedResults();
+
+                if (trending.isEmpty()) {
+                        return trending;
+                }
+
+                List<String> ids = trending.stream().map(d -> d.getString("_id")).toList();
+                Map<String, String> nombresPorId = obtenerNombres(ids);
+
+                trending.forEach(doc -> {
+                        String figuraId = doc.getString("_id");
+                        doc.put("figura", nombresPorId.getOrDefault(figuraId, "Desconocido"));
+                        doc.remove("_id");
+                });
+
+                return trending;
         }
 
         // ----------- Evoluciones mensuales
@@ -245,40 +285,112 @@ public class DashboardSevice {
                 return resultados;
         }
 
-        // ---------- Enriquecimiento común: agrega nombre + las 3 métricas que falten
-        // ----------
+        // ---------- Enriquecimiento común: agrega nombre + las 3 métricas que
+        // falten, todo resuelto en batch (antes: hasta 4 queries por CADA una de
+        // las 10 figuras, ahora: como máximo 5 queries en total por lista) ----------
 
         private List<Top10> enriquecer(List<Document> docs) {
+
+                if (docs.isEmpty()) {
+                        return List.of();
+                }
+
+                List<String> ids = docs.stream().map(d -> d.getString("_id")).toList();
+
+                Map<String, String> nombresPorId = obtenerNombres(ids);
+
+                boolean faltaVisualizaciones = docs.stream().noneMatch(d -> d.containsKey("visualizacion"));
+                boolean faltaFavoritos = docs.stream().noneMatch(d -> d.containsKey("favoritos"));
+                boolean faltaComentarios = docs.stream().noneMatch(d -> d.containsKey("comentarios"));
+                boolean faltaValoracion = docs.stream().noneMatch(d -> d.containsKey("valoracion"));
+
+                Map<String, Long> visualizacionesPorId = faltaVisualizaciones
+                                ? contarPorFiguraId(Visualizacion.class, ids)
+                                : Map.of();
+
+                Map<String, Long> favoritosPorId = faltaFavoritos
+                                ? contarPorFiguraId(Favorito.class, ids)
+                                : Map.of();
+
+                Map<String, Long> comentariosPorId = faltaComentarios
+                                ? contarPorFiguraId(Comentario.class, ids)
+                                : Map.of();
+
+                Map<String, Double> valoracionPorId = faltaValoracion
+                                ? promedioValoracionPorFiguraIds(ids)
+                                : Map.of();
 
                 return docs.stream()
                                 .map(doc -> {
                                         String figuraId = doc.getString("_id");
 
-                                        String nombre = figuraRepository.findById(figuraId)
-                                                        .map(f -> f.getNombre())
-                                                        .orElse("Desconocido");
+                                        String nombre = nombresPorId.getOrDefault(figuraId, "Desconocido");
 
                                         long visualizaciones = doc.containsKey("visualizacion")
                                                         ? ((Number) doc.get("visualizacion")).longValue()
-                                                        : visualizacionRepository.countByFiguraId(figuraId);
+                                                        : visualizacionesPorId.getOrDefault(figuraId, 0L);
 
                                         long favoritos = doc.containsKey("favoritos")
                                                         ? ((Number) doc.get("favoritos")).longValue()
-                                                        : favoritoRepository.countByFiguraId(figuraId);
+                                                        : favoritosPorId.getOrDefault(figuraId, 0L);
 
                                         long comentarios = doc.containsKey("comentarios")
                                                         ? ((Number) doc.get("comentarios")).longValue()
-                                                        : comentarioRepository.countByFiguraId(figuraId);
+                                                        : comentariosPorId.getOrDefault(figuraId, 0L);
 
                                         double valoracion = doc.containsKey("valoracion")
-                                                        ? Math.round(((Number) doc.get("valoracion")).doubleValue()
-                                                                        * 100) / 100.0
-                                                        : Math.round(obtenerPromedioValoracionPorFigura(figuraId) * 100)
-                                                                        / 100.0;
+                                                        ? redondear(((Number) doc.get("valoracion")).doubleValue())
+                                                        : redondear(valoracionPorId.getOrDefault(figuraId, 0.0));
 
                                         return new Top10(nombre, visualizaciones, favoritos, comentarios, valoracion);
                                 })
                                 .toList();
+        }
+
+        // ---------- Helpers de batch fetching ----------
+
+        private Map<String, String> obtenerNombres(List<String> figuraIds) {
+                return figuraRepository.findAllById(figuraIds).stream()
+                                .collect(Collectors.toMap(Figura::getId, Figura::getNombre));
+        }
+
+        private <T> Map<String, Long> contarPorFiguraId(Class<T> coleccion, List<String> figuraIds) {
+
+                Aggregation aggregation = Aggregation.newAggregation(
+                                Aggregation.match(Criteria.where("figuraId").in(figuraIds)),
+                                Aggregation.group("figuraId").count().as("total"));
+
+                List<Document> resultados = mongoTemplate.aggregate(
+                                aggregation,
+                                coleccion,
+                                Document.class)
+                                .getMappedResults();
+
+                return resultados.stream()
+                                .collect(Collectors.toMap(
+                                                d -> d.getString("_id"),
+                                                d -> ((Number) d.get("total")).longValue()));
+        }
+
+        private Map<String, Double> promedioValoracionPorFiguraIds(List<String> figuraIds) {
+
+                Aggregation aggregation = Aggregation.newAggregation(
+                                Aggregation.match(Criteria.where("figuraId").in(figuraIds)),
+                                Aggregation.group("figuraId").avg("puntuacion").as("promedio"));
+
+                List<Document> resultados = mongoTemplate.aggregate(
+                                aggregation,
+                                Valoracion.class,
+                                Document.class)
+                                .getMappedResults();
+
+                return resultados.stream()
+                                .collect(Collectors.toMap(
+                                                d -> d.getString("_id"),
+                                                d -> {
+                                                        Double promedio = d.getDouble("promedio");
+                                                        return promedio != null ? promedio : 0.0;
+                                                }));
         }
 
         private Double obtenerPuntuacionPromedio() {
@@ -294,19 +406,7 @@ public class DashboardSevice {
                 return promedio != null ? promedio : 0.0;
         }
 
-        private Double obtenerPromedioValoracionPorFigura(String figuraId) {
-                Aggregation aggregation = Aggregation.newAggregation(
-                                Aggregation.match(Criteria.where("figuraId").is(figuraId)),
-                                Aggregation.group().avg("puntuacion").as("promedio"));
-
-                AggregationResults<Document> results = mongoTemplate.aggregate(aggregation, "valoraciones",
-                                Document.class);
-
-                if (results == null)
-                        return 0.0;
-
-                Document document = results.getUniqueMappedResult();
-
-                return document != null ? document.getDouble("promedio") : 0.0;
+        private double redondear(double valor) {
+                return Math.round(valor * 100) / 100.0;
         }
 }

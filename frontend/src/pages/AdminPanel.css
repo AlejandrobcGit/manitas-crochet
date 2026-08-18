@@ -17,6 +17,9 @@
     display: flex;
     gap: 1.5rem;
     align-items: flex-start;
+    /* Red de seguridad: nada dentro (tablas anchas, etc.) puede
+       ensanchar la página entera; deben scrollear dentro de sí mismas */
+    overflow-x: hidden;
 }
 
 /* ==========================
@@ -49,7 +52,7 @@
 }
 
 .admin-menu li {
-    padding: 0.0rem 1rem;
+    padding: 0.55rem 1rem;
     border-radius: 999px;
     margin-bottom: 0.5rem;
     cursor: pointer;
@@ -83,6 +86,9 @@
 
 .admin-content {
     flex: 1;
+    /* Sin esto, un hijo ancho (la tabla) empuja esta columna
+       en vez de quedarse contenido con su propio scroll */
+    min-width: 0;
 }
 
 .admin-content-panel {
@@ -110,9 +116,37 @@
 @media (max-width: 900px) {
     .admin-layout {
         flex-direction: column;
+        gap: 1rem;
     }
 
     .admin-menu {
         width: 100%;
+    }
+
+    .admin-panel {
+        padding: 0.75rem;
+    }
+
+    .admin-panel h2 {
+        margin: 0 0 0.6rem;
+    }
+
+    /* En móvil, el menú se convierte en una tira de pastillas
+       con scroll horizontal en vez de una lista apilada a lo alto,
+       para no empujar el contenido fuera de la pantalla */
+    .admin-menu ul {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 0.6rem;
+        padding-bottom: 0.2rem;
+    }
+
+    .admin-menu li {
+        flex: 0 0 auto;
+        margin-bottom: 0;
+        white-space: nowrap;
+        padding: 0.6rem 1.1rem;
     }
 }

@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { FaBars, FaTimes } from "react-icons/fa";
+
 import "./Header.css";
 import { useUser } from "../hooks/useUser";
 import { useApiFetch } from "../api/useApiFetch";
@@ -5,6 +8,9 @@ import { useApiFetch } from "../api/useApiFetch";
 function Header() {
     const { user, logout } = useUser();
     const apiFetch = useApiFetch();
+    const [menuAbierto, setMenuAbierto] = useState(false);
+
+    const cerrarMenu = () => setMenuAbierto(false);
 
     const emailVerificado = async () => {
         try {
@@ -14,27 +20,46 @@ function Header() {
         }
     };
 
+    const handleLogout = () => {
+        cerrarMenu();
+        logout();
+    };
+
     return (
         <header className="header">
             <div className="header__inner">
 
-                <a href="/" className="header__logo">
+                <a href="/" className="header__logo" onClick={cerrarMenu}>
                     <span className="header__logo-mark" aria-hidden="true">🧶</span>
                     <span className="header__logo-text">Manitas Crochet</span>
                 </a>
 
-                <nav className="header__nav">
+                <button
+                    type="button"
+                    className="header__toggle"
+                    onClick={() => setMenuAbierto((prev) => !prev)}
+                    aria-expanded={menuAbierto}
+                    aria-controls="header-nav"
+                    aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+                >
+                    {menuAbierto ? <FaTimes /> : <FaBars />}
+                </button>
+
+                <nav
+                    id="header-nav"
+                    className={`header__nav ${menuAbierto ? "header__nav--open" : ""}`}
+                >
                     <div className="header__nav-left">
-                        <a className="header__link" href="/">Catálogo</a>
-                        <a className="header__link" href="#sobre-nosotros">Sobre nosotros</a>
-                        <a className="header__link" href="#contacto">Contacto</a>
+                        <a className="header__link" href="/" onClick={cerrarMenu}>Catálogo</a>
+                        <a className="header__link" href="#sobre-nosotros" onClick={cerrarMenu}>Sobre nosotros</a>
+                        <a className="header__link" href="#contacto" onClick={cerrarMenu}>Contacto</a>
                     </div>
 
                     <div className="header__nav-right">
                         {user ? (
                             <>
                                 {user.rol === "ROLE_ADMIN" && (
-                                    <a className="header__link" href="/administracion">Administración</a>
+                                    <a className="header__link" href="/administracion" onClick={cerrarMenu}>Administración</a>
                                 )}
                                 <div className="header__user-menu">
                                     <button type="button" className="header__user-trigger">
@@ -59,7 +84,7 @@ function Header() {
                                         <button
                                             type="button"
                                             className="header__link header__link--button"
-                                            onClick={logout}
+                                            onClick={handleLogout}
                                         >
                                             Cerrar sesión
                                         </button>
@@ -68,8 +93,8 @@ function Header() {
                             </>
                         ) : (
                             <>
-                                <a className="header__link" href="/login">Iniciar sesión</a>
-                                <a className="header__link header__link--accent" href="/signup">Crear cuenta</a>
+                                <a className="header__link" href="/login" onClick={cerrarMenu}>Iniciar sesión</a>
+                                <a className="header__link header__link--accent" href="/signup" onClick={cerrarMenu}>Crear cuenta</a>
                             </>
                         )}
                     </div>

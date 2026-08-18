@@ -108,8 +108,21 @@
         align-items: stretch;
     }
 
+    /* El label también debe ocupar el ancho completo: si no,
+       el 100% del input se calcula sobre un contenedor encogido */
+    .admin-campo {
+        width: 100%;
+    }
+
     .admin-busqueda,
     .admin-select {
         width: 100%;
+        height: 42px;
+        font-size: 0.9rem;
+    }
+
+    .admin-limpiar {
+        width: 100%;
+        height: 42px;
     }
 }

@@ -32,6 +32,8 @@ public class SecurityConfig {
             @Value("${app.cors.allowed-origins}") List<String> allowedOrigins) {
         this.authTokenFilter = authTokenFilter;
         this.allowedOrigins = allowedOrigins;
+
+        System.out.println("allowedOrigins = " + allowedOrigins);
     }
 
     @Bean

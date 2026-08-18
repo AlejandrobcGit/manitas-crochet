@@ -18,6 +18,6 @@ public class DashboardController {
 
     @GetMapping("/kpis")
     public DashboardResponseDto getKpis() {
-        return dashboardSevice.getKpis();
+        return dashboardSevice.getKpis();  
     }
 }

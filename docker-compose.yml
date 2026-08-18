@@ -1,0 +1,25 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+    container_name: manitas-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: manitas-frontend
+    env_file:
+      - .env
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

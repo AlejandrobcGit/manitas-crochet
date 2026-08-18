@@ -23,9 +23,9 @@ import com.manitascrochet.backend.exception.GlobalExceptionHandler.InvalidImageE
 @Service
 public class ImageCompressionService {
 
-    private static final int MAX_DIMENSION = 1600;
+    private static final int MAX_DIMENSION = 1000;
 
-    private static final float WEBP_QUALITY = 0.85f;
+    private static final float WEBP_QUALITY = 0.75f;
 
     /**
      * Convierte la imagen original a WebP optimizado.

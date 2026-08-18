@@ -11,7 +11,7 @@
 }
 
 .header__inner {
-    max-width: 1100px;
+    max-width: 1500px;
     margin: 0 auto;
     padding: 0.9rem 1.5rem;
     display: flex;
@@ -201,4 +201,115 @@
 .header__link--button:hover {
     color: var(--color-coral);
     text-decoration: underline;
+}
+
+/* Botón hamburguesa: oculto en escritorio */
+.header__toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    flex: none;
+    border: 1px solid rgba(201, 183, 160, 0.45);
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--color-ink);
+    font-size: 1.05rem;
+    cursor: pointer;
+}
+
+/* ===== Responsive: móvil ===== */
+@media (max-width: 768px) {
+    /* El header conserva una altura fija y compacta: solo logo + botón */
+    .header__inner {
+        flex-wrap: nowrap;
+        padding: 0.75rem 1.1rem;
+        padding: 0.55rem 1rem;
+    }
+
+    .header__toggle {
+        display: inline-flex;
+    }
+
+    /* El nav se convierte en un panel flotante que se despliega
+       ENCIMA del contenido (no en el flujo), así nunca empuja ni
+       queda tapado por la altura del header */
+    .header__nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.9rem;
+        width: 100%;
+        max-height: calc(100vh - 100%);
+        overflow-y: auto;
+        background: rgba(255, 250, 243, 0.98);
+        border-bottom: 1px dashed rgba(201, 183, 160, 0.45);
+        box-shadow: 0 12px 24px rgba(67, 59, 52, 0.1);
+        padding: 1rem 1.1rem 1.25rem;
+
+        /* oculto por defecto */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-0.5rem);
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    }
+
+    .header__nav--open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .header__nav-left,
+    .header__nav-right {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        gap: 0.7rem;
+        margin-left: 0;
+    }
+
+    .header__divider {
+        display: none;
+    }
+
+    .header__user-menu {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header__user-trigger {
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .header__user-info,
+    .header__user-name,
+    .header__user-email {
+        text-align: left;
+    }
+
+    /* En móvil no hay hover persistente, así que el submenú de
+       usuario se muestra en flujo normal en vez de absoluto */
+    .header__user-dropdown {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        box-shadow: none;
+        border: none;
+        padding: 0.25rem 0;
+        margin-top: 0.25rem;
+        min-width: 0;
+        width: 100%;
+    }
+
+    .header__link--accent {
+        align-self: flex-start;
+    }
 }

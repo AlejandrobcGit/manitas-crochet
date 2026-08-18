@@ -1,12 +1,15 @@
 .admin-tabla-container {
     max-height: 22rem;
     overflow-y: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border: 1px solid var(--color-linen);
     border-radius: 12px;
 }
 
 .admin-tabla {
     width: 100%;
+    min-width: 600px;
     border-collapse: collapse;
     border: none;
 }
@@ -115,4 +118,25 @@
 
 .btn-eliminar:hover {
     background: #bc2533;
+}
+
+/* Responsive: la tabla mantiene su ancho mínimo y se
+   desplaza horizontalmente en vez de aplastar las columnas */
+@media (max-width: 640px) {
+    .admin-tabla th,
+    .admin-tabla td {
+        padding: 0.45rem 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .admin-tabla__imagen {
+        width: 48px;
+        height: 48px;
+    }
+
+    .btn-editar,
+    .btn-eliminar {
+        padding: 0.4rem 0.65rem;
+        font-size: 0.85rem;
+    }
 }
