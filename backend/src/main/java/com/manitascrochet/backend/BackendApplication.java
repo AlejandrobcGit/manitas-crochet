@@ -18,7 +18,6 @@ public class BackendApplication {
 	}
 
 	@Bean
-	@SuppressWarnings("unused")
 	public CommandLineRunner initAdmin(UsuarioRepository usuarioRepository, PasswordEncoder encoder) {
 		return args -> {
 			if (usuarioRepository.count() == 0) {

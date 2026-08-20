@@ -43,10 +43,10 @@ public class VerificacionEmailService {
         @Value("${app.protocolo}") // Obtiene el protocolo del servidor desde aplicaciones.properties
         private String protocolo;
 
-        public void enviarCorreoVerificacion(String username) throws MessagingException {
+        public void enviarCorreoVerificacion(String email) throws MessagingException {
 
-                Usuario usuario = usuarioRepository.findByUsername(username)
-                                .orElseThrow(() -> new UsuarioNotFoundException(username));
+                Usuario usuario = usuarioRepository.findByEmail(email)
+                                .orElseThrow(() -> new UsuarioNotFoundException(email));
 
                 if (usuario.isEmailVerificado()) {
                         throw new EmailYaVerificadoException();

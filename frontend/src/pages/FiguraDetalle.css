@@ -123,6 +123,25 @@
   border: 2px solid var(--color-sage);
 }
 
+.detail-galeria-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.detail-galeria-aviso {
+  /* font-size: 0.8rem; */
+  line-height: 1.55;
+  color: var(--color-ink-soft);
+  margin: 0;
+}
+
+.detail-galeria-aviso strong {
+  color: var(--color-ink);
+ /* font-weight: 700;*/
+}
+
 /* --- Info --- */
 
 .detail-info {

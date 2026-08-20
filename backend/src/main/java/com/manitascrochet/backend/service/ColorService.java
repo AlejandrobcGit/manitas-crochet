@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CodigoColorDuplicadoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorDuplicadoException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorEnUsoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
 import com.manitascrochet.backend.model.Color;
 import com.manitascrochet.backend.repository.ColorRepository;
+import com.manitascrochet.backend.repository.FiguraRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class ColorService {
 
     private final ColorRepository colorRepository;
+    private final FiguraRepository figuraRepository;
     /*
      * permite trabajar directamente con MongoDB sin pasar por un repositorio
      * (MongoRepository).
@@ -42,7 +45,7 @@ public class ColorService {
         if (codigo != null && !codigo.isBlank()) {
             criterios.add(Criteria.where("codigo").regex(codigo, "i")); // buscador → parcial
         }
-    // Combina todos los filtros antes de ejecutar la consulta.    
+        // Combina todos los filtros antes de ejecutar la consulta.
         if (!criterios.isEmpty()) {
             query.addCriteria(new Criteria().andOperator(criterios.toArray(new Criteria[0])));
         }
@@ -113,8 +116,13 @@ public class ColorService {
     // Eliminar color
     public void eliminar(String id) {
 
-        colorRepository.findById(id)
-                .orElseThrow(() -> new ColorNoEncontradoException(id));
+        if (!colorRepository.existsById(id)) {
+            throw new ColorNoEncontradoException(id);
+        }
+
+        if (figuraRepository.existsByColoresIdsContaining(id)) {
+            throw new ColorEnUsoException();
+        }
 
         colorRepository.deleteById(id);
     }

@@ -12,7 +12,7 @@ function LoginForm() {
     const location = useLocation();
     const apiFetch = useApiFetch(); 
 
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -33,7 +33,7 @@ function LoginForm() {
         setSubmitting(true);
 
         try {
-            await login(username, password);
+            await login(email, password);
             navigate(from, { replace: true });
         } catch (apiError) {
             setError(apiError.mensaje || "No se pudo iniciar sesión. Inténtalo de nuevo.");
@@ -86,16 +86,16 @@ function LoginForm() {
                         </p>
                     )}
 
-                    <label className="login-form__label" htmlFor="username">
-                        Usuario
+                    <label className="login-form__label" htmlFor="email">
+                        Correo Electrónico
                     </label>
                     <input
-                        id="username"
+                        id="email"
                         className="login-form__input"
                         type="text"
-                        value={username}
-                        onChange={(event) => setUsername(event.target.value)}
-                        autoComplete="username"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        autoComplete="email"
                         required
                     />
 

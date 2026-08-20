@@ -52,8 +52,8 @@ class VerificacionEmailServiceTest {
 
     @Test
     void enviaVerificacionYGuardaToken() throws Exception {
-        when(users.findByUsername("ana")).thenReturn(Optional.of(user()));
-        service.enviarCorreoVerificacion("ana");
+        when(users.findByEmail("ana@manitascochet.com")).thenReturn(Optional.of(user()));
+        service.enviarCorreoVerificacion("ana@manitascochet.com");
         ArgumentCaptor<TokenVerificacion> cap = ArgumentCaptor.forClass(TokenVerificacion.class);
         verify(tokens).save(cap.capture());
         verify(email).enviar(eq("ana@test"), contains("Verificación"), contains("verificar-email?token="));
@@ -63,9 +63,9 @@ class VerificacionEmailServiceTest {
 
     @Test
     void enviarVerificacion_usuarioNoEncontrado_lanzaExcepcion() {
-        when(users.findByUsername("ana")).thenReturn(Optional.empty());
+        when(users.findByEmail("ana@maniatascrochet.com")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.enviarCorreoVerificacion("ana"))
+        assertThatThrownBy(() -> service.enviarCorreoVerificacion("ana@maniatascrochet.com"))
                 .isInstanceOf(UsuarioNotFoundException.class);
 
         verifyNoInteractions(tokens, email);
@@ -73,9 +73,9 @@ class VerificacionEmailServiceTest {
 
     @Test
     void enviarVerificacion_emailYaVerificado_lanzaExcepcion() {
-        when(users.findByUsername("ana")).thenReturn(Optional.of(user(true)));
+        when(users.findByEmail("ana@maniatascrochet.com")).thenReturn(Optional.of(user(true)));
 
-        assertThatThrownBy(() -> service.enviarCorreoVerificacion("ana"))
+        assertThatThrownBy(() -> service.enviarCorreoVerificacion("ana@maniatascrochet.com"))
                 .isInstanceOf(EmailYaVerificadoException.class);
 
         verifyNoInteractions(tokens, email);

@@ -1,4 +1,4 @@
-package  com.manitascrochet.backend.security;
+package com.manitascrochet.backend.security;
 
 import java.security.Key;
 import java.util.Date;
@@ -33,50 +33,61 @@ public class JwtUtils {
 
     // ACCESS TOKEN desde Authentication
     public String generateJwtToken(Authentication authentication) {
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+
+        UserDetailsImpl userPrincipal =
+                (UserDetailsImpl) authentication.getPrincipal();
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
+                .setSubject(userPrincipal.getEmail())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     // REFRESH TOKEN inicial
     public String generateRefreshToken(Authentication authentication) {
-        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+
+        UserDetailsImpl userPrincipal =
+                (UserDetailsImpl) authentication.getPrincipal();
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getUsername())
+                .setSubject(userPrincipal.getEmail())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // ACCESS TOKEN desde username
-    public String generateTokenFromUsername(String username) {
+    // ACCESS TOKEN desde email
+    public String generateTokenFromEmail(String email) {
+
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // REFRESH TOKEN desde username
-    public String generateRefreshTokenFromUsername(String username) {
+    // REFRESH TOKEN desde email
+    public String generateRefreshTokenFromEmail(String email) {
+
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
+                .setExpiration(
+                        new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Extraer username
-    public String getUserNameFromJwtToken(String token) {
+    // Extraer email del JWT
+    public String getEmailFromJwtToken(String token) {
+
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -87,11 +98,14 @@ public class JwtUtils {
 
     // Validar token
     public boolean validateJwtToken(String authToken) {
+
         try {
+
             Jwts.parserBuilder()
                     .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(authToken);
+
             return true;
 
         } catch (ExpiredJwtException e) {

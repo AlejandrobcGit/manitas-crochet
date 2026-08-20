@@ -70,11 +70,11 @@ class AuthControllerTest {
         when(jwt.generateRefreshToken(authentication)).thenReturn("refresh");
         assertThat(controller.authenticateUser(new LoginDto(), new MockHttpServletResponse()).getBody())
                 .isInstanceOf(JwtResponseDto.class);
-        when(jwt.getUserNameFromJwtToken("old")).thenReturn("ana");
+        when(jwt.getEmailFromJwtToken("old")).thenReturn("ana@manitas-crochet.com");
         when(jwt.validateJwtToken("old")).thenReturn(true);
-        when(detailsService.loadUserByUsername("ana")).thenReturn(user());
-        when(jwt.generateTokenFromUsername("ana")).thenReturn("new-access");
-        when(jwt.generateRefreshTokenFromUsername("ana")).thenReturn("new-refresh");
+        when(detailsService.loadUserByUsername("ana@manitas-crochet.com")).thenReturn(user());
+        when(jwt.generateTokenFromEmail("ana@manitas-crochet.com")).thenReturn("new-access");
+        when(jwt.generateRefreshTokenFromEmail("ana@manitas-crochet.com")).thenReturn("new-refresh");
         assertThat(controller.refreshToken("old", new MockHttpServletResponse()).getBody())
                 .isInstanceOf(JwtResponseDto.class);
         assertThatThrownBy(() -> controller.refreshToken(null, new MockHttpServletResponse()))

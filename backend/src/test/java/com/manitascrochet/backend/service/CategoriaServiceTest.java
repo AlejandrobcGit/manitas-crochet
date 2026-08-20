@@ -1,9 +1,8 @@
 package com.manitascrochet.backend.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
@@ -18,14 +17,18 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaDuplicadaException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaEnUsoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.repository.CategoriaRepository;
+import com.manitascrochet.backend.repository.FiguraRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CategoriaServiceTest {
     @Mock
     CategoriaRepository repository;
+    @Mock
+    FiguraRepository figuraRepository;
     @Mock
     MongoTemplate mongoTemplate;
     @InjectMocks
@@ -59,14 +62,19 @@ class CategoriaServiceTest {
         actual.setNombre("Vieja");
         Categoria cambio = new Categoria();
         cambio.setNombre("Nueva");
+        
         when(repository.findById("1")).thenReturn(Optional.of(actual));
         when(repository.findByNombreIgnoreCase("Nueva")).thenReturn(Optional.empty());
         when(repository.save(actual)).thenReturn(actual);
-        assertThat(service.actualizar("1", cambio).getNombre()).isEqualTo("Nueva");
+        assertThat(service.actualizar("1", cambio).getNombre())
+                .isEqualTo("Nueva");
+        when(repository.existsById("1")).thenReturn(true);
+        when(figuraRepository.existsByCategoriaId("1")).thenReturn(false);
         service.eliminar("1");
         verify(repository).deleteById("1");
         when(repository.findById("x")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.obtenerPorId("x")).isInstanceOf(CategoriaNoEncontradaException.class);
+        assertThatThrownBy(() -> service.obtenerPorId("x"))
+                .isInstanceOf(CategoriaNoEncontradaException.class);
     }
 
     @Test
@@ -133,9 +141,31 @@ class CategoriaServiceTest {
 
     @Test
     void eliminarLanzaExcepcionSiNoExiste() {
-        when(repository.findById("x")).thenReturn(Optional.empty());
+        when(repository.existsById("x")).thenReturn(false);
         assertThatThrownBy(() -> service.eliminar("x"))
                 .isInstanceOf(CategoriaNoEncontradaException.class);
         verify(repository, never()).deleteById(any());
+    }
+
+    @Test
+    void noDebeEliminarCategoriaEnUso() {
+        when(repository.existsById("1")).thenReturn(true);
+        when(figuraRepository.existsByCategoriaId("1")).thenReturn(true);
+
+        assertThrows(
+                CategoriaEnUsoException.class,
+                () -> service.eliminar("1"));
+
+        verify(repository, never()).deleteById(any());
+    }
+
+    @Test
+    void debeEliminarCategoriaNoUtilizada() {
+        when(repository.existsById("1")).thenReturn(true);
+        when(figuraRepository.existsByCategoriaId("1")).thenReturn(false);
+
+        service.eliminar("1");
+
+        verify(repository).deleteById("1");
     }
 }

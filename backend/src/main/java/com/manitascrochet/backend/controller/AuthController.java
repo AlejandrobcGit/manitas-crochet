@@ -93,7 +93,7 @@ public class AuthController {
 
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginDto.getUsername(),
+                        loginDto.getEmail(),
                         loginDto.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -142,9 +142,9 @@ public class AuthController {
             throw new InvalidRefreshTokenException("No se encontró el refresh token en la cookie.");
         }
 
-        String username;
+        String email;
         try {
-            username = jwtUtils.getUserNameFromJwtToken(refreshToken);
+            email = jwtUtils.getEmailFromJwtToken(refreshToken);
         } catch (Exception e) {
             throw new InvalidRefreshTokenException("Refresh token inválido.");
         }
@@ -153,10 +153,10 @@ public class AuthController {
             throw new InvalidRefreshTokenException("Refresh token expirado o inválido.");
         }
 
-        UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServiceImpl.loadUserByUsername(username);
+        UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsServiceImpl.loadUserByUsername(email);
 
-        String newAccessToken = jwtUtils.generateTokenFromUsername(username);
-        String newRefreshToken = jwtUtils.generateRefreshTokenFromUsername(username);
+        String newAccessToken = jwtUtils.generateTokenFromEmail(email);
+        String newRefreshToken = jwtUtils.generateRefreshTokenFromEmail(email);
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
                 .httpOnly(cookieHttpOnly)
@@ -272,6 +272,7 @@ public class AuthController {
 
         try {
             verificacionEmailService.enviarCorreoRecuperacion(email);
+            log.info("Correo se envió correctamnete " + email);
         } catch (EmailNotFoundException ex) {
             // No revelamos que el correo no existe: solo lo registramos internamente
             log.info("Solicitud de recuperación para correo no registrado: {}", email);
@@ -309,7 +310,7 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> EnviarCorreoverificar(
             @AuthenticationPrincipal UserDetailsImpl userDetails) throws MessagingException {
 
-        verificacionEmailService.enviarCorreoVerificacion(userDetails.getUsername());
+        verificacionEmailService.enviarCorreoVerificacion(userDetails.getEmail());
 
         return ResponseEntity.ok(Map.of("status", "success"));
     }

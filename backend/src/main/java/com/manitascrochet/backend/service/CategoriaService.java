@@ -8,9 +8,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaDuplicadaException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaEnUsoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.repository.CategoriaRepository;
+import com.manitascrochet.backend.repository.FiguraRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
+    private final FiguraRepository figuraRepository;
     /*
      * permite trabajar directamente con MongoDB sin pasar por un repositorio
      * (MongoRepository).
@@ -79,8 +82,17 @@ public class CategoriaService {
 
     // Eliminar categoria
     public void eliminar(String id) {
-        categoriaRepository.findById(id)
-                .orElseThrow(() -> new CategoriaNoEncontradaException(id));
+
+        if (!categoriaRepository.existsById(id)) {
+
+            throw new CategoriaNoEncontradaException(id);
+
+        }
+
+        if (figuraRepository.existsByCategoriaId(id)) {
+            throw new CategoriaEnUsoException();
+        }
+
         categoriaRepository.deleteById(id);
     }
 }

@@ -23,13 +23,13 @@ function UserProvider(props) {
         emailVerificado: data.emailVerificado
     });
 
-    const login = async (username, password) => {
+    const login = async (email, password) => {
 
         const respuesta = await fetch(`${API_URL}/auth/signin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ email, password })
         });
 
         if (!respuesta.ok) {

@@ -15,29 +15,47 @@ import com.manitascrochet.backend.repository.UsuarioRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UserDetailsServiceImplTest {
+
     @Mock
     UsuarioRepository repository;
+
     @InjectMocks
     UserDetailsServiceImpl service;
 
     private Usuario user() {
-        return new Usuario("id", "ana", "ana@test", "hash", Rol.USER, true);
+        return new Usuario("id", "ana", "ana@manitascochet.com", "hash", Rol.USER, true);
     }
 
     @Test
-    void cargaPorUsernameYEmail() {
-        when(repository.findByUsername("ana")).thenReturn(Optional.of(user()));
-        assertThat(service.loadUserByUsername("ana").getUsername()).isEqualTo("ana");
-        when(repository.findByEmail("ana@test")).thenReturn(Optional.of(user()));
-        assertThat(service.loadUserByEmail("ana@test").getAuthorities()).extracting("authority")
+    void cargaPorUsernameUsandoEmail() {
+        when(repository.findByEmail("ana@manitascochet.com")).thenReturn(Optional.of(user()));
+
+        assertThat(service.loadUserByUsername("ana@manitascochet.com").getUsername())
+                .isEqualTo("ana");
+    }
+
+    @Test
+    void cargaPorEmail() {
+        when(repository.findByEmail("ana@manitascochet.com")).thenReturn(Optional.of(user()));
+
+        assertThat(service.loadUserByEmail("ana@manitascochet.com").getAuthorities())
+                .extracting("authority")
                 .containsExactly("ROLE_USER");
     }
 
     @Test
-    void fallaSiNoExiste() {
-        when(repository.findByUsername("x")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.loadUserByUsername("x")).isInstanceOf(UsernameNotFoundException.class);
+    void loadUserByUsernameFallaSiNoExiste() {
         when(repository.findByEmail("x")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.loadUserByEmail("x")).isInstanceOf(EmailNotFoundException.class);
+
+        assertThatThrownBy(() -> service.loadUserByUsername("x"))
+                .isInstanceOf(UsernameNotFoundException.class);
+    }
+
+    @Test
+    void loadUserByEmailFallaSiNoExiste() {
+        when(repository.findByEmail("x")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.loadUserByEmail("x"))
+                .isInstanceOf(EmailNotFoundException.class);
     }
 }

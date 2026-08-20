@@ -5,5 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import com.manitascrochet.backend.model.Figura;
 
 public interface FiguraRepository extends MongoRepository<Figura, String> {
-
+    Boolean existsByCategoriaId ( String categoriaId);
+    Boolean existsByColoresIdsContaining(String colorId);
 }

@@ -83,11 +83,21 @@ function FiguraDetalle() {
 
                         <section className="detail">
 
-                            <GaleriaImagenes
-                                imagenPrincipal={figura.imagenPrincipal}
-                                imagenesSecundarias={figura.imagenesSecundarias}
-                                nombre={figura.nombre}
-                            />
+                            <div className="detail-galeria-wrap">
+
+                                <GaleriaImagenes
+                                    imagenPrincipal={figura.imagenPrincipal}
+                                    imagenesSecundarias={figura.imagenesSecundarias}
+                                    nombre={figura.nombre}
+                                />
+
+                                <p className="detail-galeria-aviso">
+                                    <strong>Cada pieza está hecha a mano y es única.</strong>
+                                    {" "}
+                                    Las fotografías son orientativas. Debido al proceso artesanal y a la disponibilidad de materiales, el producto final puede presentar pequeñas variaciones en colores, detalles o acabados, <strong> manteniendo siempre su esencia y calidad</strong>.
+                                </p>
+
+                            </div>
 
                             <div className="detail-info">
 

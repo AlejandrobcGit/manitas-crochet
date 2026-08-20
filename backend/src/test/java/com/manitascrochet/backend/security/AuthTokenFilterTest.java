@@ -122,7 +122,7 @@ class AuthTokenFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(jwtUtils).validateJwtToken("invalid-token");
-        verify(jwtUtils, never()).getUserNameFromJwtToken(any());
+        verify(jwtUtils, never()).getEmailFromJwtToken(any());
         verifyNoInteractions(userDetailsService);
         verify(filterChain).doFilter(request, response);
     }
@@ -132,7 +132,7 @@ class AuthTokenFilterTest {
         when(request.getServletPath()).thenReturn("/api/figuras");
         when(request.getHeader("Authorization")).thenReturn("Bearer valid-token");
         when(jwtUtils.validateJwtToken("valid-token")).thenReturn(true);
-        when(jwtUtils.getUserNameFromJwtToken("valid-token")).thenReturn("ana");
+        when(jwtUtils.getEmailFromJwtToken("valid-token")).thenReturn("ana");
         when(userDetailsService.loadUserByUsername("ana")).thenReturn(userDetails);
         when(userDetails.getAuthorities()).thenReturn(List.of());
 
@@ -162,7 +162,7 @@ class AuthTokenFilterTest {
         when(request.getServletPath()).thenReturn("/api/figuras");
         when(request.getHeader("Authorization")).thenReturn("Bearer valid-token");
         when(jwtUtils.validateJwtToken("valid-token")).thenReturn(true);
-        when(jwtUtils.getUserNameFromJwtToken("valid-token")).thenReturn("ana");
+        when(jwtUtils.getEmailFromJwtToken("valid-token")).thenReturn("ana");
         when(userDetailsService.loadUserByUsername("ana"))
                 .thenThrow(new RuntimeException("user error"));
 

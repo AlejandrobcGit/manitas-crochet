@@ -32,7 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-   // private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    // private static final Logger log =
+    // LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     // ─── Model : Figuras ───────────────────────────────────────────────────────
 
@@ -53,13 +54,19 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, "CODIGO_COLOR_EXISTENTE", ex.getMessage());
     }
 
+    @ExceptionHandler({
+            CategoriaEnUsoException.class,
+            ColorEnUsoException.class })
+    public ResponseEntity<ApiError> handleRecusoUtilizado(RuntimeException ex) {
+        return build(HttpStatus.CONFLICT, "VALOR_EN_USO", ex.getMessage());
+    }
+
     // 404 - Recursos no encontrados
     @ExceptionHandler({
             CategoriaNoEncontradaException.class,
             ColorNoEncontradoException.class,
             FiguraNoEncontradaException.class,
-            ComentarioNoEncontradoException.class
-    })
+            ComentarioNoEncontradoException.class })
     public ResponseEntity<ApiError> manejarNoEncontrado(RuntimeException ex) {
         return build(HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", ex.getMessage());
     }
@@ -96,8 +103,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleImageDelete(ImageDeleteException ex) {
         return build(HttpStatus.BAD_GATEWAY, "IMAGE_DELETE_FAILED", "No se pudo eliminar la imagen");
     }
-
-
 
     // ─── Seguridad ─────────────────────────────────────────────────────────────
 
@@ -421,6 +426,18 @@ public class GlobalExceptionHandler {
 
         public ImageDeleteException(String message, Throwable cause) {
             super(message, cause);
+        }
+    }
+
+    public static class CategoriaEnUsoException extends RuntimeException {
+        public CategoriaEnUsoException() {
+            super("No se puede eliminar categorias asignada");
+        }
+    }
+
+    public static class ColorEnUsoException extends RuntimeException {
+        public ColorEnUsoException() {
+            super("No se puede eliminar colores asignados");
         }
     }
 }

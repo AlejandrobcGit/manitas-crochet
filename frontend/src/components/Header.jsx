@@ -15,8 +15,10 @@ function Header() {
     const emailVerificado = async () => {
         try {
             /*const response = */ await apiFetch("/auth/enviarcorreoverificar");
+            alert("Correo de verificación enviado. Revisa tu bandeja de entrada.");
         } catch (error) {
             console.error("Error verifying email:", error);
+            alert("Ocurrió un error al enviar el correo de verificación.");
         }
     };
 
