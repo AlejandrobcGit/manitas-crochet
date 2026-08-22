@@ -214,17 +214,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MailAuthenticationException.class)
     public ResponseEntity<ApiError> handleMailAuthenticationException(MailAuthenticationException ex) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_AUTH_ERROR",
-                "Error de configuración del servicio de correo.");
+                "Error de configuración del servicio de correo ->"+ ex.getMessage());
     }
 
     @ExceptionHandler(MailException.class)
     public ResponseEntity<ApiError> handleMailException(MailException ex) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR", "No se pudo enviar el correo electrónico.");
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR", "No se pudo enviar el correo electrónico ->"+ ex.getMessage());
     }
 
     @ExceptionHandler(MessagingException.class)
     public ResponseEntity<ApiError> handleMessagingException(MessagingException ex) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR", "Error al enviar el correo electrónico.");
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR", "Error al enviar el correo electrónico ->"+ ex.getMessage());
     }
 
     @ExceptionHandler(EmailYaVerificadoException.class)

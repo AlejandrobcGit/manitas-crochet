@@ -40,7 +40,7 @@ public class VerificacionEmailService {
         @Value("${APP_FRONTEND_URL}") // Obtiene el dirección del servidor desde aplicaciones.properties
         private String app_frontend_url;
 
-        @Value("${app.protocolo}") // Obtiene el protocolo del servidor desde aplicaciones.properties
+        @Value("${APP_PROTOCOLO}") // Obtiene el protocolo del servidor desde aplicaciones.properties
         private String protocolo;
 
         public void enviarCorreoVerificacion(String email) throws MessagingException {
