@@ -4,6 +4,8 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import "./Header.css";
 import { useUser } from "../hooks/useUser";
 import { useApiFetch } from "../api/useApiFetch";
+import { Link } from "react-router-dom";
+import logo from '../assets/logo.jpg';
 
 function Header() {
     const { user, logout } = useUser();
@@ -31,10 +33,14 @@ function Header() {
         <header className="header">
             <div className="header__inner">
 
-                <a href="/" className="header__logo" onClick={cerrarMenu}>
-                    <span className="header__logo-mark" aria-hidden="true">🧶</span>
-                    <span className="header__logo-text">Manitas Crochet</span>
-                </a>
+                <Link to="/" className="header__logo" onClick={cerrarMenu}>
+                    <img
+                        src={logo}
+                        alt="Arriba Crochet"
+                        className="header__logo-img"
+                    />
+                    <span className="header__logo-text">Arriba Crochet</span>
+                </Link>
 
                 <button
                     type="button"
@@ -51,17 +57,20 @@ function Header() {
                     id="header-nav"
                     className={`header__nav ${menuAbierto ? "header__nav--open" : ""}`}
                 >
+
                     <div className="header__nav-left">
-                        <a className="header__link" href="/" onClick={cerrarMenu}>Catálogo</a>
-                        <a className="header__link" href="#sobre-nosotros" onClick={cerrarMenu}>Sobre nosotros</a>
-                        <a className="header__link" href="#contacto" onClick={cerrarMenu}>Contacto</a>
+                        <Link className="header__link" to="/" onClick={cerrarMenu}>Catálogo</Link>
+                        <Link className="header__link" to="/sobre-nosotros"onClick={cerrarMenu}>Sobre nosotros</Link>
+                        <Link className="header__link" to="/#contacto" onClick={cerrarMenu}>Contacto</Link>
                     </div>
 
                     <div className="header__nav-right">
                         {user ? (
                             <>
                                 {user.rol === "ROLE_ADMIN" && (
-                                    <a className="header__link" href="/administracion" onClick={cerrarMenu}>Administración</a>
+                                    <Link className="header__link" to="/administracion" onClick={cerrarMenu}>
+                                        Administración
+                                    </Link>
                                 )}
                                 <div className="header__user-menu">
                                     <button type="button" className="header__user-trigger">

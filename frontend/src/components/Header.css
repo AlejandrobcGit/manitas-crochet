@@ -3,7 +3,7 @@
     backdrop-filter: blur(8px);
     border-bottom: 1px dashed rgba(201, 183, 160, 0.45);
     box-shadow: 0 4px 16px rgba(67, 59, 52, 0.06);
-    position: fixed;
+    position: sticky;  
     top: 0;
     left: 0;
     right: 0;
@@ -29,8 +29,13 @@
     color: var(--color-ink);
 }
 
-.header__logo-mark {
-    font-size: 1.4rem;
+.header__logo-img {
+    height: 4rem;   
+    max-height: 4rem;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
 }
 
 .header__logo-text {

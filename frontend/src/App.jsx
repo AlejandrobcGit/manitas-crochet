@@ -9,6 +9,7 @@ import NoAutorizado from "./pages/NoAutorizado";
 import SignupForm from "./components/SignupForm";
 import VerificarEmail from "./pages/VerificarEmail";
 import ResetPasswordForm from "./pages/ResetPasswordForm";
+import AboutPage from "./pages/AboutPage"
 
 function App() {
     return (
@@ -44,8 +45,10 @@ function App() {
 
             <Route
                 path="/signup"
-                element={<SignupForm />}
-            />
+                element={<SignupForm />}/>
+
+            <Route path="/sobre-nosotros"
+                element={<AboutPage />} />
 
             <Route path="/verificar-email"
                 element={<VerificarEmail />} />

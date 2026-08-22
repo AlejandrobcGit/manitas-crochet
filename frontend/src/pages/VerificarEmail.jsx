@@ -77,10 +77,10 @@ export default function VerificarEmail() {
           <p className="verificar-mensaje">{mensaje}</p>
 
           {estado === "success" && (
-            <a href="/" className="verificar-btn">Ir al catalogo</a>
+            <Link to="/" className="verificar-btn">Ir al catalogo</Link>
           )}
           {estado === "error" && (
-            <a href="/reenviar-verificacion" className="verificar-btn">Reenviar correo</a>
+            <Link to="/reenviar-verificacion" className="verificar-btn">Reenviar correo</Link>
           )}
         </div>
       </main>
