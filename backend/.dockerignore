@@ -1,8 +1,8 @@
-.env
+target
 .git
 .gitignore
-.idea/
-.vscode/
-
-target/*
-!target/backend-0.0.1-SNAPSHOT.jar
+.idea
+.vscode
+node_modules
+Dockerfile
+README.md

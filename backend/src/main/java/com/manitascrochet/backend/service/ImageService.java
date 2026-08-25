@@ -1,11 +1,12 @@
 package com.manitascrochet.backend.service;
 
+import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.ByteArrayInputStream;
 
 import com.manitascrochet.backend.dto.ImageUploadResultDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ImageDeleteException;
@@ -26,6 +27,9 @@ public class ImageService {
     private final ImageKitClient imageKitClient;
     private final ImageCompressionService compressionService;
 
+    @Value("${imagekit.folder}") // Obtiene el remitente del correo electrónico desde aplicaciones.properties
+    private String folder;
+
     /**
      * Valida, comprime a WebP y sube la imagen a ImageKit.
      *
@@ -36,7 +40,7 @@ public class ImageService {
     public ImageUploadResultDto uploadImage(String figureId, String titulo, MultipartFile file) {
 
         validate(file);
-
+        
         byte[] compressedBytes = compressionService.compress(file);
         System.out.println("ImageService.uploadImage: originalContentType=" + file.getContentType() + ", originalSize=" + file.getSize() + ", compressedSize=" + (compressedBytes == null ? 0 : compressedBytes.length));
 
@@ -58,7 +62,7 @@ public class ImageService {
         FileUploadResponse response = upload(
                 compressedBytes,
                 fileName,
-                normalizeFolder("manitas-Crochet"));
+                normalizeFolder(folder));
 
         return new ImageUploadResultDto(
                 response.url().orElseThrow(() -> new ImageUploadException("ImageKit no devolvió una URL válida")),

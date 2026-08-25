@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -41,6 +42,10 @@ public class FiguraService {
         // private final FileStorageService fileStorageService;
         private final ValoracionService valoracionService;
         private final ComentarioService comentarioService;
+        @Value("${imagekit.url.endpoint}")
+        private String imageUrl;
+        @Value("${imagekit.folder}")
+        private String imageFolder;
 
         /*
          * permite trabajar directamente con MongoDB sin pasar por un repositorio
@@ -84,7 +89,7 @@ public class FiguraService {
                                 .orElseThrow(() -> new CategoriaNoEncontradaException(figura.getCategoriaId()));
 
                 if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
-                        figura.setImagenPrincipal("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
+                        figura.setImagenPrincipal(imageUrl + "/" + imageFolder + "/default.webp");
                 }
 
                 ResumenValoracionDto resumenValoracionDto = valoracionService
