@@ -46,6 +46,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // --------------------------------------------------
+                        // Consulta pulico puntuales
+                        // --------------------------------------------------
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // --------------------------------------------------
                         // Usuarios autenticados
                         // --------------------------------------------------
                         .requestMatchers(HttpMethod.GET, "/api/favorito/**").authenticated()
@@ -62,8 +66,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/**").hasRole("ADMIN")
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
                         // --------------------------------------------------
-                        // Consulta polico para todos
+                        // Consulta pulico para todos
                         // --------------------------------------------------
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/**").permitAll()

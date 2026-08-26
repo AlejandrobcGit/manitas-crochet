@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
@@ -126,6 +128,12 @@ class FiguraServiceTest {
         assertThat(dto.getValoracionMedia()).isEqualTo(4.5);
         assertThat(dto.getTotalValoraciones()).isEqualTo(10L);
     }
+
+@BeforeEach
+void setUp() {
+    ReflectionTestUtils.setField(service, "imageUrl", "https://ik.imagekit.io/8hlhxb9hx");
+    ReflectionTestUtils.setField(service, "imageFolder", "manitas-Crochet");
+}
 
     @Test
     void obtenerTodasDtoUsaImagenPorDefectoCuandoEsBlank() {
@@ -337,7 +345,8 @@ class FiguraServiceTest {
         var result = service.crear(f, null, null);
 
         assertThat(result).isNotNull();
-        assertThat(result.getImagenPrincipal()).isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
+        assertThat(result.getImagenPrincipal())
+                .isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
 
         verify(imageService, never()).uploadImage(anyString(), anyString(), any());
         verify(figuras, times(2)).save(any(Figura.class));
@@ -412,7 +421,8 @@ class FiguraServiceTest {
             return saved;
         });
 
-        when(imageService.uploadImage(anyString(), anyString(), any())).thenReturn(new ImageUploadResultDto("imagen.png","file-id-1"));
+        when(imageService.uploadImage(anyString(), anyString(), any()))
+                .thenReturn(new ImageUploadResultDto("imagen.png", "file-id-1"));
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 
         assertThat(service.crear(f, principal, List.of(secundaria))).isNotNull();
@@ -452,7 +462,8 @@ class FiguraServiceTest {
 
         when(figuras.findById("f1")).thenReturn(Optional.of(actual));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(imageService.uploadImage(anyString(), anyString(), any())).thenReturn(new ImageUploadResultDto("nueva.png","new-file-id"));
+        when(imageService.uploadImage(anyString(), anyString(), any()))
+                .thenReturn(new ImageUploadResultDto("nueva.png", "new-file-id"));
         when(figuras.save(actual)).thenReturn(actual);
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 
@@ -551,7 +562,8 @@ class FiguraServiceTest {
 
         when(figuras.findById("f1")).thenReturn(Optional.of(actual));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(imageService.uploadImage(anyString(), anyString(), any())).thenReturn(new ImageUploadResultDto("gato.png","gato-file-id"));
+        when(imageService.uploadImage(anyString(), anyString(), any()))
+                .thenReturn(new ImageUploadResultDto("gato.png", "gato-file-id"));
         when(figuras.save(actual)).thenReturn(actual);
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 
@@ -579,7 +591,8 @@ class FiguraServiceTest {
 
         when(figuras.findById("f1")).thenReturn(Optional.of(actual));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(imageService.uploadImage(anyString(), anyString(), any())).thenReturn(new ImageUploadResultDto("zorro-1.png","zorro-file-id"));
+        when(imageService.uploadImage(anyString(), anyString(), any()))
+                .thenReturn(new ImageUploadResultDto("zorro-1.png", "zorro-file-id"));
         when(figuras.save(actual)).thenReturn(actual);
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 

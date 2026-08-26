@@ -1,11 +1,5 @@
 import { useState } from "react";
-
-// ImageKit: tr=w-<ancho>,h-<alto>,fo-auto,q-<calidad>
-function getImagenOptimizada(url, size) {
-    if (!url) return url;
-    const separador = url.includes("?") ? "&" : "?";
-    return `${url}${separador}tr=w-${size},h-${size},fo-auto,q-80`;
-}
+import { getGalleryImage, getThumbnailImage } from "../api/imagekit";
 
 function GaleriaImagenes({ imagenPrincipal, imagenesSecundarias = [], nombre }) {
 
@@ -19,7 +13,7 @@ function GaleriaImagenes({ imagenPrincipal, imagenesSecundarias = [], nombre }) 
 
             <div className="galeria__principal">
                 <img
-                    src={getImagenOptimizada(imagenes[seleccionada], 800)}
+                    src={getGalleryImage(imagenes[seleccionada])}
                     alt={nombre}
                     fetchPriority="high"
                 />
@@ -45,7 +39,7 @@ function GaleriaImagenes({ imagenPrincipal, imagenesSecundarias = [], nombre }) 
                             onClick={() => setSeleccionada(index)}
                         >
                             <img
-                                src={getImagenOptimizada(img, 150)}
+                                src={getThumbnailImage(img)}
                                 alt={`${nombre} vista ${index + 1}`}
                                 loading="lazy"
                             />

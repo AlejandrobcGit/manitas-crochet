@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useApiFetch } from "../api/useApiFetch";
 
 import Header from "../components/Header";
@@ -25,19 +25,25 @@ export default function VerificarEmail() {
 
       try {
         const response = await authFetch("/auth/verificar?token=" + encodeURIComponent(token));
-
         const data = await response.json();
+
+        if (!response.ok) {
+          // Lanzamos el body del error para que lo capture el catch de abajo
+          throw data;
+        }
 
         setEstado("success");
         setMensaje(
           data.mensaje ||
-          "¡Tu correo de verificación fue enviado correctamente!."
+          "¡Tu correo fue verificado correctamente!"
         );
       } catch (error) {
         console.error("Error al verificar el correo:", error);
-        if (error.error === "TOKEN_YA_USADO") {
+
+        if (error?.error === "TOKEN_YA_USADO") {
           setEstado("error");
-          setMensaje(error.mensaje ||
+          setMensaje(
+            error.mensaje ||
             "Este correo ya fue verificado anteriormente. Podés iniciar sesión."
           );
           return;
@@ -45,9 +51,9 @@ export default function VerificarEmail() {
 
         setEstado("error");
         setMensaje(
-          error.mensaje ||
+          error?.mensaje ||
           "No pudimos verificar tu correo."
-        )
+        );
       }
     };
 
@@ -77,7 +83,7 @@ export default function VerificarEmail() {
           <p className="verificar-mensaje">{mensaje}</p>
 
           {estado === "success" && (
-            <Link to="/" className="verificar-btn">Ir al catalogo</Link>
+            <Link to="/" className="verificar-btn">Ir al catálogo</Link>
           )}
           {estado === "error" && (
             <Link to="/reenviar-verificacion" className="verificar-btn">Reenviar correo</Link>

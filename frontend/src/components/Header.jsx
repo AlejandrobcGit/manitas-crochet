@@ -57,11 +57,12 @@ function Header() {
                     id="header-nav"
                     className={`header__nav ${menuAbierto ? "header__nav--open" : ""}`}
                 >
-
                     <div className="header__nav-left">
                         <Link className="header__link" to="/" onClick={cerrarMenu}>Catálogo</Link>
-                        <Link className="header__link" to="/sobre-nosotros"onClick={cerrarMenu}>Sobre nosotros</Link>
-                        <Link className="header__link" to="/#contacto" onClick={cerrarMenu}>Contacto</Link>
+                        <Link className="header__link" to="/sobre-nosotros" onClick={cerrarMenu}>Sobre nosotros</Link>
+                        <a className="header__link" href="https://www.instagram.com/ArribaCrochet" target="_blank"
+                            rel="noopener noreferrer" onClick={cerrarMenu}
+                        >Contacto</a>
                     </div>
 
                     <div className="header__nav-right">

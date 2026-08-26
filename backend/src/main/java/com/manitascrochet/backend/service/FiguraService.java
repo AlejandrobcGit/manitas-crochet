@@ -139,7 +139,7 @@ public class FiguraService {
                                 .toList();
 
                 if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
-                        figura.setImagenPrincipal("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
+                         figura.setImagenPrincipal(imageUrl + "/" + imageFolder + "/default.webp");
                 }
 
                 ResumenValoracionDto resumenValoracionDto = valoracionService

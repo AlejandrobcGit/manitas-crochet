@@ -1,6 +1,7 @@
 import "./FiguraCard.css";
 import { useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart, FaStar } from "react-icons/fa";
+import { getCatalogImage } from "../api/imagekit";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -8,19 +9,7 @@ function FiguraCard({ figura, esFavorito, onToggleFavorito }) {
 
     const navigate = useNavigate();
 
-    const optimizeImage = (
-        url,
-        transformation = "tr:w-600,q-auto,f-auto"
-    ) => {
-        if (!url) return null;
-
-        return url.replace(
-            "https://ik.imagekit.io/8hlhxb9hx/",
-            `https://ik.imagekit.io/8hlhxb9hx/${transformation}/`
-        );
-    };
-
-    const imageUrl = optimizeImage(figura.imagenPrincipal);
+    const imageUrl = getCatalogImage(figura.imagenPrincipal);
 
     const handleFavorito = async (e) => {
         e.stopPropagation();
