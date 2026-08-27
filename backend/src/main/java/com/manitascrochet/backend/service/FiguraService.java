@@ -35,9 +35,7 @@ import com.manitascrochet.backend.repository.ValoracionRepository;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FiguraService {
@@ -137,18 +135,12 @@ public class FiguraService {
                                                                         (long) lista.size());
                                                 }));
 
-                long inicio = System.currentTimeMillis();
-
                 List<FiguraListadoDto> resultado = figuras.stream()
                                 .map(figura -> convertirFiguraListadoDto(
                                                 figura,
                                                 categoriasMap,
                                                 resumenValoracionesMap))
                                 .toList();
-
-                log.info(
-                                "obtenerTodasDto total={}ms",
-                                System.currentTimeMillis() - inicio);
 
                 return resultado;
         }
@@ -159,10 +151,6 @@ public class FiguraService {
                         Map<String, String> categoriasMap,
                         Map<String, ResumenValoracionDto> resumenValoracionesMap) {
 
-                long inicioTotal = System.currentTimeMillis();
-
-                long inicioCategoria = System.currentTimeMillis();
-
                 String categoria = categoriasMap.get(figura.getCategoriaId());
 
                 if (categoria == null) {
@@ -170,24 +158,9 @@ public class FiguraService {
                                         figura.getCategoriaId());
                 }
 
-                long tiempoCategoria = System.currentTimeMillis() - inicioCategoria;
-
-                long inicioValoraciones = System.currentTimeMillis();
-
                 ResumenValoracionDto resumen = resumenValoracionesMap.getOrDefault(
                                 figura.getId(),
                                 new ResumenValoracionDto(0.0, 0L));
-
-                long tiempoValoraciones = System.currentTimeMillis() - inicioValoraciones;
-
-                long tiempoTotal = System.currentTimeMillis() - inicioTotal;
-
-                log.info(
-                                "Figura {} -> categoria={}ms, valoraciones={}ms, total={}ms",
-                                figura.getId(),
-                                tiempoCategoria,
-                                tiempoValoraciones,
-                                tiempoTotal);
 
                 String imagenPrincipal = figura.getImagenPrincipal() == null
                                 || figura.getImagenPrincipal().isBlank()

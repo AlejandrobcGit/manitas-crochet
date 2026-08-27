@@ -15,7 +15,7 @@ target/
 .github
 
 # Variables de entorno
-*.env*
+*env*
 
 ### IntelliJ IDEA ###
 .idea

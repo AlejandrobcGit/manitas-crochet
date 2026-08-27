@@ -46,9 +46,9 @@ export function FigurasProvider({ children }) {
         }
     }, [apiFetch]);
 
-    useEffect(() => {
-        cargarFiguras();
-    }, [cargarFiguras]);
+    // useEffect(() => {
+    //     cargarFiguras();
+    // }, [cargarFiguras]);
 
     return (
         <FigurasContext.Provider

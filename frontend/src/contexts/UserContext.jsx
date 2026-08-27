@@ -4,6 +4,7 @@ import { parseApiError } from "../api/parseApiError";
 import { UserContext } from "./UserContextDefinition";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const HAD_SESSION_KEY = "hadSession";
 
 function UserProvider(props) {
 
@@ -40,6 +41,10 @@ function UserProvider(props) {
         const data = await respuesta.json();
 
         setUser(buildUserFromResponse(data));
+
+        // Marcamos que este navegador tuvo una sesión válida,
+        // así en próximas cargas sabremos que vale la pena intentar refrescar.
+        localStorage.setItem(HAD_SESSION_KEY, "true");
     };
 
     const refresh = useCallback(async () => {
@@ -51,23 +56,34 @@ function UserProvider(props) {
 
             if (!respuesta.ok) {
                 setUser(null);
+                localStorage.removeItem(HAD_SESSION_KEY);
                 return null;
             }
 
             const data = await respuesta.json();
 
             setUser(buildUserFromResponse(data));
+            localStorage.setItem(HAD_SESSION_KEY, "true");
 
             return data.accessToken;
 
         } catch {
             setUser(null);
+            localStorage.removeItem(HAD_SESSION_KEY);
             return null;
         }
     }, []);
 
     useEffect(() => {
-        refresh();
+        // Si este navegador nunca ha tenido una sesión válida,
+        // no tiene sentido gastar una petición de refresh que sabemos que fallará.
+        const hadSession = localStorage.getItem(HAD_SESSION_KEY) === "true";
+
+        if (hadSession) {
+            refresh();
+        } else {
+            setUser(null);
+        }
     }, [refresh]);
 
     const logout = async () => {
@@ -80,6 +96,7 @@ function UserProvider(props) {
             console.error("Error al cerrar sesión en el servidor:", error);
         } finally {
             setUser(null);
+            localStorage.removeItem(HAD_SESSION_KEY);
             navigate("/");
         }
     };
