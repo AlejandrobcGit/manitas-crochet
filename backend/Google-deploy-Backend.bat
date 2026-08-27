@@ -52,7 +52,7 @@ gcloud run deploy backend ^
 --cpu=1 ^
 --min-instances=0 ^
 --max-instances=3 ^
---env-vars-file=.env.prod
+--env-vars-file=.env
 
 if errorlevel 1 (
     echo ERROR desplegando Cloud Run

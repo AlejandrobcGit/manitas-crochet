@@ -3,7 +3,11 @@ package com.manitascrochet.backend.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -23,13 +27,17 @@ import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncont
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.FiguraNoEncontradaException;
 import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.model.Figura;
+import com.manitascrochet.backend.model.Valoracion;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 import com.manitascrochet.backend.repository.ColorRepository;
 import com.manitascrochet.backend.repository.FiguraRepository;
+import com.manitascrochet.backend.repository.ValoracionRepository;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FiguraService {
@@ -37,6 +45,7 @@ public class FiguraService {
         private final FiguraRepository figuraRepository;
         private final CategoriaRepository categoriaRepository;
         private final ColorRepository colorRepository;
+        private final ValoracionRepository valoracionRepository;
         private final ImageService imageService;
         // si elimnara el FileStorageService, cuando imageUpload esta lito
         // private final FileStorageService fileStorageService;
@@ -57,53 +66,143 @@ public class FiguraService {
         private final MongoTemplate mongoTemplate;
 
         // Obtener todas las figuras en formato DTO
-        public List<FiguraListadoDto> obtenerTodasDto(String nombre, String categoriaId) {
+        public List<FiguraListadoDto> obtenerTodasDto(
+                        String nombre,
+                        String categoriaId) {
 
                 Query query = new Query();
                 List<Criteria> criterios = new ArrayList<>();
 
                 if (nombre != null && !nombre.isBlank()) {
-                        criterios.add(Criteria.where("nombre").regex(nombre, "i")); // buscador → parcial
+                        criterios.add(
+                                        Criteria.where("nombre")
+                                                        .regex(Pattern.quote(nombre.trim()), "i"));
                 }
 
                 if (categoriaId != null && !categoriaId.isBlank()) {
-                        criterios.add(Criteria.where("categoriaId").is(categoriaId)); // filtro → exacto
-                }
-                // Combina todos los filtros antes de ejecutar la consulta.
-                if (!criterios.isEmpty()) {
-                        query.addCriteria(new Criteria().andOperator(criterios.toArray(Criteria[]::new)));
+                        criterios.add(
+                                        Criteria.where("categoriaId")
+                                                        .is(categoriaId));
                 }
 
-                return mongoTemplate.find(query, Figura.class)
+                if (!criterios.isEmpty()) {
+                        query.addCriteria(
+                                        new Criteria().andOperator(
+                                                        criterios.toArray(Criteria[]::new)));
+                }
+
+                List<Figura> figuras = mongoTemplate.find(query, Figura.class);
+
+                // Obtener todas las categorías necesarias en una sola consulta
+                Set<String> categoriaIds = figuras.stream()
+                                .map(Figura::getCategoriaId)
+                                .collect(Collectors.toSet());
+
+                Map<String, String> categoriasMap = categoriaRepository.findAllById(categoriaIds)
                                 .stream()
-                                .map(this::convertirFiguraListadoDto)
+                                .collect(Collectors.toMap(
+                                                Categoria::getId,
+                                                Categoria::getNombre));
+
+                // Obtener valoresciones en uns sola consulta
+                List<String> figuraIds = figuras.stream()
+                                .map(Figura::getId)
                                 .toList();
+
+                List<Valoracion> valoraciones = valoracionRepository.findByFiguraIdIn(figuraIds);
+
+                // agrupamos las valoraciones por figuras
+
+                Map<String, List<Valoracion>> valoracionesPorFigura = valoraciones.stream()
+                                .collect(Collectors.groupingBy(
+                                                Valoracion::getFiguraId));
+
+                // calcular promedio
+
+                Map<String, ResumenValoracionDto> resumenValoracionesMap = valoracionesPorFigura.entrySet()
+                                .stream()
+                                .collect(Collectors.toMap(
+                                                Map.Entry::getKey,
+                                                entry -> {
+
+                                                        List<Valoracion> lista = entry.getValue();
+
+                                                        double media = lista.stream()
+                                                                        .mapToInt(Valoracion::getPuntuacion)
+                                                                        .average()
+                                                                        .orElse(0.0);
+
+                                                        return new ResumenValoracionDto(
+                                                                        media,
+                                                                        (long) lista.size());
+                                                }));
+
+                long inicio = System.currentTimeMillis();
+
+                List<FiguraListadoDto> resultado = figuras.stream()
+                                .map(figura -> convertirFiguraListadoDto(
+                                                figura,
+                                                categoriasMap,
+                                                resumenValoracionesMap))
+                                .toList();
+
+                log.info(
+                                "obtenerTodasDto total={}ms",
+                                System.currentTimeMillis() - inicio);
+
+                return resultado;
         }
 
         // Convertir Figura a FiguraListadoDto
-        private FiguraListadoDto convertirFiguraListadoDto(Figura figura) {
+        private FiguraListadoDto convertirFiguraListadoDto(
+                        Figura figura,
+                        Map<String, String> categoriasMap,
+                        Map<String, ResumenValoracionDto> resumenValoracionesMap) {
 
-                String categoria = categoriaRepository
-                                .findById(figura.getCategoriaId())
-                                .map(Categoria::getNombre)
-                                .orElseThrow(() -> new CategoriaNoEncontradaException(figura.getCategoriaId()));
+                long inicioTotal = System.currentTimeMillis();
 
-                if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
-                        figura.setImagenPrincipal(imageUrl + "/" + imageFolder + "/default.webp");
+                long inicioCategoria = System.currentTimeMillis();
+
+                String categoria = categoriasMap.get(figura.getCategoriaId());
+
+                if (categoria == null) {
+                        throw new CategoriaNoEncontradaException(
+                                        figura.getCategoriaId());
                 }
 
-                ResumenValoracionDto resumenValoracionDto = valoracionService
-                                .obtenerResumenValoraciones(figura.getId());
+                long tiempoCategoria = System.currentTimeMillis() - inicioCategoria;
+
+                long inicioValoraciones = System.currentTimeMillis();
+
+                ResumenValoracionDto resumen = resumenValoracionesMap.getOrDefault(
+                                figura.getId(),
+                                new ResumenValoracionDto(0.0, 0L));
+
+                long tiempoValoraciones = System.currentTimeMillis() - inicioValoraciones;
+
+                long tiempoTotal = System.currentTimeMillis() - inicioTotal;
+
+                log.info(
+                                "Figura {} -> categoria={}ms, valoraciones={}ms, total={}ms",
+                                figura.getId(),
+                                tiempoCategoria,
+                                tiempoValoraciones,
+                                tiempoTotal);
+
+                String imagenPrincipal = figura.getImagenPrincipal() == null
+                                || figura.getImagenPrincipal().isBlank()
+                                                ? imageUrl + "/" + imageFolder + "/default.webp"
+                                                : figura.getImagenPrincipal();
 
                 return new FiguraListadoDto(
                                 figura.getId(),
                                 figura.getNombre(),
                                 categoria,
-                                figura.getImagenPrincipal(),
+                                imagenPrincipal,
                                 figura.getAltura(),
                                 figura.getAncho(),
-                                resumenValoracionDto.getValoracionMedia(),
-                                resumenValoracionDto.getTotalValoraciones());
+                                resumen.getValoracionMedia(),
+                                resumen.getTotalValoraciones());
         }
 
         // Obtener figura por id
@@ -139,7 +238,7 @@ public class FiguraService {
                                 .toList();
 
                 if (figura.getImagenPrincipal() == null || figura.getImagenPrincipal().isBlank()) {
-                         figura.setImagenPrincipal(imageUrl + "/" + imageFolder + "/default.webp");
+                        figura.setImagenPrincipal(imageUrl + "/" + imageFolder + "/default.webp");
                 }
 
                 ResumenValoracionDto resumenValoracionDto = valoracionService

@@ -12,7 +12,7 @@ public interface ValoracionRepository extends MongoRepository<Valoracion, String
     Optional<Valoracion> findByUsuarioIdAndFiguraId(
             String usuarioId,
             String figuraId);
-
+    List<Valoracion> findByFiguraIdIn(List<String> figuraIds);
     List<Valoracion> findByFiguraId(String figuraId);
     void deleteByFiguraId(String figuraId);
     long countByFiguraId(String figuraId);
