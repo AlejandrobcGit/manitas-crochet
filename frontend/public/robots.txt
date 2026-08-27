@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://frontend-44190383928.europe-southwest1.run.app/sitemap.xml
