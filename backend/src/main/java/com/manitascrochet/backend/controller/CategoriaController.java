@@ -16,6 +16,7 @@ import com.manitascrochet.backend.dto.CategoriaRequestDto;
 import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.service.CategoriaService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -62,5 +63,14 @@ public class CategoriaController {
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable String id) {
         categoriaService.eliminar(id);
+    }
+
+    // temporal
+
+    @GetMapping("/debug/secure")
+
+    public String secure(HttpServletRequest request) {
+        return String.valueOf(request.isSecure());
+
     }
 }
