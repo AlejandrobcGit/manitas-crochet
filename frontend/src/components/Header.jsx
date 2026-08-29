@@ -5,7 +5,7 @@ import "./Header.css";
 import { useUser } from "../hooks/useUser";
 import { useApiFetch } from "../api/useApiFetch";
 import { Link } from "react-router-dom";
-import logo from '../assets/logo.jpg';
+import logo from '../assets/logo.webp';
 
 function Header() {
     const { user, logout } = useUser();

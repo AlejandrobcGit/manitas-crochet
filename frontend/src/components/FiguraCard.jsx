@@ -9,7 +9,7 @@ function FiguraCard({ figura, esFavorito, onToggleFavorito }) {
 
     const navigate = useNavigate();
 
-    const imageUrl = getCatalogImage(figura.imagenPrincipal);
+    const imageUrl = getCatalogImage(figura.imagenPrincipal, 300);
 
     const handleFavorito = async (e) => {
         e.stopPropagation();

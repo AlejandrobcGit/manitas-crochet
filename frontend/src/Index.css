@@ -46,3 +46,7 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+.catalog-content {
+    min-height: 580px;
+}

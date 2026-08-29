@@ -17,10 +17,10 @@ const addTransformation = (imageUrl, transformation) => {
     return `${url.origin}/${imageKitId}/${transformation}/${imagePath}`;
 };
 
-export const getCatalogImage = (imageUrl) =>
+export const getCatalogImage = (imageUrl, width = 300) =>
     addTransformation(
         imageUrl,
-        "tr:w-600,q-auto,f-auto,l-image,i-BadgeIntagram.png,lx-N5,ly-N5,w-80,o-40,l-end"
+        `tr:w-${width},q-auto,f-auto,l-image,i-BadgeIntagram.png,lx-N5,ly-N5,w-80,o-40,l-end`
     );
 
 export const getGalleryImage = (imageUrl) =>
