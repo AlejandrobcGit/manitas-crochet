@@ -18,7 +18,7 @@ import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenExpirado
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenInvalidoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenInvalidoRecuperacionException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenYaUsadoException;
-import com.manitascrochet.backend.exception.GlobalExceptionHandler.UsuarioNotFoundException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.UsernameNotFoundException;
 import com.manitascrochet.backend.model.TokenVerificacion;
 import com.manitascrochet.backend.model.Usuario;
 import com.manitascrochet.backend.repository.TokenVerificacionRepository;
@@ -46,7 +46,7 @@ public class VerificacionEmailService {
         public void enviarCorreoVerificacion(String email) throws MessagingException {
 
                 Usuario usuario = usuarioRepository.findByEmail(email)
-                                .orElseThrow(() -> new UsuarioNotFoundException(email));
+                                .orElseThrow(() -> new UsernameNotFoundException(email));
 
                 if (usuario.isEmailVerificado()) {
                         throw new EmailYaVerificadoException();
@@ -131,7 +131,7 @@ public class VerificacionEmailService {
                 // 3) Ya tenemos garantía de que SOLO esta llamada pudo marcar el token,
                 // así que ahora sí actualizamos el usuario de forma segura.
                 Usuario usuario = usuarioRepository.findById(tokenVerificacion.getUsuarioId())
-                                .orElseThrow(() -> new UsuarioNotFoundException(
+                                .orElseThrow(() -> new UsernameNotFoundException(
                                                 tokenVerificacion.getUsuarioId()));
 
                 if (usuario.isEmailVerificado()) {

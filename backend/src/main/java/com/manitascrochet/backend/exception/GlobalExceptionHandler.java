@@ -140,9 +140,9 @@ public class GlobalExceptionHandler {
 
     // ─── Autenticación / Registro ──────────────────────────────────────────────
 
-    @ExceptionHandler(UsuarioNotFoundException.class)
-    public ResponseEntity<ApiError> handleUsuarioNotFound(UsuarioNotFoundException ex) {
-        return build(HttpStatus.NOT_FOUND, "USUARIO_NOT_FOUND", ex.getMessage());
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiError> handleUsuarioNotFound(UsernameNotFoundException ex) {
+        return build(HttpStatus.UNAUTHORIZED, "SESION_INVALIDA", "Credenciales inválidas o sesión expirada.");
     }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)
@@ -214,17 +214,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MailAuthenticationException.class)
     public ResponseEntity<ApiError> handleMailAuthenticationException(MailAuthenticationException ex) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_AUTH_ERROR",
-                "Error de configuración del servicio de correo ->"+ ex.getMessage());
+                "Error de configuración del servicio de correo ->" + ex.getMessage());
     }
 
     @ExceptionHandler(MailException.class)
     public ResponseEntity<ApiError> handleMailException(MailException ex) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR", "No se pudo enviar el correo electrónico ->"+ ex.getMessage());
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR",
+                "No se pudo enviar el correo electrónico ->" + ex.getMessage());
     }
 
     @ExceptionHandler(MessagingException.class)
     public ResponseEntity<ApiError> handleMessagingException(MessagingException ex) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR", "Error al enviar el correo electrónico ->"+ ex.getMessage());
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_ERROR",
+                "Error al enviar el correo electrónico ->" + ex.getMessage());
     }
 
     @ExceptionHandler(EmailYaVerificadoException.class)
@@ -372,9 +374,9 @@ public class GlobalExceptionHandler {
         }
     }
 
-    public static class UsuarioNotFoundException extends RuntimeException {
+    public static class UsernameNotFoundException extends RuntimeException {
 
-        public UsuarioNotFoundException(String userId) {
+        public UsernameNotFoundException(String userId) {
             super("El usuario con id '" + userId + "' no existe");
         }
     }

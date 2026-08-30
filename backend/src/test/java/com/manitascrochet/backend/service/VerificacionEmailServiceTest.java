@@ -66,7 +66,7 @@ class VerificacionEmailServiceTest {
         when(users.findByEmail("ana@maniatascrochet.com")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.enviarCorreoVerificacion("ana@maniatascrochet.com"))
-                .isInstanceOf(UsuarioNotFoundException.class);
+                .isInstanceOf(UsernameNotFoundException.class);
 
         verifyNoInteractions(tokens, email);
     }
@@ -144,7 +144,7 @@ class VerificacionEmailServiceTest {
         when(users.findById("u1")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.verificarCuenta("t"))
-                .isInstanceOf(UsuarioNotFoundException.class);
+                .isInstanceOf(UsernameNotFoundException.class);
 
         verify(users, never()).save(any());
     }

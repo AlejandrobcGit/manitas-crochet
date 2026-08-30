@@ -52,7 +52,8 @@ gcloud run deploy backend ^
 --cpu=1 ^
 --min-instances=0 ^
 --max-instances=3 ^
---env-vars-file=env.yaml
+--env-vars-file=env.yaml ^
+--set-secrets=MONGODB_URI=mongodb-uri:latest,EMAIL_PASSWORD=EMAIL_PASSWORD:latest,JWT_SECRET=JWT_SECRET:latest,IMAGEKIT_PUBLIC_KEY=IMAGEKIT_PUBLIC_KEY:latest,IMAGEKIT_PRIVATE_KEY=IMAGEKIT_PRIVATE_KEY:latest
 
 if errorlevel 1 (
     echo ERROR desplegando Cloud Run
