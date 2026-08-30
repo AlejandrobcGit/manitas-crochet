@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -88,6 +89,12 @@ public class FiguraService {
                                         new Criteria().andOperator(
                                                         criterios.toArray(Criteria[]::new)));
                 }
+
+                //  Ordenar la figuras de la Más nueva → más vieja
+                query.with(
+                                Sort.by(
+                                                Sort.Order.desc("fechaUltimaModificacion"),
+                                                Sort.Order.desc("fechaCreacion")));
 
                 List<Figura> figuras = mongoTemplate.find(query, Figura.class);
 
