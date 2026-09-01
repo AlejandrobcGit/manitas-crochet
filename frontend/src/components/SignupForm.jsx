@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../hooks/useUser";
+
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import "./SignupForm.css";
+
+const SIGNUP_ENABLED = import.meta.env.VITE_ACCOUNTS_ENABLED !== "false";
 
 function SignupForm() {
     const { signup } = useUser();
@@ -29,67 +34,81 @@ function SignupForm() {
     };
 
     return (
-        <div className="signup-page">
-            <form className="signup-form" onSubmit={handleSubmit}>
+        <div className="signup-layout">
+            <Header />
+            <div className="signup-page">
+                <form className="signup-form" onSubmit={handleSubmit}>
 
-                <h1 className="signup-form__title">Registro</h1>
+                    <h1 className="signup-form__title">Registro</h1>
 
-                {error && (
-                    <p className="signup-form__error" role="alert">
-                        {error}
-                    </p>
-                )}
+                    {error && (
+                        <p className="signup-form__error" role="alert">
+                            {error}
+                        </p>
+                    )}
 
-                <label className="signup-form__label" htmlFor="username">
-                    Usuario
-                </label>
-                <input
-                    id="username"
-                    className="signup-form__input"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    autoComplete="username"
-                    required
-                />
+                    <label className="signup-form__label" htmlFor="username">
+                        Usuario
+                    </label>
+                    <input
+                        id="username"
+                        className="signup-form__input"
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        autoComplete="username"
+                        disabled={!SIGNUP_ENABLED}
+                        required
+                    />
 
-                <label className="signup-form__label" htmlFor="email">
-                    Correo
-                </label>
-                <input
-                    id="email"
-                    className="signup-form__input"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="email"
-                    required
-                />
+                    <label className="signup-form__label" htmlFor="email">
+                        Correo
+                    </label>
+                    <input
+                        id="email"
+                        className="signup-form__input"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                        disabled={!SIGNUP_ENABLED}
+                        required
+                    />
 
-                <label className="signup-form__label" htmlFor="password">
-                    Contraseña
-                </label>
-                <input
-                    id="password"
-                    className="signup-form__input"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    autoComplete="new-password"
-                    required
-                />
+                    <label className="signup-form__label" htmlFor="password">
+                        Contraseña
+                    </label>
+                    <input
+                        id="password"
+                        className="signup-form__input"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="new-password"
+                        disabled={!SIGNUP_ENABLED}
+                        required
+                    />
 
-                <button
-                    className="signup-form__submit"
-                    type="submit"
-                    disabled={submitting}
-                >
-                    {submitting ? "Registrando..." : "Registrar"}
-                </button>
-
-            </form>
+                    <button
+                        className="signup-form__submit"
+                        type="submit"
+                        disabled={submitting || !SIGNUP_ENABLED}
+                    >
+                        {submitting ? "Registrando..." : "Registrar"}
+                    </button>
+                    {!SIGNUP_ENABLED && (
+                        <p className="signup-form__error" role="alert">
+                            ⚠️Registro no disponible temporalmente.
+                            <br />
+                            Mientras tanto, el catálogo puede seguir consultándose con normalidad.⚠️
+                        </p>
+                    )}
+                </form>
+            </div>
+            <Footer />
         </div>
     );
+
 }
 
 export default SignupForm;

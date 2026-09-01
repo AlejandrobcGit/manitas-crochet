@@ -1,9 +1,15 @@
-.signup-page {
+.signup-layout {
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.signup-page {
+    flex: 1 1 auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 6rem 1.5rem 2rem;
+    padding: 2.5rem 1.5rem; /* espacio suficiente alrededor */
     background: var(--color-cream, #fffaf3);
 }
 

@@ -145,6 +145,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.UNAUTHORIZED, "SESION_INVALIDA", "Credenciales inválidas o sesión expirada.");
     }
 
+    @ExceptionHandler(DisableSinUpException.class)
+    public ResponseEntity<ApiError> handleDisableSinup(DisableSinUpException ex) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, "REGISTRO_DESHABILITADO", ex.getMessage());
+    }
+
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     public ResponseEntity<ApiError> handleUsernameExists(UsernameAlreadyExistsException ex) {
         return build(HttpStatus.CONFLICT, "USERNAME_ALREADY_EXISTS", ex.getMessage());
@@ -440,6 +445,12 @@ public class GlobalExceptionHandler {
     public static class ColorEnUsoException extends RuntimeException {
         public ColorEnUsoException() {
             super("No se puede eliminar colores asignados");
+        }
+    }
+
+    public static class DisableSinUpException extends RuntimeException {
+        public DisableSinUpException() {
+            super("La funcionalidad de cuentas de usuario se encuentra temporalmente deshabilitada.");
         }
     }
 }

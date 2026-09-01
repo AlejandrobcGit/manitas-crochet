@@ -25,6 +25,7 @@ import com.manitascrochet.backend.dto.security.LoginDto;
 import com.manitascrochet.backend.dto.security.MessageResponse;
 import com.manitascrochet.backend.dto.security.ResetPasswordRequest;
 import com.manitascrochet.backend.dto.security.SignupDto;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.DisableSinUpException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.EmailNotFoundException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenInvalidoException;
 import com.manitascrochet.backend.exception.security.EmailAlreadyExistsException;
@@ -65,6 +66,9 @@ public class AuthController {
 
     @Value("${app.cookie.same-site:Lax}")
     private String cookieSameSite;
+
+    @Value("${app.security.signup:true}")
+    private boolean ACCOUNTS_ENABLED;
 
     public AuthController(
             AuthenticationManager authenticationManager,
@@ -191,6 +195,10 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(
             @Valid @RequestBody SignupDto signUpRequest) {
+
+        if (!ACCOUNTS_ENABLED) {
+            throw new DisableSinUpException();
+        }
 
         if (usuarioRepository.existsByUsername(signUpRequest.getUsername())) {
             throw new UsernameAlreadyExistsException("Ya existe un usuario con ese nombre.");
