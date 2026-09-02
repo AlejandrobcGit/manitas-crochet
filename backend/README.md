@@ -1,6 +1,6 @@
 # Backend de Manitas Crochet
 
-Este módulo contiene la API REST de Manitas Crochet, desarrollada con Spring Boot y conectada a MongoDB. Además del catálogo del MVP, la versión 2 incorpora autenticación JWT, roles, gestión de usuarios, favoritos, valoraciones, comentarios, verificación de correo y recuperación de contraseña.
+Este módulo contiene la API REST de Manitas Crochet, desarrollada con Spring Boot y conectada a MongoDB. La versión 3 incorpora un dashboard de estadísticas con caché y agregaciones en paralelo, almacenamiento de imágenes en ImageKit y monitorización con Actuator/Prometheus.
 
 ## 🧩 Funcionalidades principales
 
@@ -10,6 +10,11 @@ Este módulo contiene la API REST de Manitas Crochet, desarrollada con Spring Bo
 - Autenticación stateless con JWT, refresh token y roles `USER`/`ADMIN`.
 - Registro, login, logout, verificación de email y recuperación de contraseña.
 - Favoritos por usuario, valoraciones de 1 a 5 y comentarios por figura.
+- Dashboard de estadísticas: KPIs, rankings Top-10, tendencias y evolución mensual.
+- Almacenamiento de imágenes en ImageKit con compresión WebP.
+- Caché de 30 s (Caffeine) para los KPIs del dashboard.
+- Agregaciones MongoDB en paralelo mediante `CompletableFuture`.
+- Monitorización con Spring Actuator y métricas Prometheus.
 - Validación de datos y manejo centralizado de excepciones.
 - CORS preparado para el frontend local.
 
@@ -21,11 +26,16 @@ Este módulo contiene la API REST de Manitas Crochet, desarrollada con Spring Bo
 - Spring Security
 - Spring Data MongoDB
 - Spring Validation
-- JJWT
+- JJWT 0.11.5
 - Spring Mail
 - Spring Dotenv
+- Spring Actuator + Micrometer (Prometheus)
+- ImageKit SDK 3.0.0
+- Caffeine 3.1.8
+- WebP ImageIO 0.1.6
 - Lombok
 - Maven
+- JaCoCo 0.8.13 (cobertura de código)
 
 ## 📦 Requisitos previos
 
@@ -33,6 +43,7 @@ Este módulo contiene la API REST de Manitas Crochet, desarrollada con Spring Bo
 - Maven disponible en la línea de comandos
 - Acceso a una base de datos MongoDB.
 - Cuenta SMTP de Gmail o un servidor SMTP compatible.
+- Cuenta ImageKit para almacenamiento de imágenes en la nube.
 
 ## ⚙️ Variables de entorno
 
@@ -47,11 +58,22 @@ APP_FRONTEND_URL=http://localhost:5173
 jwt.secret=una-clave-secreta-larga
 EMAIL_ADDRESS=tu-cuenta@gmail.com
 EMAIL_PASSWORD=tu-contraseña-de-aplicación
+IMAGEKIT_PUBLIC_KEY=tu-public-key
+IMAGEKIT_PRIVATE_KEY=tu-private-key
+IMAGEKIT_URL_ENDPOINT=tu-url-endpoint
 ```
 
 Estas variables pueden definirse en un archivo `.env` del backend o en el entorno del proceso. No publiques credenciales reales.
 
 ## ▶️ Ejecutar el proyecto
+
+### Con Docker
+
+```bash
+docker compose up --build backend
+```
+
+### Sin Docker
 
 Desde la raíz del proyecto:
 
@@ -93,10 +115,7 @@ mvnw.cmd spring-boot:run
 
 ### Imágenes
 
-- `POST /api/imagenes/{id}` — subir o reemplazar la imagen principal.
-- `GET /api/imagenes/{filename}` — recuperar una imagen.
-- `GET /api/imagenes/url/{id}` — obtener la URL de la imagen principal.
-- `DELETE /api/imagenes/{id}` — eliminar la imagen principal.
+Las imágenes se almacenan en ImageKit. Los endpoints de imágenes gestionan la subida, eliminación y compresión a WebP.
 
 ### Autenticación
 
@@ -116,6 +135,16 @@ mvnw.cmd spring-boot:run
 - `GET /api/comentarios/figura/{figuraId}` — listar comentarios públicamente.
 - `GET /api/comentarios/figura/{figuraId}/usuario`, `POST /api/comentarios` y `DELETE /api/comentarios/{comentarioId}` — gestionar comentarios; requiere autenticación.
 
+### Dashboard
+
+- `GET /api/dashboard/kpis` — KPIs, rankings Top-10, tendencias y evolución mensual. Solo ADMIN. Caché de 30 s.
+
+### Monitorización
+
+- `GET /actuator/health` — estado de la aplicación (público).
+- `GET /actuator/info` — información de la aplicación (público).
+- `GET /actuator/prometheus` — métricas Prometheus (solo ADMIN).
+
 ## 📁 Estructura relevante
 
 ```text
@@ -127,7 +156,15 @@ src/main/java/
 ├── dto/            # Objetos de transferencia
 ├── exception/      # Manejo de errores
 ├── security/       # JWT, filtros y configuración de seguridad
-└── config/         # Carga inicial, CORS y configuración
+└── config/         # Carga inicial, CORS, caché, ImageKit y configuración
+```
+
+## 🐳 Docker
+
+El backend se contenedoriza con una imagen multi-stage basada en `eclipse-temurin:21-jre`. La JVM se configura con soporte de contenedores y límite de memoria al 75 %.
+
+```bash
+docker compose up --build backend
 ```
 
 ## 📌 Nota

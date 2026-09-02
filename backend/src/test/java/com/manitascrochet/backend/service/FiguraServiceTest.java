@@ -3,9 +3,11 @@ package com.manitascrochet.backend.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,9 +39,11 @@ import com.manitascrochet.backend.model.Categoria;
 import com.manitascrochet.backend.model.Color;
 import com.manitascrochet.backend.model.Dificultad;
 import com.manitascrochet.backend.model.Figura;
+import com.manitascrochet.backend.model.Valoracion;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 import com.manitascrochet.backend.repository.ColorRepository;
 import com.manitascrochet.backend.repository.FiguraRepository;
+import com.manitascrochet.backend.repository.ValoracionRepository;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,6 +66,9 @@ class FiguraServiceTest {
 
     @Mock
     ComentarioService comments;
+
+    @Mock
+    ValoracionRepository valoracionesRepo;
 
     @Mock
     MongoTemplate mongo;
@@ -105,6 +112,19 @@ class FiguraServiceTest {
         return new ResumenValoracionDto(media, total);
     }
 
+    private Valoracion valoracion(String figuraId, int puntuacion) {
+        Valoracion v = new Valoracion();
+        v.setFiguraId(figuraId);
+        v.setPuntuacion(puntuacion);
+        return v;
+    }
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(service, "imageUrl", "https://ik.imagekit.io/8hlhxb9hx");
+        ReflectionTestUtils.setField(service, "imageFolder", "manitas-Crochet");
+        lenient().when(valoracionesRepo.findByFiguraIdIn(anyList())).thenReturn(List.of());
+    }
     // ---------------------------------------------------------------
     // obtenerTodasDto
     // ---------------------------------------------------------------
@@ -115,8 +135,10 @@ class FiguraServiceTest {
         f.setImagenPrincipal("oso.png");
 
         when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
-        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(4.5, 10L));
+        when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
+        when(valoracionesRepo.findByFiguraIdIn(List.of("f1"))).thenReturn(List.of(
+                valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5),
+                valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4)));
 
         List<FiguraListadoDto> resultado = service.obtenerTodasDto(null, null);
 
@@ -129,20 +151,13 @@ class FiguraServiceTest {
         assertThat(dto.getTotalValoraciones()).isEqualTo(10L);
     }
 
-@BeforeEach
-void setUp() {
-    ReflectionTestUtils.setField(service, "imageUrl", "https://ik.imagekit.io/8hlhxb9hx");
-    ReflectionTestUtils.setField(service, "imageFolder", "manitas-Crochet");
-}
-
     @Test
     void obtenerTodasDtoUsaImagenPorDefectoCuandoEsBlank() {
         Figura f = figura();
         f.setImagenPrincipal("   ");
 
         when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
-        when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
+        when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
 
         List<FiguraListadoDto> resultado = service.obtenerTodasDto(null, null);
 
@@ -174,7 +189,7 @@ void setUp() {
     @Test
     void obtenerTodasDtoFallaSiCategoriaNoExiste() {
         when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(figura()));
-        when(categorias.findById("c1")).thenReturn(Optional.empty());
+        when(categorias.findAllById(any())).thenReturn(List.of());
 
         assertThatThrownBy(() -> service.obtenerTodasDto(null, null))
                 .isInstanceOf(CategoriaNoEncontradaException.class);

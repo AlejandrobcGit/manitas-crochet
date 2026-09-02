@@ -54,6 +54,7 @@ class AuthControllerTest {
     }
 
     @Test void registraUsuarioYAdministrador() {
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "ACCOUNTS_ENABLED", true);
         when(users.existsByUsername(anyString())).thenReturn(false);
         when(users.existsByEmail(anyString())).thenReturn(false);
         when(encoder.encode("secreto")).thenReturn("hash");

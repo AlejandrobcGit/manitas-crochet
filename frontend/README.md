@@ -1,6 +1,6 @@
 # Frontend de Manitas Crochet
 
-Este directorio contiene la interfaz web de Manitas Crochet, desarrollada con React y Vite. La versión 2 mantiene el catálogo del MVP y añade autenticación, favoritos, valoraciones, comentarios, verificación de correo, recuperación de contraseña y una galería de varias imágenes.
+Este directorio contiene la interfaz web de Manitas Crochet, desarrollada con React y Vite. La versión 3 añade el dashboard de estadísticas de administración con KPIs, rankings, tendencias y gráficas de evolución, además de la Dockerización del despliegue.
 
 ## 🚀 Tecnologías
 
@@ -8,7 +8,7 @@ Este directorio contiene la interfaz web de Manitas Crochet, desarrollada con Re
 - Vite 8
 - React Router 7
 - React Icons
-- CSS personalizado
+- CSS personalizado (sin framework de UI)
 - Fetch nativo para consumir la API REST del backend
 
 ## 📦 Scripts disponibles
@@ -41,7 +41,7 @@ npm run lint
 
 - `/` — página de inicio con el catálogo de figuras.
 - `/figuras/:id` — vista detallada de una figura.
-- `/administracion` — panel de administración.
+- `/administracion` — panel de administración (incluye el dashboard de estadísticas).
 - `/login` — inicio de sesión y solicitud de recuperación de contraseña.
 - `/signup` — registro de usuarios.
 - `/verificar-email?token=...` — verificación de correo electrónico.
@@ -61,6 +61,7 @@ El frontend consume la API del backend en los endpoints:
 - `/api/favorito`
 - `/api/valoraciones`
 - `/api/comentarios`
+- `/api/dashboard/kpis`
 - `/auth`
 
 Por defecto, la aplicación espera que el backend esté disponible en:
@@ -82,12 +83,22 @@ La URL está configurada actualmente en los servicios del frontend como `http://
 - Formularios de administración para figuras, categorías y colores.
 - Mensajes de carga, validación y error en las peticiones.
 
+## ✨ Funcionalidades de la versión 3
+
+- Dashboard de estadísticas accesible desde el panel de administración con:
+  - 5 tarjetas KPI: total de figuras, visualizaciones, favoritos, comentarios y valoración media.
+  - 4 rankings Top-10 (por visualizaciones, favoritos, comentarios y valoración) en pestañas.
+  - Sección de tendencias: Top-10 figuras más vistas en los últimos 30 días con barras horizontales.
+  - 4 gráficas de evolución mensual (visualizaciones, favoritos, comentarios y valoraciones) en pestañas.
+- Visualización responsive adaptada a escritorio y móvil.
+- Despliegue contenedorizado con Docker y Nginx.
+
 ## 📁 Estructura relevante
 
 ```text
 src/
 ├── components/     # Componentes reutilizables
-├── pages/          # Páginas principales del sitio
+├── pages/          # Páginas principales del sitio (incluye admin/DashboardPage)
 ├── contexts/       # Contextos de datos
 ├── hooks/          # Hooks personalizados
 ├── api/            # Utilidades para peticiones HTTP
@@ -107,6 +118,18 @@ Luego abre la URL mostrada por Vite en el navegador, normalmente:
 
 ```text
 http://localhost:5173
+```
+
+También se puede ejecutar en contenedor:
+
+```bash
+docker compose up --build frontend
+```
+
+El frontend quedará disponible en:
+
+```text
+http://localhost:3000
 ```
 
 ## 🔐 Flujo de autenticación

@@ -75,7 +75,12 @@ function FiguraForm({ onVolver, esEdicion = false, figuraId = null }) {
     const [enviando, setEnviando] = useState(false);
     const [error, setError] = useState(null);
 
-    const crearUrlImagen = (url) => url || null;
+    const crearUrlImagen = (url) => {
+        if (typeof url === "string" && /^https:\/\//.test(url)) {
+            return url;
+        }
+        return null;
+    };
 
     useEffect(() => {
 
