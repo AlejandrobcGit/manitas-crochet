@@ -10,6 +10,9 @@ import SignupForm from "./components/SignupForm";
 import VerificarEmail from "./pages/VerificarEmail";
 import ResetPasswordForm from "./pages/ResetPasswordForm";
 import AboutPage from "./pages/AboutPage"
+import PoliticaCookies from "./pages/PoliticaCookies"
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad"
+import AvisoLegal from "./pages/AvisoLegal"
 
 function App() {
     return (
@@ -49,6 +52,15 @@ function App() {
 
             <Route path="/sobre-nosotros"
                 element={<AboutPage />} />
+
+            <Route path="/politica-cookies"
+                element={<PoliticaCookies />} />
+
+            <Route path="/politica-privacidad"
+                element={<PoliticaPrivacidad />} />
+
+            <Route path="/aviso-legal"
+                element={<AvisoLegal />} />
 
             <Route path="/verificar-email"
                 element={<VerificarEmail />} />
