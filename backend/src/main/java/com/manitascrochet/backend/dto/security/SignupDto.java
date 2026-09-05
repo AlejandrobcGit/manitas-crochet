@@ -24,4 +24,6 @@ public class SignupDto {
   @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
   private String password;
 
+  private Boolean politicaPrivacidadAceptada;
+
 }

@@ -1,6 +1,7 @@
 package com.manitascrochet.backend.controller;
 
 import java.util.Map;
+import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
@@ -28,6 +29,7 @@ import com.manitascrochet.backend.dto.security.SignupDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.DisableSinUpException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.EmailNotFoundException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.TokenInvalidoException;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.PrivacyPolicyNotAcceptedException;
 import com.manitascrochet.backend.exception.security.EmailAlreadyExistsException;
 import com.manitascrochet.backend.exception.security.InvalidRefreshTokenException;
 import com.manitascrochet.backend.exception.security.UsernameAlreadyExistsException;
@@ -196,6 +198,8 @@ public class AuthController {
     public ResponseEntity<?> registerUser(
             @Valid @RequestBody SignupDto signUpRequest) {
 
+        System.out.println("Privacidad aceptada: " + signUpRequest.getPoliticaPrivacidadAceptada());
+
         if (!ACCOUNTS_ENABLED) {
             throw new DisableSinUpException();
         }
@@ -208,13 +212,20 @@ public class AuthController {
             throw new EmailAlreadyExistsException("Ya existe un usuario con ese email.");
         }
 
+        if (!Boolean.TRUE.equals(signUpRequest.getPoliticaPrivacidadAceptada())) {
+            throw new PrivacyPolicyNotAcceptedException();
+        }
+
         Usuario user = new Usuario(
                 null,
                 signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()),
                 Rol.USER,
-                false);
+                false,
+                signUpRequest.getPoliticaPrivacidadAceptada(),
+                LocalDateTime.now());
+
 
         usuarioRepository.save(user);
 
@@ -243,7 +254,9 @@ public class AuthController {
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()),
                 Rol.ADMIN,
-                false);
+                false,
+                signUpRequest.getPoliticaPrivacidadAceptada(),
+                LocalDateTime.now());
 
         usuarioRepository.save(admin);
 

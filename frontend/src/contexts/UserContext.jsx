@@ -101,12 +101,12 @@ function UserProvider(props) {
         }
     };
 
-    const signup = async ({ username, email, password }) => {
+    const signup = async ({ username, email, password, politicaPrivacidadAceptada }) => {
         const respuesta = await fetch(`${API_URL}/auth/signup`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
-            body: JSON.stringify({ username, email, password })
+            body: JSON.stringify({ username, email, password, politicaPrivacidadAceptada })
         });
 
         if (!respuesta.ok) {

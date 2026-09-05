@@ -1,5 +1,7 @@
 package com.manitascrochet.backend;
 
+import java.time.LocalDateTime;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,7 +29,9 @@ public class BackendApplication {
 						"admin@manitascrochet.com",
 						encoder.encode("12345"),
 						Rol.ADMIN,
-						false);
+						false,
+						true,
+						LocalDateTime.now());
 				usuarioRepository.save(admin);
 				System.out.println("✅ Usuario admin creado por defecto (admin / 12345)");
 				Usuario user = new Usuario(
@@ -36,7 +40,9 @@ public class BackendApplication {
 						"user@manitascrochet.com",
 						encoder.encode("12345"),
 						Rol.USER,
-						false);
+						false,
+						true,
+						LocalDateTime.now());
 				usuarioRepository.save(user);
 				System.out.println("✅ Usuario user creado por defecto (user / 12345)");
 			}

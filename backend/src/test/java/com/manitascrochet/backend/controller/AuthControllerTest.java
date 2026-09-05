@@ -46,7 +46,7 @@ class AuthControllerTest {
     @AfterEach void clearContext() { org.springframework.security.core.context.SecurityContextHolder.clearContext(); }
 
     private SignupDto signup(String username, String email) {
-        SignupDto dto = new SignupDto(); dto.setUsername(username); dto.setEmail(email); dto.setPassword("secreto"); return dto;
+        SignupDto dto = new SignupDto(); dto.setUsername(username); dto.setEmail(email); dto.setPassword("secreto"); dto.setPoliticaPrivacidadAceptada(true); return dto;
     }
     private UserDetailsImpl user() {
         return new UserDetailsImpl("u1", "ana", "ana@test.es", "hash", true,
@@ -60,8 +60,17 @@ class AuthControllerTest {
         when(encoder.encode("secreto")).thenReturn("hash");
         controller.registerUser(signup("ana", "ana@test.es"));
         controller.crearAdmin(signup("admin", "admin@test.es"));
-        verify(users).save(argThat(u -> u.getRol() == Rol.USER));
+        verify(users).save(argThat(u -> u.getRol() == Rol.USER && u.isPoliticaPrivacidadAceptada() && u.getFechaAceptacionPrivacidad() != null));
         verify(users).save(argThat(u -> u.getRol() == Rol.ADMIN));
+    }
+
+    @Test void rechazaRegistroSinAceptarPolitica() {
+        org.springframework.test.util.ReflectionTestUtils.setField(controller, "ACCOUNTS_ENABLED", true);
+        SignupDto dto = signup("ana", "ana@test.es");
+        dto.setPoliticaPrivacidadAceptada(false);
+        assertThatThrownBy(() -> controller.registerUser(dto))
+                .isInstanceOf(com.manitascrochet.backend.exception.GlobalExceptionHandler.PrivacyPolicyNotAcceptedException.class);
+        verify(users, never()).save(any());
     }
 
     @Test void autenticaYRefrescaTokens() {

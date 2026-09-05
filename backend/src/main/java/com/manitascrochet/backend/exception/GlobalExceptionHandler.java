@@ -160,6 +160,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, "EMAIL_ALREADY_EXISTS", ex.getMessage());
     }
 
+    @ExceptionHandler(PrivacyPolicyNotAcceptedException.class)
+    public ResponseEntity<ApiError> handlePrivacyPolicyNotAccepted(PrivacyPolicyNotAcceptedException ex) {
+        return build(HttpStatus.BAD_REQUEST, "PRIVACY_POLICY_NOT_ACCEPTED", ex.getMessage());
+    }
+
     @ExceptionHandler(InvalidRefreshTokenException.class)
     public ResponseEntity<ApiError> handleInvalidRefreshToken(InvalidRefreshTokenException ex) {
         return build(HttpStatus.UNAUTHORIZED, "INVALID_REFRESH_TOKEN", ex.getMessage());
@@ -451,6 +456,12 @@ public class GlobalExceptionHandler {
     public static class DisableSinUpException extends RuntimeException {
         public DisableSinUpException() {
             super("La funcionalidad de cuentas de usuario se encuentra temporalmente deshabilitada.");
+        }
+    }
+
+    public static class PrivacyPolicyNotAcceptedException extends RuntimeException {
+        public PrivacyPolicyNotAcceptedException() {
+            super("Debes aceptar la Política de Privacidad para registrarte.");
         }
     }
 }

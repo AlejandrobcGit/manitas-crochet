@@ -15,6 +15,7 @@ function SignupForm() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -22,9 +23,15 @@ function SignupForm() {
         event.preventDefault();
         setError(null);
         setSubmitting(true);
+        console.log("privacyAccepted:", privacyAccepted);
 
         try {
-            await signup({ username, email, password });
+            await signup({
+                username,
+                email,
+                password,
+                politicaPrivacidadAceptada: privacyAccepted,
+            });
             navigate("/login");
         } catch (apiError) {
             setError(apiError.mensaje || "No se pudo registrar. Inténtalo de nuevo.");
@@ -89,10 +96,32 @@ function SignupForm() {
                         required
                     />
 
+                    <label className="signup-form__privacy">
+                        <input
+                            className="signup-form__checkbox"
+                            type="checkbox"
+                            checked={privacyAccepted}
+                            onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                            disabled={!SIGNUP_ENABLED}
+                            required
+                        />
+                        <span>
+                            Acepto la{" "}
+                            <a
+                                className="signup-form__privacy-link"
+                                href="/politica-privacidad"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Política de Privacidad
+                            </a>
+                        </span>
+                    </label>
+
                     <button
                         className="signup-form__submit"
                         type="submit"
-                        disabled={submitting || !SIGNUP_ENABLED}
+                        disabled={submitting || !SIGNUP_ENABLED || !privacyAccepted}
                     >
                         {submitting ? "Registrando..." : "Registrar"}
                     </button>
