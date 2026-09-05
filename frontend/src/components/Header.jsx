@@ -11,6 +11,7 @@ function Header() {
     const { user, logout } = useUser();
     const apiFetch = useApiFetch();
     const [menuAbierto, setMenuAbierto] = useState(false);
+    const [userMenuAbierto, setUserMenuAbierto] = useState(false);
 
     const cerrarMenu = () => setMenuAbierto(false);
 
@@ -26,6 +27,10 @@ function Header() {
 
     const handleLogout = () => {
         cerrarMenu();
+        if (!window.confirm("¿Seguro que quieres cerrar sesión?")) {
+            return;
+        }
+        setUserMenuAbierto(false);
         logout();
     };
 
@@ -73,8 +78,14 @@ function Header() {
                                         Administración
                                     </Link>
                                 )}
-                                <div className="header__user-menu">
-                                    <button type="button" className="header__user-trigger">
+                                <div className={`header__user-menu ${userMenuAbierto ? "header__user-menu--open" : ""}`}>
+                                    <button
+                                        type="button"
+                                        className="header__user-trigger"
+                                        onClick={() => setUserMenuAbierto(prev => !prev)}
+                                        aria-expanded={userMenuAbierto}
+                                        aria-haspopup="true"
+                                    >
                                         <span className="header__user-name">{user.username}</span>
                                         <span className="header__user-email">{user.email}</span>
                                     </button>
@@ -87,7 +98,10 @@ function Header() {
                                             <button
                                                 type="button"
                                                 className="header__link header__link--button"
-                                                onClick={emailVerificado}
+                                                onClick={() => {
+                                                    setUserMenuAbierto(false);
+                                                    emailVerificado();
+                                                }}
                                             >
                                                 Verificar correo
                                             </button>

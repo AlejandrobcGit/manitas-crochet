@@ -147,8 +147,7 @@
     text-align: left;
 }
 
-.header__user-menu:hover .header__user-dropdown,
-.header__user-menu:focus-within .header__user-dropdown {
+.header__user-menu--open .header__user-dropdown {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
@@ -300,11 +299,11 @@
     }
 
     /* En móvil no hay hover persistente, así que el submenú de
-       usuario se muestra en flujo normal en vez de absoluto */
+       usuario se gestiona igual con el toggle por click */
     .header__user-dropdown {
         position: static;
-        opacity: 1;
-        visibility: visible;
+        opacity: 0;
+        visibility: hidden;
         transform: none;
         box-shadow: none;
         border: none;
@@ -312,6 +311,11 @@
         margin-top: 0.25rem;
         min-width: 0;
         width: 100%;
+    }
+
+    .header__user-menu--open .header__user-dropdown {
+        opacity: 1;
+        visibility: visible;
     }
 
     .header__link--accent {
