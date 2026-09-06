@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import { useFiguras } from "../../hooks/useFiguras";
 import { useCategorias } from "../../hooks/useCategorias";
@@ -15,7 +15,8 @@ function AdminFiguras() {
         figuras,
         recargarFiguras,
         loading,
-        error
+        error,
+        pagina
     } = useFiguras();
 
     const apiFetch = useApiFetch();
@@ -29,8 +30,19 @@ function AdminFiguras() {
     const [categoriaId, setCategoriaId] = useState("");
     const [modo, setModo] = useState("LISTADO");
     const [figuraSeleccionada, setFiguraSeleccionada] = useState(null);
+    const [paginaActual, setPaginaActual] = useState(0);
+    const [paginaInput, setPaginaInput] = useState("");
 
     const nombreDebounced = useDebounce(nombre, 400);
+
+    const cargar = useCallback((page) => {
+        recargarFiguras({
+            nombre: nombreDebounced,
+            categoriaId,
+            page,
+            size: 50
+        });
+    }, [recargarFiguras, nombreDebounced, categoriaId]);
 
     const onEditar = (figuraId) => {
         setFiguraSeleccionada(figuraId);
@@ -46,7 +58,7 @@ function AdminFiguras() {
 
             setFiguraSeleccionada("");
             setModo("LISTADO");
-            recargarFiguras(nombreDebounced, categoriaId);
+            cargar(paginaActual);
         } catch (err) {
             console.error("Error eliminando figura:", err);
         }
@@ -54,8 +66,25 @@ function AdminFiguras() {
 
     // Cada vez que cambie la busqueda (debounced) o la categoria, pedimos al backend
     useEffect(() => {
-        recargarFiguras(nombreDebounced, categoriaId);
-    }, [nombreDebounced, categoriaId, recargarFiguras]);
+        setPaginaActual(0);
+        cargar(0);
+    }, [cargar]);
+
+    const irAPagina = (pagina) => {
+        setPaginaActual(pagina);
+        cargar(pagina);
+    };
+
+    const irAPaginaInput = () => {
+        const num = parseInt(paginaInput, 10);
+        if (isNaN(num)) return;
+        irAPagina(Math.min(Math.max(num - 1, 0), pagina.totalPaginas - 1));
+    };
+
+    // Sincroniza el input con la página actual cuando cambia externamente
+    useEffect(() => {
+        setPaginaInput(String(pagina.paginaActual + 1));
+    }, [pagina.paginaActual]);
 
     return (
         <>
@@ -143,6 +172,57 @@ function AdminFiguras() {
                                     onEditar={onEditar}
                                     onEliminar={onEliminar}
                                 />
+                            )}
+
+                            {modo === "LISTADO" && pagina.totalPaginas > 1 && (
+                                <div className="paginacion">
+                                    <button
+                                        type="button"
+                                        className="paginacion__btn"
+                                        disabled={pagina.paginaActual <= 0}
+                                        onClick={() => irAPagina(pagina.paginaActual - 1)}
+                                    >
+                                        ‹ Anterior
+                                    </button>
+                                    <div className="paginacion__go">
+                                        <label
+                                            className="paginacion__label"
+                                            htmlFor="paginacion-input-admin"
+                                        >
+                                            Página
+                                        </label>
+                                        <input
+                                            id="paginacion-input-admin"
+                                            type="number"
+                                            min="1"
+                                            max={pagina.totalPaginas}
+                                            className="paginacion__input"
+                                            value={paginaInput}
+                                            onChange={(e) => setPaginaInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") irAPaginaInput();
+                                            }}
+                                        />
+                                        <span className="paginacion__info">
+                                            de {pagina.totalPaginas} · {pagina.totalElementos} figuras
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="paginacion__btn"
+                                            onClick={irAPaginaInput}
+                                        >
+                                            Ir
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="paginacion__btn"
+                                        disabled={pagina.paginaActual >= pagina.totalPaginas - 1}
+                                        onClick={() => irAPagina(pagina.paginaActual + 1)}
+                                    >
+                                        Siguiente ›
+                                    </button>
+                                </div>
                             )}
 
                             {modo === "CREAR" && (

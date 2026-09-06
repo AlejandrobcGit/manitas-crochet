@@ -1,6 +1,7 @@
 package com.manitascrochet.backend.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -14,6 +15,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraRequestDto;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.ParametroInvalidoException;
 import com.manitascrochet.backend.model.Dificultad;
 import com.manitascrochet.backend.service.FiguraService;
 import com.manitascrochet.backend.service.VisualizacionService;
@@ -27,6 +29,30 @@ class FiguraControllerTest {
     private FiguraRequestDto dto() {
         return new FiguraRequestDto("Oso", "Descripción", "cat1", Dificultad.PRINCIPIANTE,
                 "Ana", List.of("red"), 10, 8, 100);
+    }
+
+    @Test void obtieneListadoConDefaultsYDelegaEnService() {
+        controller.obtenerTodas(0, 12, null, null, false, null);
+        verify(service).obtenerTodasDto(null, null, false, 0, 12, null);
+    }
+
+    @Test void obtieneListadoPasandoFiltrosYPaginacion() {
+        controller.obtenerTodas(1, 20, "oso", "c1", true, null);
+        verify(service).obtenerTodasDto("oso", "c1", true, 1, 20, null);
+    }
+
+    @Test void rechazaPageNegativa() {
+        assertThatThrownBy(() -> controller.obtenerTodas(-1, 12, null, null, false, null))
+                .isInstanceOf(ParametroInvalidoException.class);
+        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any());
+    }
+
+    @Test void rechazaSizeInvalido() {
+        assertThatThrownBy(() -> controller.obtenerTodas(0, 0, null, null, false, null))
+                .isInstanceOf(ParametroInvalidoException.class);
+        assertThatThrownBy(() -> controller.obtenerTodas(0, 51, null, null, false, null))
+                .isInstanceOf(ParametroInvalidoException.class);
+        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any());
     }
 
     @Test void obtieneListadoYDetalleYMarcaVisualizacion() {

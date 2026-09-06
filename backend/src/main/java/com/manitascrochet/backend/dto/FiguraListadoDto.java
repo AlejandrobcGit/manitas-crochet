@@ -22,4 +22,6 @@ public class FiguraListadoDto {
     private Double valoracionMedia;
 
     private Long totalValoraciones;
+
+    private boolean esFavorito;
 }   

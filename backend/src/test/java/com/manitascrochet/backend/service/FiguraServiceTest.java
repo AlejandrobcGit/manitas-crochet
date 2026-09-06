@@ -73,6 +73,9 @@ class FiguraServiceTest {
     @Mock
     MongoTemplate mongo;
 
+    @Mock
+    com.manitascrochet.backend.repository.FavoritoRepository favoritosRepo;
+
     @InjectMocks
     FiguraService service;
 
@@ -134,21 +137,26 @@ class FiguraServiceTest {
         Figura f = figura();
         f.setImagenPrincipal("oso.png");
 
+        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(1L);
         when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
         when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
         when(valoracionesRepo.findByFiguraIdIn(List.of("f1"))).thenReturn(List.of(
                 valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5),
                 valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4)));
 
-        List<FiguraListadoDto> resultado = service.obtenerTodasDto(null, null);
+        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, null);
 
-        assertThat(resultado).hasSize(1);
-        FiguraListadoDto dto = resultado.get(0);
+        assertThat(resultado.getContenido()).hasSize(1);
+        FiguraListadoDto dto = resultado.getContenido().get(0);
         assertThat(dto.getId()).isEqualTo("f1");
         assertThat(dto.getCategoria()).isEqualTo("Animales");
         assertThat(dto.getImagenPrincipal()).isEqualTo("oso.png");
         assertThat(dto.getValoracionMedia()).isEqualTo(4.5);
         assertThat(dto.getTotalValoraciones()).isEqualTo(10L);
+        assertThat(dto.isEsFavorito()).isFalse();
+        assertThat(resultado.getPaginaActual()).isEqualTo(0);
+        assertThat(resultado.getTotalElementos()).isEqualTo(1L);
+        assertThat(resultado.getTotalPaginas()).isEqualTo(1);
     }
 
     @Test
@@ -156,43 +164,107 @@ class FiguraServiceTest {
         Figura f = figura();
         f.setImagenPrincipal("   ");
 
+        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(1L);
         when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
         when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
 
-        List<FiguraListadoDto> resultado = service.obtenerTodasDto(null, null);
+        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, null);
 
-        assertThat(resultado.get(0).getImagenPrincipal())
+        assertThat(resultado.getContenido().get(0).getImagenPrincipal())
                 .isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
     }
 
     @Test
     void obtenerTodasDtoConFiltros_delegaEnMongoTemplate() {
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of());
+        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(0L);
 
-        List<FiguraListadoDto> resultado = service.obtenerTodasDto("oso", "c1");
+        var resultado = service.obtenerTodasDto("oso", "c1", false, 0, 12, null);
 
-        assertThat(resultado).isEmpty();
-        verify(mongo, times(1)).find(any(Query.class), eq(Figura.class));
+        assertThat(resultado.getContenido()).isEmpty();
+        verify(mongo, times(1)).count(any(Query.class), eq(Figura.class));
     }
 
     @Test
     void obtenerTodasDtoListaVacia_noConsultaCategoriaNiValoraciones() {
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of());
+        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(0L);
 
-        List<FiguraListadoDto> resultado = service.obtenerTodasDto("", "");
+        var resultado = service.obtenerTodasDto("", "", false, 0, 12, null);
 
-        assertThat(resultado).isEmpty();
+        assertThat(resultado.getContenido()).isEmpty();
         verify(categorias, never()).findById(anyString());
         verify(ratings, never()).obtenerResumenValoraciones(anyString());
     }
 
     @Test
     void obtenerTodasDtoFallaSiCategoriaNoExiste() {
+        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(1L);
         when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(figura()));
         when(categorias.findAllById(any())).thenReturn(List.of());
 
-        assertThatThrownBy(() -> service.obtenerTodasDto(null, null))
+        assertThatThrownBy(() -> service.obtenerTodasDto(null, null, false, 0, 12, null))
                 .isInstanceOf(CategoriaNoEncontradaException.class);
+    }
+
+    @Test
+    void obtenerTodasDtoFueraDeRango_devuelveListaVacia() {
+        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(10L);
+
+        var resultado = service.obtenerTodasDto(null, null, false, 5, 12, null);
+
+        assertThat(resultado.getContenido()).isEmpty();
+        assertThat(resultado.getPaginaActual()).isEqualTo(5);
+        assertThat(resultado.getTotalElementos()).isEqualTo(10L);
+        assertThat(resultado.getTotalPaginas()).isEqualTo(1);
+        // No se debe consultar la página (find) si está fuera de rango
+        verify(mongo, never()).find(any(Query.class), eq(Figura.class));
+    }
+
+    @Test
+    void obtenerTodasDtoSoloFavoritos_conUsuarioYFavoritos() {
+        Figura f = figura();
+
+        UserDetailsImpl user = mock(UserDetailsImpl.class);
+        when(user.getUsername()).thenReturn("u1");
+        when(favoritosRepo.findByUsuarioIdAndActivoTrue("u1")).thenReturn(List.of(favorito("f1")));
+        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(1L);
+        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
+        when(valoracionesRepo.findByFiguraIdIn(List.of("f1"))).thenReturn(List.of());
+        when(favoritosRepo.findByUsuarioIdAndFiguraIdInAndActivoTrue("u1", List.of("f1"))).thenReturn(List.of(favorito("f1")));
+
+        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, user);
+
+        assertThat(resultado.getContenido()).hasSize(1);
+        assertThat(resultado.getContenido().get(0).isEsFavorito()).isTrue();
+    }
+
+    @Test
+    void obtenerTodasDtoSoloFavoritos_sinUsuario_devuelveVacio() {
+        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, null);
+
+        assertThat(resultado.getContenido()).isEmpty();
+        verify(mongo, never()).find(any(Query.class), eq(Figura.class));
+    }
+
+    @Test
+    void obtenerTodasDtoSoloFavoritos_usuarioSinFavoritos_devuelveVacio() {
+        UserDetailsImpl user = mock(UserDetailsImpl.class);
+        when(user.getUsername()).thenReturn("u1");
+        when(favoritosRepo.findByUsuarioIdAndActivoTrue("u1")).thenReturn(List.of());
+
+        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, user);
+
+        assertThat(resultado.getContenido()).isEmpty();
+        verify(mongo, never()).find(any(Query.class), eq(Figura.class));
+    }
+
+    private com.manitascrochet.backend.model.Favorito favorito(String figuraId) {
+        com.manitascrochet.backend.model.Favorito f = new com.manitascrochet.backend.model.Favorito();
+        f.setId("fav-" + figuraId);
+        f.setUsuarioId("u1");
+        f.setFiguraId(figuraId);
+        f.setActivo(true);
+        return f;
     }
 
     // ---------------------------------------------------------------

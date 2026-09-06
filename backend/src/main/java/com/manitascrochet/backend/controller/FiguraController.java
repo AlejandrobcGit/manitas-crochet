@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
-import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.dto.FiguraRequestDto;
+import com.manitascrochet.backend.dto.PaginaFigurasDto;
+import com.manitascrochet.backend.exception.GlobalExceptionHandler.ParametroInvalidoException;
 import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 import com.manitascrochet.backend.service.FiguraService;
@@ -37,10 +38,23 @@ public class FiguraController {
 
     // GET /api/figuras
     @GetMapping
-    public List<FiguraListadoDto> obtenerTodas(
+    public PaginaFigurasDto obtenerTodas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
             @RequestParam(required = false) String nombre,
-            @RequestParam(required = false) String categoriaId) {
-        return figuraService.obtenerTodasDto(nombre, categoriaId);
+            @RequestParam(required = false) String categoriaId,
+            @RequestParam(defaultValue = "false") boolean soloFavoritos,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        // Validación manual: page >= 0, size >= 1, size <= 50
+        if (page < 0) {
+            throw new ParametroInvalidoException("El parámetro 'page' debe ser mayor o igual que 0.");
+        }
+        if (size < 1 || size > 50) {
+            throw new ParametroInvalidoException("El parámetro 'size' debe estar entre 1 y 50.");
+        }
+
+        return figuraService.obtenerTodasDto(nombre, categoriaId, soloFavoritos, page, size, userDetails);
     }
 
     // GET /api/figuras/{id}

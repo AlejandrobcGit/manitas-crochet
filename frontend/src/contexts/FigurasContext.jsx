@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useApiFetch } from "../api/useApiFetch";
 import { FigurasContext } from "./FigurasContextDefinition";
 
@@ -7,25 +7,34 @@ export function FigurasProvider({ children }) {
     const apiFetch = useApiFetch();
 
     const [figuras, setFiguras] = useState([]);
+    const [pagina, setPagina] = useState({
+        paginaActual: 0,
+        totalPaginas: 1,
+        totalElementos: 0,
+        tamanoPagina: 12
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const cargarFiguras = useCallback(async (nombre = "", categoriaId = "") => {
+    const cargarFiguras = useCallback(async (params = {}) => {
 
         try {
 
             setLoading(true);
             setError(null);
 
-            const params = new URLSearchParams();
+            const { nombre = "", categoriaId = "", soloFavoritos = false, page = 0, size = 12 } = params;
 
-            if (nombre) params.set("nombre", nombre);
-            if (categoriaId) params.set("categoriaId", categoriaId);
+            const qs = new URLSearchParams();
 
-            const queryString = params.toString();
-            const url = queryString
-                ? `/api/figuras?${queryString}`
-                : "/api/figuras";
+            if (nombre) qs.set("nombre", nombre);
+            if (categoriaId) qs.set("categoriaId", categoriaId);
+            if (soloFavoritos) qs.set("soloFavoritos", "true");
+            qs.set("page", page);
+            qs.set("size", size);
+
+            const queryString = qs.toString();
+            const url = `/api/figuras?${queryString}`;
 
             const response =
                 await apiFetch(url);
@@ -33,7 +42,13 @@ export function FigurasProvider({ children }) {
             const data =
                 await response.json();
 
-            setFiguras(data);
+            setFiguras(data.contenido || []);
+            setPagina({
+                paginaActual: data.paginaActual ?? 0,
+                totalPaginas: data.totalPaginas ?? 1,
+                totalElementos: data.totalElementos ?? 0,
+                tamanoPagina: data.tamanoPagina ?? size
+            });
 
         } catch (error) {
 
@@ -46,10 +61,6 @@ export function FigurasProvider({ children }) {
         }
     }, [apiFetch]);
 
-    // useEffect(() => {
-    //     cargarFiguras();
-    // }, [cargarFiguras]);
-
     return (
         <FigurasContext.Provider
             value={{
@@ -57,6 +68,8 @@ export function FigurasProvider({ children }) {
                 setFiguras,
                 cargarFiguras,
                 recargarFiguras: cargarFiguras,
+                pagina,
+                setPagina,
                 loading,
                 error
             }}

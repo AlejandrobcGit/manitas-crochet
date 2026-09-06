@@ -21,16 +21,19 @@ import com.manitascrochet.backend.dto.ColorResponseDto;
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
 import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.dto.ImageUploadResultDto;
+import com.manitascrochet.backend.dto.PaginaFigurasDto;
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
 import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.FiguraNoEncontradaException;
 import com.manitascrochet.backend.model.Categoria;
+import com.manitascrochet.backend.model.Favorito;
 import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.model.Valoracion;
 import com.manitascrochet.backend.repository.CategoriaRepository;
 import com.manitascrochet.backend.repository.ColorRepository;
+import com.manitascrochet.backend.repository.FavoritoRepository;
 import com.manitascrochet.backend.repository.FiguraRepository;
 import com.manitascrochet.backend.repository.ValoracionRepository;
 import com.manitascrochet.backend.security.UserDetailsImpl;
@@ -45,6 +48,7 @@ public class FiguraService {
         private final CategoriaRepository categoriaRepository;
         private final ColorRepository colorRepository;
         private final ValoracionRepository valoracionRepository;
+        private final FavoritoRepository favoritoRepository;
         private final ImageService imageService;
         // si elimnara el FileStorageService, cuando imageUpload esta lito
         // private final FileStorageService fileStorageService;
@@ -64,10 +68,14 @@ public class FiguraService {
 
         private final MongoTemplate mongoTemplate;
 
-        // Obtener todas las figuras en formato DTO
-        public List<FiguraListadoDto> obtenerTodasDto(
+        // Obtener todas las figuras en formato DTO con paginación
+        public PaginaFigurasDto obtenerTodasDto(
                         String nombre,
-                        String categoriaId) {
+                        String categoriaId,
+                        boolean soloFavoritos,
+                        int page,
+                        int size,
+                        UserDetailsImpl userDetails) {
 
                 Query query = new Query();
                 List<Criteria> criterios = new ArrayList<>();
@@ -84,6 +92,27 @@ public class FiguraService {
                                                         .is(categoriaId));
                 }
 
+                // Filtro de solo favoritos: solo figuras que el usuario tiene marcadas.
+                // Los favoritos se guardan con el USERNAME como usuarioId (ver FavoritoController).
+                String usuarioId = (userDetails != null) ? userDetails.getUsername() : null;
+                if (soloFavoritos) {
+                        // Un usuario anónimo no tiene favoritos → lista vacía
+                        if (usuarioId == null) {
+                                return new PaginaFigurasDto(List.of(), page, 0, 0, size);
+                        }
+                        List<String> favoritosIds = favoritoRepository
+                                        .findByUsuarioIdAndActivoTrue(usuarioId)
+                                        .stream()
+                                        .map(Favorito::getFiguraId)
+                                        .toList();
+                        // Sin favoritos → lista vacía
+                        if (favoritosIds.isEmpty()) {
+                                return new PaginaFigurasDto(List.of(), page, 0, 0, size);
+                        }
+                        criterios.add(
+                                        Criteria.where("id").in(favoritosIds));
+                }
+
                 if (!criterios.isEmpty()) {
                         query.addCriteria(
                                         new Criteria().andOperator(
@@ -96,7 +125,20 @@ public class FiguraService {
                                                 Sort.Order.desc("fechaUltimaModificacion"),
                                                 Sort.Order.desc("fechaCreacion")));
 
-                List<Figura> figuras = mongoTemplate.find(query, Figura.class);
+                // Total de elementos que cumplen el filtro (antes de paginar)
+                long totalElementos = mongoTemplate.count(query, Figura.class);
+
+                // Página fuera de rango → lista vacía (skip mayor que el total)
+                if (totalElementos == 0 || (long) page * size >= totalElementos) {
+                        return new PaginaFigurasDto(List.of(), page, totalPaginas(totalElementos, size), totalElementos, size);
+                }
+
+                // Clonar la query para no mutar la usada en el count y aplicar paginación
+                Query queryPagina = Query.of(query)
+                                .skip((long) page * size)
+                                .limit(size);
+
+                List<Figura> figuras = mongoTemplate.find(queryPagina, Figura.class);
 
                 // Obtener todas las categorías necesarias en una sola consulta
                 Set<String> categoriaIds = figuras.stream()
@@ -142,21 +184,41 @@ public class FiguraService {
                                                                         (long) lista.size());
                                                 }));
 
+                // Favoritos de la página actual en una sola consulta (usuario autenticado)
+                Set<String> favoritosPagina = (usuarioId == null)
+                                ? Set.of()
+                                : favoritoRepository
+                                                .findByUsuarioIdAndFiguraIdInAndActivoTrue(usuarioId, figuraIds)
+                                                .stream()
+                                                .map(Favorito::getFiguraId)
+                                                .collect(Collectors.toSet());
+
                 List<FiguraListadoDto> resultado = figuras.stream()
                                 .map(figura -> convertirFiguraListadoDto(
                                                 figura,
                                                 categoriasMap,
-                                                resumenValoracionesMap))
+                                                resumenValoracionesMap,
+                                                favoritosPagina.contains(figura.getId())))
                                 .toList();
 
-                return resultado;
+                return new PaginaFigurasDto(
+                                resultado,
+                                page,
+                                totalPaginas(totalElementos, size),
+                                totalElementos,
+                                size);
+        }
+
+        private int totalPaginas(long totalElementos, int size) {
+                return (int) Math.ceil((double) totalElementos / size);
         }
 
         // Convertir Figura a FiguraListadoDto
         private FiguraListadoDto convertirFiguraListadoDto(
                         Figura figura,
                         Map<String, String> categoriasMap,
-                        Map<String, ResumenValoracionDto> resumenValoracionesMap) {
+                        Map<String, ResumenValoracionDto> resumenValoracionesMap,
+                        boolean esFavorito) {
 
                 String categoria = categoriasMap.get(figura.getCategoriaId());
 
@@ -182,7 +244,8 @@ public class FiguraService {
                                 figura.getAltura(),
                                 figura.getAncho(),
                                 resumen.getValoracionMedia(),
-                                resumen.getTotalValoraciones());
+                                resumen.getTotalValoraciones(),
+                                esFavorito);
         }
 
         // Obtener figura por id

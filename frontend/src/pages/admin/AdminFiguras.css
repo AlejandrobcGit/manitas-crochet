@@ -126,3 +126,113 @@
         height: 42px;
     }
 }
+
+/* ==========================
+   Paginación
+========================== */
+
+.paginacion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.25rem 0 0.5rem;
+    flex-wrap: wrap;
+}
+
+.paginacion__btn {
+    height: 34px;
+    padding: 0 1.1rem;
+
+    border: 1px solid var(--color-ring);
+    border-radius: 8px;
+
+    background: var(--color-card);
+    color: var(--color-ink);
+
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+.paginacion__btn:hover:not(:disabled) {
+    border-color: var(--color-sage);
+    background: var(--color-sage);
+    color: white;
+}
+
+.paginacion__btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.paginacion__info {
+    font-size: 0.8rem;
+    color: var(--color-ink-soft);
+}
+
+.paginacion__go {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.paginacion__label {
+    font-size: 0.8rem;
+    color: var(--color-ink-soft);
+}
+
+.paginacion__input {
+    width: 64px;
+    height: 34px;
+    padding: 0 0.5rem;
+    border: 1px solid var(--color-ring);
+    border-radius: 8px;
+    background: white;
+    color: var(--color-ink);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.paginacion__input:focus {
+    outline: none;
+    border-color: var(--color-sage);
+    box-shadow: 0 0 0 3px rgba(110, 130, 102, 0.16);
+}
+
+/* ==========================
+   Responsive paginación
+========================== */
+
+@media (max-width: 700px) {
+    .paginacion {
+        gap: 0.5rem;
+    }
+
+    .paginacion__go {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .paginacion__btn {
+        flex: 1 1 auto;
+        min-width: 0;
+        white-space: nowrap;
+        padding: 0 0.75rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .paginacion__go {
+        gap: 0.3rem;
+    }
+
+    .paginacion__label {
+        display: none;
+    }
+}

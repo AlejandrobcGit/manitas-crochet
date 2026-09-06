@@ -258,6 +258,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "INVALID_PARAMETER_TYPE", msg);
     }
 
+    // Parámetros de paginación fuera de rango (page < 0, size < 1, size > 50)
+    @ExceptionHandler(ParametroInvalidoException.class)
+    public ResponseEntity<ApiError> handleParametroInvalido(ParametroInvalidoException ex) {
+        return build(HttpStatus.BAD_REQUEST, "PARAMETRO_INVALIDO", ex.getMessage());
+    }
+
     // ─── Base de datos ─────────────────────────────────────────────────────────
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -462,6 +468,12 @@ public class GlobalExceptionHandler {
     public static class PrivacyPolicyNotAcceptedException extends RuntimeException {
         public PrivacyPolicyNotAcceptedException() {
             super("Debes aceptar la Política de Privacidad para registrarte.");
+        }
+    }
+
+    public static class ParametroInvalidoException extends RuntimeException {
+        public ParametroInvalidoException(String mensaje) {
+            super(mensaje);
         }
     }
 }

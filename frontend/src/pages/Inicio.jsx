@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 import { useFiguras } from "../hooks/useFiguras";
@@ -12,13 +12,33 @@ import Footer from "../components/Footer";
 
 import "./Inicio.css";
 
+const SESSION_KEY = "mcc-catalogo-estado";
+
+function leerEstadoGuardado() {
+    try {
+        const raw = sessionStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+}
+
+function guardarEstado(estado) {
+    try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(estado));
+    } catch {
+        // almacenamiento no disponible
+    }
+}
+
 function Inicio() {
 
     const {
         figuras,
         recargarFiguras,
         loading,
-        error
+        error,
+        pagina
     } = useFiguras();
 
     const {
@@ -26,24 +46,91 @@ function Inicio() {
         loading: loadingCategorias
     } = useCategorias();
 
-    const { favoritos, cambiarFavorito } = useFavoritos();
+    const { cambiarFavorito } = useFavoritos();
 
-    const [nombre, setNombre] = useState("");
-    const [categoriaId, setCategoriaId] = useState("");
-    const [soloFavoritos, setSoloFavoritos] = useState(false);
+    // Recupera el estado guardado una sola vez al montar (al volver del detalle se restaura)
+    const [estadoInicial] = useState(leerEstadoGuardado);
+
+    const [nombre, setNombre] = useState(estadoInicial?.nombre ?? "");
+    const [categoriaId, setCategoriaId] = useState(estadoInicial?.categoriaId ?? "");
+    const [soloFavoritos, setSoloFavoritos] = useState(estadoInicial?.soloFavoritos ?? false);
+    const [paginaActual, setPaginaActual] = useState(estadoInicial?.page ?? 0);
+    const [paginaInput, setPaginaInput] = useState("");
 
     const nombreDebounced = useDebounce(nombre, 400);
 
-    // Cada vez que cambie la busqueda (debounced) o la categoria, pedimos al backend
-    useEffect(() => {
-        recargarFiguras(nombreDebounced, categoriaId);
-    }, [nombreDebounced, categoriaId, recargarFiguras]);
+    const cargar = useCallback((page) => {
+        recargarFiguras({
+            nombre: nombreDebounced,
+            categoriaId,
+            soloFavoritos,
+            page,
+            size: 12
+        });
+    }, [recargarFiguras, nombreDebounced, categoriaId, soloFavoritos]);
 
-    // El filtro de favoritos se aplica en el cliente sobre lo que ya trajo el backend
-    const figurasMostradas = useMemo(() => {
-        if (!soloFavoritos) return figuras;
-        return figuras.filter((figura) => favoritos.includes(figura.id));
-    }, [figuras, favoritos, soloFavoritos]);
+    // Guarda el estado (filtros + página) cuando cambian, para restaurarlo al volver
+    useEffect(() => {
+        guardarEstado({
+            nombre: nombreDebounced,
+            categoriaId,
+            soloFavoritos,
+            page: paginaActual
+        });
+    }, [nombreDebounced, categoriaId, soloFavoritos, paginaActual]);
+
+    // Al montar carga la página guardada; al cambiar un filtro recarga en la página actual
+    useEffect(() => {
+        cargar(paginaActual);
+    }, [cargar, paginaActual]);
+
+    const cambiarNombre = (e) => {
+        setNombre(e.target.value);
+        setPaginaActual(0);
+    };
+
+    const cambiarCategoria = (e) => {
+        setCategoriaId(e.target.value);
+        setPaginaActual(0);
+    };
+
+    const toggleSoloFavoritos = () => {
+        setSoloFavoritos((prev) => !prev);
+        setPaginaActual(0);
+    };
+
+    const limpiarFiltros = () => {
+        setNombre("");
+        setCategoriaId("");
+        setSoloFavoritos(false);
+        setPaginaActual(0);
+    };
+
+    const onToggleFavorito = async (figuraId) => {
+        try {
+            await cambiarFavorito(figuraId);
+            // Reconsultamos para actualizar el flag esFavorito (y quitar si filtramos favoritos)
+            cargar(paginaActual);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const irAPagina = (pagina) => {
+        setPaginaActual(pagina);
+    };
+
+    const irAPaginaInput = () => {
+        const num = parseInt(paginaInput, 10);
+        if (isNaN(num)) return;
+        // usuario escribe 1..N, internamente es 0..N-1
+        irAPagina(Math.min(Math.max(num - 1, 0), pagina.totalPaginas - 1));
+    };
+
+    // Sincroniza el input con la página actual cuando cambia externamente
+    useEffect(() => {
+        setPaginaInput(String(pagina.paginaActual + 1));
+    }, [pagina.paginaActual]);
 
     return (
 
@@ -68,7 +155,7 @@ function Inicio() {
                                     className="catalog-search"
                                     placeholder="Escribe un nombre..."
                                     value={nombre}
-                                    onChange={(e) => setNombre(e.target.value)}
+                                    onChange={cambiarNombre}
                                 />
                             </label>
 
@@ -81,7 +168,7 @@ function Inicio() {
                                             name="catalogCategory"
                                             className="catalog-select"
                                             value={categoriaId}
-                                            onChange={(e) => setCategoriaId(e.target.value)}
+                                            onChange={cambiarCategoria}
                                         >
                                             <option value="">Todas las categorías</option>
 
@@ -97,7 +184,7 @@ function Inicio() {
                                     <button
                                         type="button"
                                         className={`catalog-favorite-toggle ${soloFavoritos ? "catalog-favorite-toggle--active" : ""}`}
-                                        onClick={() => setSoloFavoritos((prev) => !prev)}
+                                        onClick={toggleSoloFavoritos}
                                         aria-pressed={soloFavoritos}
                                     >
                                         {soloFavoritos
@@ -110,11 +197,7 @@ function Inicio() {
                                     <button
                                         type="button"
                                         className="catalog-clear"
-                                        onClick={() => {
-                                            setNombre("");
-                                            setCategoriaId("");
-                                            setSoloFavoritos(false);
-                                        }}
+                                        onClick={limpiarFiltros}
                                     >
                                         Limpiar filtros
                                     </button>
@@ -141,12 +224,12 @@ function Inicio() {
 
                                 <div className="catalog-grid">
 
-                                    {figurasMostradas.map(figura => (
+                                    {figuras.map(figura => (
                                         <FiguraCard
                                             key={figura.id}
                                             figura={figura}
-                                            esFavorito={favoritos.includes(figura.id)}
-                                            onToggleFavorito={cambiarFavorito}
+                                            esFavorito={figura.esFavorito}
+                                            onToggleFavorito={onToggleFavorito}
                                         />
                                     ))}
 
@@ -156,12 +239,65 @@ function Inicio() {
 
                         {!loading &&
                             !error &&
-                            figurasMostradas.length === 0 && (
+                            figuras.length === 0 && (
 
                                 <p className="catalog-status">
                                     No se encontraron figuras.
                                 </p>
 
+                            )}
+
+                        {!loading &&
+                            !error &&
+                            pagina.totalPaginas > 1 && (
+                                <div className="paginacion">
+                                    <button
+                                        type="button"
+                                        className="paginacion__btn"
+                                        disabled={pagina.paginaActual <= 0}
+                                        onClick={() => irAPagina(pagina.paginaActual - 1)}
+                                    >
+                                        ‹ Anterior
+                                    </button>
+                                    <div className="paginacion__go">
+                                        <label
+                                            className="paginacion__label"
+                                            htmlFor="paginacion-input"
+                                        >
+                                            Página
+                                        </label>
+                                        <input
+                                            id="paginacion-input"
+                                            type="number"
+                                            min="1"
+                                            max={pagina.totalPaginas}
+                                            className="paginacion__input"
+                                            value={paginaInput}
+                                            onChange={(e) => setPaginaInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") irAPaginaInput();
+                                            }}
+                                        />
+                                        <span className="paginacion__info">
+                                            de {pagina.totalPaginas}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="paginacion__btn"
+                                            onClick={irAPaginaInput}
+                                        >
+                                            Ir
+                                        </button>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="paginacion__btn"
+                                        disabled={pagina.paginaActual >= pagina.totalPaginas - 1}
+                                        onClick={() => irAPagina(pagina.paginaActual + 1)}
+                                    >
+                                        Siguiente ›
+                                    </button>
+                                </div>
                             )}
                     </div>
                 </section>

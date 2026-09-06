@@ -1,46 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import { useUser } from "../hooks/useUser";
+import { useCallback } from "react";
 import { useApiFetch } from "../api/useApiFetch";
 import { FavoritosContext } from "./FavoritosContextDefinition";
 
 function FavoritosProvider({ children }) {
 
-    const { user } = useUser();
-
     const authFetch = useApiFetch();
 
-    const [favoritos, setFavoritos] = useState([]);
-
-    const cargarFavoritos = useCallback(async () => {
-
-        try {
-
-            const response = await authFetch("/api/favorito");
-
-            const data = await response.json();
-
-            setFavoritos(data);
-
-        } catch (error) {
-
-            console.error("Error al cargar favoritos:", error);
-
-            setFavoritos([]);
-        }
-    }, [authFetch]);
-
-    useEffect(() => {
-
-        if (!user) {
-            setFavoritos([]);
-            return;
-        }
-
-        cargarFavoritos();
-
-    }, [user, cargarFavoritos]);
-
-    const cambiarFavorito = async (figuraId) => {
+    const cambiarFavorito = useCallback(async (figuraId) => {
 
         try {
 
@@ -53,17 +19,6 @@ function FavoritosProvider({ children }) {
 
             const marcado = await response.json();
 
-            if (marcado) {
-
-                setFavoritos(prev => [...prev, figuraId]);
-
-            } else {
-
-                setFavoritos(prev =>
-                    prev.filter(id => id !== figuraId)
-                );
-            }
-
             return marcado;
 
         } catch (error) {
@@ -72,14 +27,12 @@ function FavoritosProvider({ children }) {
 
             throw error;
         }
-    };
+    }, [authFetch]);
 
     return (
         <FavoritosContext.Provider
             value={{
-                favoritos,
-                cambiarFavorito,
-                cargarFavoritos
+                cambiarFavorito
             }}
         >
             {children}
