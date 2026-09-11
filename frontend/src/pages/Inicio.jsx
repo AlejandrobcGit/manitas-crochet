@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 import { useFiguras } from "../hooks/useFiguras";
@@ -31,6 +32,41 @@ function guardarEstado(estado) {
     }
 }
 
+// La URL tiene prioridad (compartible y resistente a refresco).
+// Si no hay parámetros (p. ej. al volver vía "Volver al catálogo" -> /#catalogo),
+// se recupera el último estado guardado en sessionStorage.
+function leerEstadoInicial(searchParams) {
+    if (searchParams.toString().length > 0) {
+        const page = parseInt(searchParams.get("page"), 10);
+        return {
+            nombre: searchParams.get("nombre") ?? "",
+            categoriaId: searchParams.get("categoriaId") ?? "",
+            soloFavoritos: searchParams.get("soloFavoritos") === "true",
+            sortBy: searchParams.get("sortBy") ?? "recientes",
+            page: isNaN(page) || page < 0 ? 0 : page
+        };
+    }
+
+    const guardado = leerEstadoGuardado();
+    if (guardado && typeof guardado === "object") {
+        return {
+            nombre: guardado.nombre ?? "",
+            categoriaId: guardado.categoriaId ?? "",
+            soloFavoritos: guardado.soloFavoritos ?? false,
+            sortBy: guardado.sortBy ?? "recientes",
+            page: guardado.page ?? 0
+        };
+    }
+
+    return {
+        nombre: "",
+        categoriaId: "",
+        soloFavoritos: false,
+        sortBy: "recientes",
+        page: 0
+    };
+}
+
 function Inicio() {
 
     const {
@@ -48,13 +84,16 @@ function Inicio() {
 
     const { cambiarFavorito } = useFavoritos();
 
-    // Recupera el estado guardado una sola vez al montar (al volver del detalle se restaura)
-    const [estadoInicial] = useState(leerEstadoGuardado);
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    const [nombre, setNombre] = useState(estadoInicial?.nombre ?? "");
-    const [categoriaId, setCategoriaId] = useState(estadoInicial?.categoriaId ?? "");
-    const [soloFavoritos, setSoloFavoritos] = useState(estadoInicial?.soloFavoritos ?? false);
-    const [paginaActual, setPaginaActual] = useState(estadoInicial?.page ?? 0);
+    // Recupera el estado una sola vez al montar: URL primero, sessionStorage como respaldo
+    const [estadoInicial] = useState(() => leerEstadoInicial(searchParams));
+
+    const [nombre, setNombre] = useState(estadoInicial.nombre);
+    const [categoriaId, setCategoriaId] = useState(estadoInicial.categoriaId);
+    const [soloFavoritos, setSoloFavoritos] = useState(estadoInicial.soloFavoritos);
+    const [ordenarPor, setOrdenarPor] = useState(estadoInicial.sortBy);
+    const [paginaActual, setPaginaActual] = useState(estadoInicial.page);
     const [paginaInput, setPaginaInput] = useState("");
 
     const nombreDebounced = useDebounce(nombre, 400);
@@ -65,19 +104,32 @@ function Inicio() {
             categoriaId,
             soloFavoritos,
             page,
-            size: 12
+            size: 12,
+            sortBy: ordenarPor
         });
-    }, [recargarFiguras, nombreDebounced, categoriaId, soloFavoritos]);
+    }, [recargarFiguras, nombreDebounced, categoriaId, soloFavoritos, ordenarPor]);
 
-    // Guarda el estado (filtros + página) cuando cambian, para restaurarlo al volver
+    // Sincroniza filtros y ordenación en la URL
+    useEffect(() => {
+        const params = {};
+        if (nombre) params.nombre = nombre;
+        if (categoriaId) params.categoriaId = categoriaId;
+        if (soloFavoritos) params.soloFavoritos = "true";
+        if (ordenarPor && ordenarPor !== "recientes") params.sortBy = ordenarPor;
+        if (paginaActual > 0) params.page = String(paginaActual);
+        setSearchParams(params, { replace: true });
+    }, [nombre, categoriaId, soloFavoritos, ordenarPor, paginaActual, setSearchParams]);
+
+    // Guarda el estado (filtros + orden + página) para restaurarlo al volver del detalle
     useEffect(() => {
         guardarEstado({
-            nombre: nombreDebounced,
+            nombre,
             categoriaId,
             soloFavoritos,
+            sortBy: ordenarPor,
             page: paginaActual
         });
-    }, [nombreDebounced, categoriaId, soloFavoritos, paginaActual]);
+    }, [nombre, categoriaId, soloFavoritos, ordenarPor, paginaActual]);
 
     // Al montar carga la página guardada; al cambiar un filtro recarga en la página actual
     useEffect(() => {
@@ -99,10 +151,16 @@ function Inicio() {
         setPaginaActual(0);
     };
 
+    const cambiarOrden = (e) => {
+        setOrdenarPor(e.target.value);
+        setPaginaActual(0);
+    };
+
     const limpiarFiltros = () => {
         setNombre("");
         setCategoriaId("");
         setSoloFavoritos(false);
+        setOrdenarPor("recientes");
         setPaginaActual(0);
     };
 
@@ -193,6 +251,22 @@ function Inicio() {
                                         }
                                         <span>Favoritos</span>
                                     </button>
+
+                                    <label className="catalog-field">
+                                        <span>Ordenar por</span>
+                                        <select
+                                            id="catalog-sort"
+                                            name="catalogSort"
+                                            className="catalog-select"
+                                            value={ordenarPor}
+                                            onChange={cambiarOrden}
+                                        >
+                                            <option value="recientes">Más recientes</option>
+                                            <option value="antiguos">Más antiguos</option>
+                                            <option value="valorados">Más valorados</option>
+                                            <option value="populares">Más populares</option>
+                                        </select>
+                                    </label>
 
                                     <button
                                         type="button"

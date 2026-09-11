@@ -1,6 +1,8 @@
 package com.manitascrochet.backend.controller;
 
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,6 +38,10 @@ public class FiguraController {
     private final VisualizacionService visualizacionService;
 
 
+    private static final Set<String> SORT_BY_VALIDOS = Set.of("recientes", "antiguos", "valorados", "populares");
+    private static final int NOMBRE_MAX_LONGITUD = 10;
+    private static final Pattern CATEGORIA_ID_PATTERN = Pattern.compile("[0-9a-fA-F]{24}");
+
     // GET /api/figuras
     @GetMapping
     public PaginaFigurasDto obtenerTodas(
@@ -44,6 +50,7 @@ public class FiguraController {
             @RequestParam(required = false) String nombre,
             @RequestParam(required = false) String categoriaId,
             @RequestParam(defaultValue = "false") boolean soloFavoritos,
+            @RequestParam(defaultValue = "recientes") String sortBy,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         // Validación manual: page >= 0, size >= 1, size <= 50
@@ -53,8 +60,20 @@ public class FiguraController {
         if (size < 1 || size > 50) {
             throw new ParametroInvalidoException("El parámetro 'size' debe estar entre 1 y 50.");
         }
+        if (!SORT_BY_VALIDOS.contains(sortBy)) {
+            throw new ParametroInvalidoException(
+                    "El parámetro 'sortBy' debe ser uno de: recientes, antiguos, valorados, populares.");
+        }
+        if (nombre != null && nombre.length() > NOMBRE_MAX_LONGITUD) {
+            throw new ParametroInvalidoException(
+                    "El parámetro 'nombre' no puede superar los " + NOMBRE_MAX_LONGITUD + " caracteres.");
+        }
+        if (categoriaId != null && !categoriaId.isBlank() && !CATEGORIA_ID_PATTERN.matcher(categoriaId).matches()) {
+            throw new ParametroInvalidoException(
+                    "El parámetro 'categoriaId' debe ser un identificador válido (24 caracteres hexadecimales).");
+        }
 
-        return figuraService.obtenerTodasDto(nombre, categoriaId, soloFavoritos, page, size, userDetails);
+        return figuraService.obtenerTodasDto(nombre, categoriaId, soloFavoritos, page, size, sortBy, userDetails);
     }
 
     // GET /api/figuras/{id}

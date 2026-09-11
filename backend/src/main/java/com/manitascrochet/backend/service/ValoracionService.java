@@ -9,6 +9,7 @@ import com.manitascrochet.backend.dto.ResumenValoracionDto;
 import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ValoracionInvalidaException;
 import com.manitascrochet.backend.model.Valoracion;
+import com.manitascrochet.backend.repository.FiguraRepository;
 import com.manitascrochet.backend.repository.ValoracionRepository;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class ValoracionService {
 
     private final ValoracionRepository valoracionRepository;
+    private final FiguraRepository figuraRepository;
 
     public Valoracion valorarFigura(
             String figuraId,
@@ -57,6 +59,12 @@ public class ValoracionService {
         }
 
         valoracionRepository.save(valoracion);
+
+        // MEJORA 3: recalcula la media y el total de valoraciones denormalizados
+        // directamente en la figura, para que el catálogo pueda ordenar y mostrar
+        // los valores sin necesidad de volver a consultar la colección de valoraciones.
+        actualizarMetricasDenormalizadas(figuraId);
+
         return valoracion;
     }
 
@@ -91,5 +99,19 @@ public class ValoracionService {
 
     public void eliminarValoracionesPorFigura(String figuraId) {
         valoracionRepository.deleteByFiguraId(figuraId);
+    }
+
+    // ─── Métricas denormalizadas ─────────────────────────────────────────────
+    // Actualiza puntuacionMedia y totalValoraciones de la figura afectada.
+    private void actualizarMetricasDenormalizadas(String figuraId) {
+        figuraRepository.findById(figuraId).ifPresent(figura -> {
+            List<Valoracion> valoraciones = valoracionRepository.findByFiguraId(figuraId);
+            figura.setPuntuacionMedia(valoraciones.stream()
+                    .mapToInt(Valoracion::getPuntuacion)
+                    .average()
+                    .orElse(0.0));
+            figura.setTotalValoraciones((long) valoraciones.size());
+            figuraRepository.save(figura);
+        });
     }
 }

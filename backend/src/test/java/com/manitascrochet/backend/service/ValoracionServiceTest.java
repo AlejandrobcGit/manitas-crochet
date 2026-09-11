@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.manitascrochet.backend.dto.ValoracionDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ValoracionInvalidaException;
 import com.manitascrochet.backend.model.Valoracion;
+import com.manitascrochet.backend.repository.FiguraRepository;
 import com.manitascrochet.backend.repository.ValoracionRepository;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 
@@ -23,6 +24,9 @@ class ValoracionServiceTest {
 
     @Mock
     private ValoracionRepository repository;
+
+    @Mock
+    private FiguraRepository figuraRepository;
 
     @InjectMocks
     private ValoracionService service;
@@ -36,6 +40,7 @@ class ValoracionServiceTest {
     @Test
     void creaYActualizaValoracion() {
 
+        when(figuraRepository.findById("f1")).thenReturn(Optional.empty());
         when(repository.findByUsuarioIdAndFiguraId("u1", "f1"))
                 .thenReturn(Optional.empty());
 

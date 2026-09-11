@@ -23,7 +23,7 @@ export function FigurasProvider({ children }) {
             setLoading(true);
             setError(null);
 
-            const { nombre = "", categoriaId = "", soloFavoritos = false, page = 0, size = 12 } = params;
+            const { nombre = "", categoriaId = "", soloFavoritos = false, page = 0, size = 12, sortBy = "recientes" } = params;
 
             const qs = new URLSearchParams();
 
@@ -32,6 +32,7 @@ export function FigurasProvider({ children }) {
             if (soloFavoritos) qs.set("soloFavoritos", "true");
             qs.set("page", page);
             qs.set("size", size);
+            qs.set("sortBy", sortBy);
 
             const queryString = qs.toString();
             const url = `/api/figuras?${queryString}`;

@@ -13,16 +13,28 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.bson.Document;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
+import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -32,6 +44,7 @@ import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.dto.ImageUploadResultDto;
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
 import com.manitascrochet.backend.dto.ValoracionDto;
+import com.manitascrochet.backend.dto.VisualizacionesPorFiguraDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.FiguraNoEncontradaException;
@@ -71,7 +84,17 @@ class FiguraServiceTest {
     ValoracionRepository valoracionesRepo;
 
     @Mock
+    com.manitascrochet.backend.repository.VisualizacionRepository visualizacionesRepo;
+
+    @Mock
     MongoTemplate mongo;
+
+    @Mock
+    MongoConverter mongoConverter;
+
+    // Respaldodel stub de mongoConverter.read (declarado en setUp): _id -> Figura,
+    // rellenado por facetResultados(...).
+    private final Map<String, Figura> figurasDelFacet = new HashMap<>();
 
     @Mock
     com.manitascrochet.backend.repository.FavoritoRepository favoritosRepo;
@@ -126,6 +149,10 @@ class FiguraServiceTest {
     void setUp() {
         ReflectionTestUtils.setField(service, "imageUrl", "https://ik.imagekit.io/8hlhxb9hx");
         ReflectionTestUtils.setField(service, "imageFolder", "manitas-Crochet");
+        // El servicio serializa cada Document de "pagina" del $facet con mongoConverter.read.
+        // Un único stub lenient resuelto por _id, rellenado por facetResultados(...).
+        lenient().when(mongoConverter.read(eq(Figura.class), any(Document.class)))
+                .thenAnswer(inv -> figurasDelFacet.get(((Document) inv.getArgument(1)).getString("_id")));
         lenient().when(valoracionesRepo.findByFiguraIdIn(anyList())).thenReturn(List.of());
     }
     // ---------------------------------------------------------------
@@ -137,14 +164,14 @@ class FiguraServiceTest {
         Figura f = figura();
         f.setImagenPrincipal("oso.png");
 
-        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(1L);
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(List.of(f)));
         when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
         when(valoracionesRepo.findByFiguraIdIn(List.of("f1"))).thenReturn(List.of(
                 valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5), valoracion("f1", 5),
                 valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4), valoracion("f1", 4)));
 
-        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, null);
+        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, "recientes", null);
 
         assertThat(resultado.getContenido()).hasSize(1);
         FiguraListadoDto dto = resultado.getContenido().get(0);
@@ -164,11 +191,11 @@ class FiguraServiceTest {
         Figura f = figura();
         f.setImagenPrincipal("   ");
 
-        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(1L);
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(List.of(f)));
         when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
 
-        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, null);
+        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, "recientes", null);
 
         assertThat(resultado.getContenido().get(0).getImagenPrincipal())
                 .isEqualTo("https://ik.imagekit.io/8hlhxb9hx/manitas-Crochet/default.webp");
@@ -176,19 +203,21 @@ class FiguraServiceTest {
 
     @Test
     void obtenerTodasDtoConFiltros_delegaEnMongoTemplate() {
-        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(0L);
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetVacio());
 
-        var resultado = service.obtenerTodasDto("oso", "c1", false, 0, 12, null);
+        var resultado = service.obtenerTodasDto("oso", "c1", false, 0, 12, "recientes", null);
 
         assertThat(resultado.getContenido()).isEmpty();
-        verify(mongo, times(1)).count(any(Query.class), eq(Figura.class));
+        verify(mongo, times(1)).aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class));
     }
 
     @Test
     void obtenerTodasDtoListaVacia_noConsultaCategoriaNiValoraciones() {
-        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(0L);
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetVacio());
 
-        var resultado = service.obtenerTodasDto("", "", false, 0, 12, null);
+        var resultado = service.obtenerTodasDto("", "", false, 0, 12, "recientes", null);
 
         assertThat(resultado.getContenido()).isEmpty();
         verify(categorias, never()).findById(anyString());
@@ -197,19 +226,20 @@ class FiguraServiceTest {
 
     @Test
     void obtenerTodasDtoFallaSiCategoriaNoExiste() {
-        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(1L);
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(figura()));
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(List.of(figura())));
         when(categorias.findAllById(any())).thenReturn(List.of());
 
-        assertThatThrownBy(() -> service.obtenerTodasDto(null, null, false, 0, 12, null))
+        assertThatThrownBy(() -> service.obtenerTodasDto(null, null, false, 0, 12, "recientes", null))
                 .isInstanceOf(CategoriaNoEncontradaException.class);
     }
 
     @Test
     void obtenerTodasDtoFueraDeRango_devuelveListaVacia() {
-        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(10L);
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(10, List.of()));
 
-        var resultado = service.obtenerTodasDto(null, null, false, 5, 12, null);
+        var resultado = service.obtenerTodasDto(null, null, false, 5, 12, "recientes", null);
 
         assertThat(resultado.getContenido()).isEmpty();
         assertThat(resultado.getPaginaActual()).isEqualTo(5);
@@ -226,13 +256,13 @@ class FiguraServiceTest {
         UserDetailsImpl user = mock(UserDetailsImpl.class);
         when(user.getUsername()).thenReturn("u1");
         when(favoritosRepo.findByUsuarioIdAndActivoTrue("u1")).thenReturn(List.of(favorito("f1")));
-        when(mongo.count(any(Query.class), eq(Figura.class))).thenReturn(1L);
-        when(mongo.find(any(Query.class), eq(Figura.class))).thenReturn(List.of(f));
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(List.of(f)));
         when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
         when(valoracionesRepo.findByFiguraIdIn(List.of("f1"))).thenReturn(List.of());
         when(favoritosRepo.findByUsuarioIdAndFiguraIdInAndActivoTrue("u1", List.of("f1"))).thenReturn(List.of(favorito("f1")));
 
-        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, user);
+        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, "recientes", user);
 
         assertThat(resultado.getContenido()).hasSize(1);
         assertThat(resultado.getContenido().get(0).isEsFavorito()).isTrue();
@@ -240,7 +270,7 @@ class FiguraServiceTest {
 
     @Test
     void obtenerTodasDtoSoloFavoritos_sinUsuario_devuelveVacio() {
-        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, null);
+        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, "recientes", null);
 
         assertThat(resultado.getContenido()).isEmpty();
         verify(mongo, never()).find(any(Query.class), eq(Figura.class));
@@ -252,10 +282,184 @@ class FiguraServiceTest {
         when(user.getUsername()).thenReturn("u1");
         when(favoritosRepo.findByUsuarioIdAndActivoTrue("u1")).thenReturn(List.of());
 
-        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, user);
+        var resultado = service.obtenerTodasDto(null, null, true, 0, 12, "recientes", user);
 
         assertThat(resultado.getContenido()).isEmpty();
         verify(mongo, never()).find(any(Query.class), eq(Figura.class));
+    }
+
+    // ---------------------------------------------------------------
+    // ordenación dinámica (sortBy)
+    // ---------------------------------------------------------------
+
+    @Test
+    void ordenarAntiguos_aplicaAscPorFechaCreacion() {
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(List.of(figura())));
+        when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
+
+        service.obtenerTodasDto(null, null, false, 0, 12, "antiguos", null);
+
+        ArgumentCaptor<Aggregation> captor = ArgumentCaptor.forClass(Aggregation.class);
+        verify(mongo).aggregate(captor.capture(), eq(Figura.class), eq(Document.class));
+        Sort sortNativo = sortDelFacet(captor.getValue());
+        assertThat(sortNativo.getOrderFor("fechaCreacion").getDirection())
+                .isEqualTo(Sort.Direction.ASC);
+    }
+
+    @Test
+    void ordenarRecientes_aplicaDescPorFechaCreacion() {
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(List.of(figura())));
+        when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
+
+        service.obtenerTodasDto(null, null, false, 0, 12, "recientes", null);
+
+        ArgumentCaptor<Aggregation> captor = ArgumentCaptor.forClass(Aggregation.class);
+        verify(mongo).aggregate(captor.capture(), eq(Figura.class), eq(Document.class));
+        Sort sortNativo = sortDelFacet(captor.getValue());
+        assertThat(sortNativo.getOrderFor("fechaCreacion").getDirection())
+                .isEqualTo(Sort.Direction.DESC);
+    }
+
+    @Test
+    void ordenarValorados_ordenaPorMediaDescSobreTodasLasFiguras() {
+        Figura top = figura();
+        top.setId("f1");
+        top.setNombre("Top");
+        Figura flop = figura();
+        flop.setId("f2");
+        flop.setNombre("Flop");
+
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(List.of(top, flop)));
+        when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
+        when(valoracionesRepo.findByFiguraIdIn(anyList())).thenReturn(List.of(
+                valoracion("f1", 5), valoracion("f1", 5),
+                valoracion("f2", 1)));
+
+        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, "valorados", null);
+
+        assertThat(resultado.getContenido()).hasSize(2);
+        assertThat(resultado.getContenido().get(0).getId()).isEqualTo("f1");
+        assertThat(resultado.getContenido().get(1).getId()).isEqualTo("f2");
+        assertThat(resultado.getContenido().get(0).getValoracionMedia()).isEqualTo(5.0);
+        assertThat(resultado.getContenido().get(1).getValoracionMedia()).isEqualTo(1.0);
+
+        ArgumentCaptor<Aggregation> captor = ArgumentCaptor.forClass(Aggregation.class);
+        verify(mongo).aggregate(captor.capture(), eq(Figura.class), eq(Document.class));
+        Sort sortNativo = sortDelFacet(captor.getValue());
+        assertThat(sortNativo.getOrderFor("puntuacionMedia").getDirection())
+                .isEqualTo(Sort.Direction.DESC);
+    }
+
+    @Test
+    void ordenarPopulares_ordenaPorNumeroDeVisualizacionesDesc() {
+        Figura popular = figura();
+        popular.setId("f1");
+        Figura menosPopular = figura();
+        menosPopular.setId("f2");
+
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetResultados(List.of(popular, menosPopular)));
+        when(categorias.findAllById(any())).thenReturn(List.of(categoria()));
+        when(valoracionesRepo.findByFiguraIdIn(anyList())).thenReturn(List.of());
+
+        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, "populares", null);
+
+        assertThat(resultado.getContenido()).hasSize(2);
+        assertThat(resultado.getContenido().get(0).getId()).isEqualTo("f1");
+        assertThat(resultado.getContenido().get(1).getId()).isEqualTo("f2");
+
+        ArgumentCaptor<Aggregation> captor = ArgumentCaptor.forClass(Aggregation.class);
+        verify(mongo).aggregate(captor.capture(), eq(Figura.class), eq(Document.class));
+        Sort sortNativo = sortDelFacet(captor.getValue());
+        assertThat(sortNativo.getOrderFor("numVisualizaciones").getDirection())
+                .isEqualTo(Sort.Direction.DESC);
+    }
+
+    @Test
+    void ordenarValorados_sinResultados_devuelveListaVacia() {
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(facetVacio());
+
+        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, "valorados", null);
+
+        assertThat(resultado.getContenido()).isEmpty();
+        assertThat(resultado.getTotalElementos()).isZero();
+        verify(visualizacionesRepo, never()).contarAgrupadasPorFiguraId(anyList());
+    }
+
+    // Extrae el Sort del SortOperation que se inyecta en el pipeline del $facet.
+    private Sort sortDelFacet(Aggregation aggregation) {
+        List<AggregationOperation> pipeline = aggregation.getPipeline().getOperations();
+        // El $facet suele añadir operaciones tras el sort; el SortOperation suele ser el primero
+        // que aparece recorriendo el pipeline en orden.
+        for (AggregationOperation op : pipeline) {
+            if (op instanceof SortOperation sortOp) {
+                Document sortDoc = sortOp.toDocument(ctxDePrueba());
+                Object sortSpec = sortDoc.get("$sort");
+                if (sortSpec instanceof Document d && !d.isEmpty()) {
+                    String campo = d.keySet().iterator().next();
+                    int valor = ((Number) d.get(campo)).intValue();
+                    return valor == 1 ? Sort.by(Sort.Direction.ASC, campo)
+                            : Sort.by(Sort.Direction.DESC, campo);
+                }
+            }
+        }
+        throw new AssertionError("Sin SortOperation en el $facet");
+    }
+
+    // Contexto de serialización que deja los campos tal cual (referencia "$campo").
+    private org.springframework.data.mongodb.core.aggregation.AggregationOperationContext ctxDePrueba() {
+        org.springframework.data.mongodb.core.aggregation.AggregationOperationContext ctx = org.mockito.Mockito
+                .mock(org.springframework.data.mongodb.core.aggregation.AggregationOperationContext.class);
+        lenient().when(ctx.getMappedObject(any(Document.class), any())).thenAnswer(inv -> inv.getArgument(0));
+        lenient().when(ctx.getReference(any(org.springframework.data.mongodb.core.aggregation.Field.class)))
+                .thenAnswer(inv -> {
+                    String raw = ((org.springframework.data.mongodb.core.aggregation.Field) inv.getArgument(0)).getTarget();
+                    return refDePrueba(raw);
+                });
+        lenient().when(ctx.getReference(any(String.class)))
+                .thenAnswer(inv -> refDePrueba(inv.getArgument(0)));
+        return ctx;
+    }
+
+    private org.springframework.data.mongodb.core.aggregation.ExposedFields.FieldReference refDePrueba(String raw) {
+        org.springframework.data.mongodb.core.aggregation.ExposedFields.FieldReference ref = org.mockito.Mockito
+                .mock(org.springframework.data.mongodb.core.aggregation.ExposedFields.FieldReference.class);
+        lenient().when(ref.getRaw()).thenReturn(raw);
+        lenient().when(ref.getReferenceValue()).thenReturn("$" + raw);
+        return ref;
+    }
+
+    // Simula el resultado del $facet: un único Document con "totales" (count)
+    // y "pagina" (docs de la página), tal y como lo devuelve mongoTemplate.aggregate.
+    // Además deja listo mongoConverter.read para devolver la Figura de cada doc de página.
+    private AggregationResults<Document> facetResultados(long total, List<Figura> figuras) {
+        // El $count de MongoDB devuelve Int32 (Integer), no Long: así se simula el dato real.
+        List<Document> totales = List.of(new Document("total", (int) total));
+        List<Document> paginaDocs = figuras.stream()
+                .map(f -> new Document("_id", f.getId()))
+                .toList();
+        Document resultado = new Document()
+                .append("totales", totales)
+                .append("pagina", paginaDocs);
+        // Registra en el Map que respalda el stub de mongoConverter.read (declarado en setUp).
+        figurasDelFacet.clear();
+        figuras.forEach(f -> figurasDelFacet.put(f.getId(), f));
+        // AggregationResults tiene constructor público: evita mockear getMappedResults(),
+        // que provocaria UnfinishedStubbing al evaluarse dentro de another "when(...)".
+        return new AggregationResults<>(List.of(resultado), resultado);
+    }
+
+    private AggregationResults<Document> facetResultados(List<Figura> figuras) {
+        return facetResultados(figuras.size(), figuras);
+    }
+
+    // result -> mock(AggregationResults) cuyo getMappedResults devuelve UNA página vacía (total 0).
+    private AggregationResults<Document> facetVacio() {
+        return facetResultados(0, List.of());
     }
 
     private com.manitascrochet.backend.model.Favorito favorito(String figuraId) {
@@ -297,7 +501,7 @@ class FiguraServiceTest {
 
         when(figuras.findById("f1")).thenReturn(Optional.of(f));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(colores.findById("rojo")).thenReturn(Optional.of(color("rojo", "Rojo", "#ff0000")));
+        when(colores.findAllById(anyList())).thenReturn(List.of(color("rojo", "Rojo", "#ff0000")));
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(4.0, 5L));
         when(ratings.obtenerValoracionUsuario("u1", "f1")).thenReturn(new ValoracionDto(5));
 
@@ -329,8 +533,7 @@ class FiguraServiceTest {
 
         when(figuras.findById("f1")).thenReturn(Optional.of(f));
         when(categorias.findById("c1")).thenReturn(Optional.of(categoria()));
-        when(colores.findById("rojo")).thenReturn(Optional.of(color("rojo", "Rojo", "#ff0000")));
-        when(colores.findById("verde")).thenReturn(Optional.empty());
+        when(colores.findAllById(anyList())).thenReturn(List.of(color("rojo", "Rojo", "#ff0000")));
         when(ratings.obtenerResumenValoraciones("f1")).thenReturn(resumen(0.0, 0L));
 
         FiguraDetalleDto dto = service.obtenerPorIdDto("f1", null);

@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.manitascrochet.backend.model.Visualizacion;
@@ -21,6 +22,8 @@ import com.manitascrochet.backend.security.UserDetailsImpl;
 class VisualizacionServiceTest {
     @Mock
     VisualizacionRepository repository;
+    @Mock
+    MongoTemplate mongoTemplate;
     @InjectMocks
     VisualizacionService service;
 

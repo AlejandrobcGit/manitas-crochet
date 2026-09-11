@@ -26,33 +26,66 @@ class FiguraControllerTest {
     @Mock VisualizacionService visualizaciones;
     @InjectMocks FiguraController controller;
 
+    // ObjectId de MongoDB válido (24 hex)
+    private static final String CATEGORIA_ID_OK = "507f1f77bcf86cd799439011";
+
     private FiguraRequestDto dto() {
         return new FiguraRequestDto("Oso", "Descripción", "cat1", Dificultad.PRINCIPIANTE,
                 "Ana", List.of("red"), 10, 8, 100);
     }
 
     @Test void obtieneListadoConDefaultsYDelegaEnService() {
-        controller.obtenerTodas(0, 12, null, null, false, null);
-        verify(service).obtenerTodasDto(null, null, false, 0, 12, null);
+        controller.obtenerTodas(0, 12, null, null, false, "recientes", null);
+        verify(service).obtenerTodasDto(null, null, false, 0, 12, "recientes", null);
     }
 
     @Test void obtieneListadoPasandoFiltrosYPaginacion() {
-        controller.obtenerTodas(1, 20, "oso", "c1", true, null);
-        verify(service).obtenerTodasDto("oso", "c1", true, 1, 20, null);
+        controller.obtenerTodas(1, 20, "oso", CATEGORIA_ID_OK, true, "recientes", null);
+        verify(service).obtenerTodasDto("oso", CATEGORIA_ID_OK, true, 1, 20, "recientes", null);
+    }
+
+    @Test void obtieneListadoConSortByYDelegaEnService() {
+        controller.obtenerTodas(0, 12, null, null, false, "valorados", null);
+        verify(service).obtenerTodasDto(null, null, false, 0, 12, "valorados", null);
+    }
+
+    @Test void rechazaSortByInvalido() {
+        assertThatThrownBy(() -> controller.obtenerTodas(0, 12, null, null, false, "aleatorio", null))
+                .isInstanceOf(ParametroInvalidoException.class);
+        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any(), any());
     }
 
     @Test void rechazaPageNegativa() {
-        assertThatThrownBy(() -> controller.obtenerTodas(-1, 12, null, null, false, null))
+        assertThatThrownBy(() -> controller.obtenerTodas(-1, 12, null, null, false, "recientes", null))
                 .isInstanceOf(ParametroInvalidoException.class);
-        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any());
+        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any(), any());
     }
 
     @Test void rechazaSizeInvalido() {
-        assertThatThrownBy(() -> controller.obtenerTodas(0, 0, null, null, false, null))
+        assertThatThrownBy(() -> controller.obtenerTodas(0, 0, null, null, false, "recientes", null))
                 .isInstanceOf(ParametroInvalidoException.class);
-        assertThatThrownBy(() -> controller.obtenerTodas(0, 51, null, null, false, null))
+        assertThatThrownBy(() -> controller.obtenerTodas(0, 51, null, null, false, "recientes", null))
                 .isInstanceOf(ParametroInvalidoException.class);
-        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any());
+        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any(), any());
+    }
+
+    @Test void rechazaNombreDemasiadoLargo() {
+        assertThatThrownBy(() -> controller.obtenerTodas(0, 12, "EsteNombreEsMuyLargo", null, false, "recientes", null))
+                .isInstanceOf(ParametroInvalidoException.class);
+        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any(), any());
+    }
+
+    @Test void rechazaCategoriaIdConFormatoInvalido() {
+        assertThatThrownBy(() -> controller.obtenerTodas(0, 12, null, "c1", false, "recientes", null))
+                .isInstanceOf(ParametroInvalidoException.class);
+        assertThatThrownBy(() -> controller.obtenerTodas(0, 12, null, "xyz1234567890abcdefghijkl", false, "recientes", null))
+                .isInstanceOf(ParametroInvalidoException.class);
+        verify(service, never()).obtenerTodasDto(any(), any(), anyBoolean(), anyInt(), anyInt(), any(), any());
+    }
+
+    @Test void aceptaCategoriaIdConFormatoValido() {
+        controller.obtenerTodas(0, 12, null, CATEGORIA_ID_OK, false, "recientes", null);
+        verify(service).obtenerTodasDto(null, CATEGORIA_ID_OK, false, 0, 12, "recientes", null);
     }
 
     @Test void obtieneListadoYDetalleYMarcaVisualizacion() {
