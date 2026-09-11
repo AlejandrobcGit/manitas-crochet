@@ -4,24 +4,21 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import org.bson.Document;
 
 import com.manitascrochet.backend.dto.ColorResponseDto;
 import com.manitascrochet.backend.dto.FiguraDetalleDto;
@@ -30,12 +27,10 @@ import com.manitascrochet.backend.dto.ImageUploadResultDto;
 import com.manitascrochet.backend.dto.PaginaFigurasDto;
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
 import com.manitascrochet.backend.dto.ValoracionDto;
-import com.manitascrochet.backend.dto.VisualizacionesPorFiguraDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.FiguraNoEncontradaException;
 import com.manitascrochet.backend.model.Categoria;
-import com.manitascrochet.backend.model.Color;
 import com.manitascrochet.backend.model.Favorito;
 import com.manitascrochet.backend.model.Figura;
 import com.manitascrochet.backend.model.Valoracion;
@@ -44,7 +39,6 @@ import com.manitascrochet.backend.repository.ColorRepository;
 import com.manitascrochet.backend.repository.FavoritoRepository;
 import com.manitascrochet.backend.repository.FiguraRepository;
 import com.manitascrochet.backend.repository.ValoracionRepository;
-import com.manitascrochet.backend.repository.VisualizacionRepository;
 import com.manitascrochet.backend.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
@@ -58,7 +52,6 @@ public class FiguraService {
         private final ColorRepository colorRepository;
         private final ValoracionRepository valoracionRepository;
         private final FavoritoRepository favoritoRepository;
-        private final VisualizacionRepository visualizacionRepository;
         private final ImageService imageService;
         // si elimnara el FileStorageService, cuando imageUpload esta lito
         // private final FileStorageService fileStorageService;
@@ -145,14 +138,10 @@ public class FiguraService {
                         // Sort NATIVO de MongoDB sobre los campos puntuacionMedia /
                         // numVisualizaciones, en lugar de cargar todos los IDs en memoria,
                         // calcular la clave en Java y paginar manualmente (era ~400-500 ms).
-                        boolean esValorados = "valorados".equals(sortBy);
-                        boolean esPopulares = "populares".equals(sortBy);
+boolean esValorados = "valorados".equals(sortBy);
+                boolean esPopulares = "populares".equals(sortBy);
 
-                        String campoOrden = esValorados ? "puntuacionMedia"
-                                        : esPopulares ? "numVisualizaciones"
-                                                        : "fechaCreacion";
-
-                        // Recientes (default) / antiguos → fechaCreacion DESC/ASC
+                // Recientes (default) / antiguos → fechaCreacion DESC/ASC
                         Sort sort;
                         if (esValorados) {
                                 sort = Sort.by(Sort.Order.desc("puntuacionMedia"));
@@ -197,7 +186,7 @@ public class FiguraService {
                         }
 
                         // totales → [{total: N}] — $count devuelve Integer (Int32), no Long
-                        List<Document> totalesDocs = (List<Document>) documentos.get(0).get("totales");
+                        List<Document> totalesDocs = listaDocumentos(documentos.get(0).get("totales"));
                         long totalElementos = totalesDocs.isEmpty() ? 0
                                         : ((Number) totalesDocs.get(0).get("total")).longValue();
 
@@ -207,7 +196,7 @@ public class FiguraService {
                         }
 
                         // página → [{...figura...}]
-                        List<Document> paginaDocs = (List<Document>) documentos.get(0).get("pagina");
+                        List<Document> paginaDocs = listaDocumentos(documentos.get(0).get("pagina"));
                         List<Figura> figurasPagina = paginaDocs.stream()
                                         .map(doc -> mongoConverter.read(Figura.class, doc))
                                         .toList();
@@ -215,114 +204,6 @@ public class FiguraService {
                         return construirPaginaFigurasDto(
                                         figurasPagina, page, size, totalElementos, usuarioId);
                 }
-
-        // Ordenación por valoración media o popularidad (visualizaciones)
-        // Se obtienen todos los IDs filtrados, se calcula la clave de orden en memoria,
-        // se ordenan y se pagina manualmente.
-        private PaginaFigurasDto obtenerTodasDtoOrdenJava(
-                        Query query,
-                        int page,
-                        int size,
-                        String sortBy,
-                        String usuarioId) {
-
-                // 1. Obtener todos los IDs que cumplen los filtros (sin sort, sin paginación)
-                Query queryIds = Query.of(query);
-                queryIds.fields().include("_id");
-                List<String> todosIds = mongoTemplate.find(queryIds, Figura.class)
-                                .stream()
-                                .map(Figura::getId)
-                                .toList();
-
-                long totalElementos = todosIds.size();
-
-                if (totalElementos == 0) {
-                        return new PaginaFigurasDto(List.of(), page, 0, 0, size);
-                }
-
-                // 2. Calcular la clave de ordenación para cada ID
-                Map<String, Double> sortKeys;
-                if ("valorados".equals(sortBy)) {
-                        sortKeys = calcularSortKeysValoracion(todosIds);
-                } else {
-                        sortKeys = calcularSortKeysPopularidad(todosIds);
-                }
-
-                // 3. Ordenar IDs por clave DESC (empates se resuelven por fechaCreacion DESC)
-                Map<String, LocalDateTime> fechasMap = obtenerFechasCreacion(todosIds);
-
-                List<String> idsOrdenados = todosIds.stream()
-                                .sorted((a, b) -> {
-                                        double ka = sortKeys.getOrDefault(a, 0.0);
-                                        double kb = sortKeys.getOrDefault(b, 0.0);
-                                        int cmp = Double.compare(kb, ka); // DESC
-                                        if (cmp != 0) return cmp;
-                                        // Empate: más reciente primero
-                                        LocalDateTime fa = fechasMap.getOrDefault(a, LocalDateTime.MIN);
-                                        LocalDateTime fb = fechasMap.getOrDefault(b, LocalDateTime.MIN);
-                                        return fb.compareTo(fa);
-                                })
-                                .toList();
-
-                // 4. Paginar los IDs
-                int totalPaginas = totalPaginas(totalElementos, size);
-                if (page >= totalPaginas) {
-                        return new PaginaFigurasDto(List.of(), page, totalPaginas, totalElementos, size);
-                }
-
-                int from = page * size;
-                int to = (int) Math.min((long) from + size, totalElementos);
-                List<String> paginaIds = idsOrdenados.subList(from, to);
-
-                // 5. Fetch de las figuras de la página manteniendo el orden
-                List<Figura> figurasPagina = fetchFigurasOrdenadas(paginaIds);
-
-                return construirPaginaFigurasDto(figurasPagina, page, size, totalElementos, usuarioId);
-        }
-
-        private Map<String, Double> calcularSortKeysValoracion(List<String> figuraIds) {
-                List<Valoracion> valoraciones = valoracionRepository.findByFiguraIdIn(figuraIds);
-                return valoraciones.stream()
-                                .collect(Collectors.groupingBy(
-                                                Valoracion::getFiguraId,
-                                                Collectors.averagingInt(Valoracion::getPuntuacion)));
-        }
-
-        private Map<String, Double> calcularSortKeysPopularidad(List<String> figuraIds) {
-                if (figuraIds.isEmpty()) return Map.of();
-                return visualizacionRepository.contarAgrupadasPorFiguraId(figuraIds)
-                                .stream()
-                                .collect(Collectors.toMap(
-                                                VisualizacionesPorFiguraDto::getFiguraId,
-                                                dto -> (double) dto.getTotal()));
-        }
-
-        private Map<String, LocalDateTime> obtenerFechasCreacion(List<String> figuraIds) {
-                if (figuraIds.isEmpty()) return Map.of();
-                Query queryFechas = Query.query(Criteria.where("id").in(figuraIds));
-                queryFechas.fields().include("_id").include("fechaCreacion");
-                List<Figura> figuras = mongoTemplate.find(queryFechas, Figura.class);
-                return figuras.stream()
-                                .collect(Collectors.toMap(
-                                                Figura::getId,
-                                                f -> f.getFechaCreacion() != null
-                                                                ? f.getFechaCreacion()
-                                                                : LocalDateTime.MIN));
-        }
-
-        // Fetch de figuras por IDs manteniendo el orden dado
-        private List<Figura> fetchFigurasOrdenadas(List<String> ids) {
-                if (ids.isEmpty()) return List.of();
-                List<Figura> todas = mongoTemplate.find(
-                                Query.query(Criteria.where("id").in(ids)),
-                                Figura.class);
-                Map<String, Figura> byId = todas.stream()
-                                .collect(Collectors.toMap(Figura::getId, f -> f));
-                return ids.stream()
-                                .map(byId::get)
-                                .filter(java.util.Objects::nonNull)
-                                .toList();
-        }
 
         // Construir PaginaFigurasDto a partir de una lista de figuras de la página
         private PaginaFigurasDto construirPaginaFigurasDto(
@@ -398,6 +279,12 @@ public class FiguraService {
 
         private int totalPaginas(long totalElementos, int size) {
                 return (int) Math.ceil((double) totalElementos / size);
+        }
+
+        // Los $facet devuelven las listas como Object; el cast es inherente al BSON.
+        @SuppressWarnings("unchecked")
+        private static List<Document> listaDocumentos(Object value) {
+                return (List<Document>) value;
         }
 
         // Convertir Figura a FiguraListadoDto

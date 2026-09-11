@@ -2,8 +2,6 @@ package com.manitascrochet.backend.repository;
 
 import java.util.List;
 
-import java.util.List;
-
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.manitascrochet.backend.model.Figura;

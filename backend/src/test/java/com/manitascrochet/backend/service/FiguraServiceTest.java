@@ -1,26 +1,15 @@
 package com.manitascrochet.backend.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.bson.Document;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +33,6 @@ import com.manitascrochet.backend.dto.FiguraListadoDto;
 import com.manitascrochet.backend.dto.ImageUploadResultDto;
 import com.manitascrochet.backend.dto.ResumenValoracionDto;
 import com.manitascrochet.backend.dto.ValoracionDto;
-import com.manitascrochet.backend.dto.VisualizacionesPorFiguraDto;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.CategoriaNoEncontradaException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.ColorNoEncontradoException;
 import com.manitascrochet.backend.exception.GlobalExceptionHandler.FiguraNoEncontradaException;
@@ -222,6 +210,21 @@ class FiguraServiceTest {
         assertThat(resultado.getContenido()).isEmpty();
         verify(categorias, never()).findById(anyString());
         verify(ratings, never()).obtenerResumenValoraciones(anyString());
+    }
+
+    @Test
+    void obtenerTodasDtoResultadoVacio_devuelveListaVacia() {
+        @SuppressWarnings("unchecked")
+        AggregationResults<Document> vacio = mock(AggregationResults.class);
+        when(vacio.getMappedResults()).thenReturn(List.of());
+        when(mongo.aggregate(any(Aggregation.class), eq(Figura.class), eq(Document.class)))
+                .thenReturn(vacio);
+
+        var resultado = service.obtenerTodasDto(null, null, false, 0, 12, "recientes", null);
+
+        assertThat(resultado.getContenido()).isEmpty();
+        assertThat(resultado.getTotalElementos()).isZero();
+        assertThat(resultado.getTotalPaginas()).isZero();
     }
 
     @Test
