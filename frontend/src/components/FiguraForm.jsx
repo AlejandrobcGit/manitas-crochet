@@ -12,31 +12,40 @@ const DIFICULTADES = [
     "AVANZADO"
 ];
 
-// ImageKit: tr=w-<ancho>,h-<alto>,fo-auto,q-<calidad>
-function getImagenOptimizada(url, anchoCss, altoCss) {
-
-    if (!url) {
-        return url;
-    }
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2); // cap en 2x
-
-    const ancho = Math.round(anchoCss * dpr);
-    const alto = Math.round((altoCss ?? anchoCss) * dpr);
-
-    const separador = url.includes("?") ? "&" : "?";
-
-    return `${url}${separador}tr=w-${ancho},h-${alto},fo-auto,q-70`;
-}
-
-// Evita optimizar previews locales (blob:) generadas al elegir un archivo nuevo
+// Solo se muestran URLs generadas por el navegador o servidas por ImageKit.
+// cambio incluido por sugerencia de GitHUB\CodeQL
 function urlPreview(url, anchoCss, altoCss) {
+    if (!url) {
+        return null;
+    }
 
-    if (!url || url.startsWith("blob:")) {
+    if (url.startsWith("blob:")) {
         return url;
     }
 
-    return getImagenOptimizada(url, anchoCss, altoCss);
+    try {
+        const imageUrl = new URL(url);
+
+        if (
+            imageUrl.protocol !== "https:" ||
+            imageUrl.hostname !== "ik.imagekit.io"
+        ) {
+            return null;
+        }
+
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const ancho = Math.round(anchoCss * dpr);
+        const alto = Math.round((altoCss ?? anchoCss) * dpr);
+
+        imageUrl.searchParams.set(
+            "tr",
+            `w-${ancho},h-${alto},fo-auto,q-70`
+        );
+
+        return imageUrl.href;
+    } catch {
+        return null;
+    }
 }
 
 function FiguraForm({ onVolver, esEdicion = false, figuraId = null }) {
