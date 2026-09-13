@@ -1,6 +1,6 @@
 # Frontend de Manitas Crochet
 
-Este directorio contiene la interfaz web de Manitas Crochet, desarrollada con React y Vite. La versión 3 añade el dashboard de estadísticas de administración con KPIs, rankings, tendencias y gráficas de evolución, además de la Dockerización del despliegue.
+Este directorio contiene la interfaz web de Manitas Crochet, desarrollada con React y Vite. La versión 4 añade un catálogo paginado con filtros combinables, ordenación y estado navegable mediante URL, además de las mejoras del dashboard de estadísticas y la Dockerización del despliegue.
 
 ## 🚀 Tecnologías
 
@@ -47,6 +47,10 @@ npm run lint
 - `/verificar-email?token=...` — verificación de correo electrónico.
 - `/recuperar-contrasena?token=...` — restablecimiento de contraseña.
 - `/no-autorizado` — respuesta para usuarios sin permisos.
+- `/sobre-nosotros` — información del proyecto.
+- `/politica-cookies` — política de cookies.
+- `/politica-privacidad` — política de privacidad.
+- `/aviso-legal` — aviso legal.
 
 El panel `/administracion` está protegido y solo es accesible para usuarios con rol `ROLE_ADMIN`.
 
@@ -92,6 +96,15 @@ La URL está configurada actualmente en los servicios del frontend como `http://
   - 4 gráficas de evolución mensual (visualizaciones, favoritos, comentarios y valoraciones) en pestañas.
 - Visualización responsive adaptada a escritorio y móvil.
 - Despliegue contenedorizado con Docker y Nginx.
+
+## ✨ Funcionalidades de la versión 4
+
+- Catálogo paginado con navegación entre páginas y salto directo a una página.
+- Filtros combinables por nombre, categoría y favoritos.
+- Ordenación por figuras recientes, antiguas, más valoradas y más populares.
+- Sincronización de filtros, ordenación y página con los parámetros de la URL.
+- Restauración del estado del catálogo al volver desde el detalle mediante `sessionStorage`.
+- Panel de administración de figuras con búsqueda, filtro por categoría y paginación.
 
 ## 📁 Estructura relevante
 

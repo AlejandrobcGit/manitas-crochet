@@ -5,18 +5,20 @@
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![MongoDB](https://img.shields.io/badge/MongoDB-NoSQL-47A248?logo=mongodb&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-24.0-2496ED?logo=docker&logoColor=white)
-![Estado](https://img.shields.io/badge/Estado-Versi%C3%B3n%203-brightgreen)
+![Estado](https://img.shields.io/badge/Estado-Versi%C3%B3n%204-brightgreen)
 ![Licencia](https://img.shields.io/badge/Licencia-MIT-blue)
 
-Manitas Crochet es una aplicación full stack para publicar y gestionar un catálogo digital de figuras de crochet y amigurumis. La versión 3 incorpora un dashboard de estadísticas, almacenamiento de imágenes en la nube mediante ImageKit, contenedorización con Docker y monitorización con Actuator/Prometheus.
+Manitas Crochet es una aplicación full stack para publicar y gestionar un catálogo digital de figuras de crochet y amigurumis. La versión 4 incorpora un catálogo paginado con filtros combinables y ordenación, mejoras de rendimiento en MongoDB y mantiene el dashboard de estadísticas, el almacenamiento de imágenes en ImageKit, la contenedorización con Docker y la monitorización con Actuator/Prometheus.
 
 ## ✨ Funcionalidades
 
 ### Catálogo público
 
 - Catálogo público de figuras con tarjetas y detalle.
-- Búsqueda por nombre y filtrado por categoría.
-- Filtro local de favoritos.
+- Búsqueda por nombre, filtrado por categoría y filtro de favoritos.
+- Filtros combinables con ordenación por recientes, antiguos, más valorados y más populares.
+- Paginación del catálogo con navegación directa por número de página.
+- Estado de filtros, ordenación y página sincronizado con la URL y restaurado al volver desde el detalle.
 - Página de detalle con descripción, dificultad, autor, colores, dimensiones, galería de imágenes y valoraciones.
 - Comentarios públicos asociados a cada figura.
 
@@ -49,6 +51,16 @@ Manitas Crochet es una aplicación full stack para publicar y gestionar un catá
 - Almacenamiento de imágenes en la nube mediante ImageKit con compresión WebP.
 - Contenedorización completa con Docker y Docker Compose.
 - Monitorización con Spring Actuator y métricas Prometheus.
+
+### Mejoras del catálogo (v4)
+
+- Paginación real en backend y frontend, con tamaño configurable y límite de 50 elementos por página.
+- Filtros combinables por nombre, categoría y favoritos.
+- Ordenación nativa por fecha de creación, valoración media y visualizaciones.
+- Métricas denormalizadas en las figuras para acelerar las consultas de popularidad y valoración.
+- Índices compuestos de MongoDB para las consultas principales del catálogo.
+- Consulta de total y contenido mediante una única operación agregada (`$facet`).
+- Panel de administración con búsqueda, filtros y paginación.
 
 ## 🏗️ Arquitectura
 
@@ -163,8 +175,9 @@ http://localhost:5173
 
 ## 🔗 Rutas principales
 
-- Frontend público: `/` y `/figuras/:id`.
+- Frontend público: `/`, `/figuras/:id` y `/sobre-nosotros`.
 - Autenticación: `/login`, `/signup`, `/verificar-email` y `/recuperar-contrasena`.
+- Información legal: `/politica-cookies`, `/politica-privacidad` y `/aviso-legal`.
 - Panel de administración: `/administracion` (incluye dashboard de estadísticas).
 - API: `/auth/**`, `/api/figuras`, `/api/categorias`, `/api/color`, `/api/imagenes`, `/api/favorito`, `/api/valoraciones`, `/api/comentarios` y `/api/dashboard/kpis`.
 
@@ -173,7 +186,7 @@ http://localhost:5173
 - **Versión 1:** catálogo, búsqueda, filtros, CRUD de figuras, categorías, colores e imágenes.
 - **Versión 2:** autenticación y autorización, verificación de correo, recuperación de contraseña, favoritos, valoraciones, comentarios y galería con varias imágenes.
 - **Versión 3:** dashboard de estadísticas, almacenamiento de imágenes en ImageKit, Dockerización, monitorización con Actuator/Prometheus.
-- **Por venir:** descarga de patrones PDF y tienda online.
+- **Versión 4:** paginación real del catálogo, filtros combinables, ordenación por métricas, métricas denormalizadas e índices MongoDB para mejorar el rendimiento.
 
 ## 👤 Autor
 

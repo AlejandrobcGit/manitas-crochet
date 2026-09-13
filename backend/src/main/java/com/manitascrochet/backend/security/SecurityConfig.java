@@ -62,8 +62,6 @@ public class SecurityConfig {
                         // Consulta pulico puntuales
                         // --------------------------------------------------
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
-                        // TEMPORAL (pruebas de métricas - REVERTIR al finalizar)
-                        .requestMatchers(HttpMethod.GET, "/actuator/metrics/**").permitAll()
                         // --------------------------------------------------
                         // Usuarios autenticados
                         // --------------------------------------------------

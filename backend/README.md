@@ -1,11 +1,12 @@
 # Backend de Manitas Crochet
 
-Este módulo contiene la API REST de Manitas Crochet, desarrollada con Spring Boot y conectada a MongoDB. La versión 3 incorpora un dashboard de estadísticas con caché y agregaciones en paralelo, almacenamiento de imágenes en ImageKit y monitorización con Actuator/Prometheus.
+Este módulo contiene la API REST de Manitas Crochet, desarrollada con Spring Boot y conectada a MongoDB. La versión 4 incorpora paginación, filtros combinables y ordenación eficiente del catálogo, además del dashboard de estadísticas con caché y agregaciones en paralelo, almacenamiento de imágenes en ImageKit y monitorización con Actuator/Prometheus.
 
 ## 🧩 Funcionalidades principales
 
 - Gestión CRUD de figuras, categorías y colores.
-- Búsqueda de figuras por nombre y categoría mediante DTOs de listado y detalle.
+- Listado paginado de figuras con filtros combinables por nombre, categoría y favoritos.
+- Ordenación por figuras recientes, antiguas, más valoradas y más populares.
 - Dificultad, autor, colores, dimensiones y varias imágenes por figura.
 - Autenticación stateless con JWT, refresh token y roles `USER`/`ADMIN`.
 - Registro, login, logout, verificación de email y recuperación de contraseña.
@@ -14,6 +15,9 @@ Este módulo contiene la API REST de Manitas Crochet, desarrollada con Spring Bo
 - Almacenamiento de imágenes en ImageKit con compresión WebP.
 - Caché de 30 s (Caffeine) para los KPIs del dashboard.
 - Agregaciones MongoDB en paralelo mediante `CompletableFuture`.
+- Métricas denormalizadas (`puntuacionMedia` y `numVisualizaciones`) para ordenar el catálogo de forma nativa.
+- Índices compuestos de MongoDB para las consultas principales del catálogo.
+- Consulta de total y contenido mediante una única agregación con `$facet`.
 - Monitorización con Spring Actuator y métricas Prometheus.
 - Validación de datos y manejo centralizado de excepciones.
 - CORS preparado para el frontend local.
@@ -93,7 +97,8 @@ mvnw.cmd spring-boot:run
 
 ### Figuras
 
-- `GET /api/figuras?nombre=&categoriaId=` — listado, búsqueda y filtro.
+- `GET /api/figuras` — listado del catálogo.
+- `GET /api/figuras?page=0&size=12&nombre=&categoriaId=&soloFavoritos=false&sortBy=recientes` — listado paginado con filtros y ordenación.
 - `GET /api/figuras/{id}` — detalle y resumen de valoraciones.
 - `POST /api/figuras` — crear con multipart (`data`, `imagenPrincipal`, `imagenesSecundarias`). Solo ADMIN.
 - `PUT /api/figuras/{id}` — actualizar datos e imágenes. Solo ADMIN.
@@ -145,6 +150,10 @@ Las imágenes se almacenan en ImageKit. Los endpoints de imágenes gestionan la 
 - `GET /actuator/info` — información de la aplicación (público).
 - `GET /actuator/prometheus` — métricas Prometheus (solo ADMIN).
 
+El endpoint paginado devuelve un objeto con `contenido`, `paginaActual`, `totalPaginas`,
+`totalElementos` y `tamanoPagina`. `page` empieza en 0, `size` admite valores entre 1 y 50,
+y `sortBy` acepta `recientes`, `antiguos`, `valorados` o `populares`.
+
 ## 📁 Estructura relevante
 
 ```text
@@ -166,6 +175,13 @@ El backend se contenedoriza con una imagen multi-stage basada en `eclipse-temuri
 ```bash
 docker compose up --build backend
 ```
+
+## 📈 Rendimiento del catálogo (v4)
+
+La versión 4 evita realizar por separado el recuento y la consulta de la página mediante una
+agregación `$facet`, y utiliza métricas denormalizadas e índices MongoDB para las ordenaciones
+por popularidad y valoración. Las mediciones comparativas están documentadas en
+[`docs/benchmark-indices.md`](../docs/benchmark-indices.md).
 
 ## 📌 Nota
 

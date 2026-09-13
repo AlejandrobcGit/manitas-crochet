@@ -100,7 +100,8 @@ public class FiguraService {
                 }
 
                 // Filtro de solo favoritos: solo figuras que el usuario tiene marcadas.
-                // Los favoritos se guardan con el USERNAME como usuarioId (ver FavoritoController).
+                // Los favoritos se guardan con el USERNAME como usuarioId (ver
+                // FavoritoController).
                 String usuarioId = (userDetails != null) ? userDetails.getUsername() : null;
                 if (soloFavoritos) {
                         // Un usuario anónimo no tiene favoritos → lista vacía
@@ -126,84 +127,84 @@ public class FiguraService {
                                                         criterios.toArray(Criteria[]::new)));
                 }
 
-                        // -----------------------------------------------------------------
-                        // ORDENACIÓN / PAGINACIÓN EN UNA SOLA IDA A MONGODB (MEJORA 1 + 3)
-                        // -----------------------------------------------------------------
-                        // Se usa $facet: en respuesta única obtenemos el TOTAL (count) y los
-                        // DOCUMENTOS de la página. Así evitamos el patrón anterior de
-                        // (1) count + (2) find = 2 round-trips por petición.
-                        //
-                        // Ordenación por VALORADOS / POPULARES: a partir de la MEJORA 3
-                        // (métricas denormalizadas en la propia Figura) ahora se ordena con
-                        // Sort NATIVO de MongoDB sobre los campos puntuacionMedia /
-                        // numVisualizaciones, en lugar de cargar todos los IDs en memoria,
-                        // calcular la clave en Java y paginar manualmente (era ~400-500 ms).
-boolean esValorados = "valorados".equals(sortBy);
+                // -----------------------------------------------------------------
+                // ORDENACIÓN / PAGINACIÓN EN UNA SOLA IDA A MONGODB (MEJORA 1 + 3)
+                // -----------------------------------------------------------------
+                // Se usa $facet: en respuesta única obtenemos el TOTAL (count) y los
+                // DOCUMENTOS de la página. Así evitamos el patrón anterior de
+                // (1) count + (2) find = 2 round-trips por petición.
+                //
+                // Ordenación por VALORADOS / POPULARES: a partir de la MEJORA 3
+                // (métricas denormalizadas en la propia Figura) ahora se ordena con
+                // Sort NATIVO de MongoDB sobre los campos puntuacionMedia /
+                // numVisualizaciones, en lugar de cargar todos los IDs en memoria,
+                // calcular la clave en Java y paginar manualmente (era ~400-500 ms).
+                boolean esValorados = "valorados".equals(sortBy);
                 boolean esPopulares = "populares".equals(sortBy);
 
                 // Recientes (default) / antiguos → fechaCreacion DESC/ASC
-                        Sort sort;
-                        if (esValorados) {
-                                sort = Sort.by(Sort.Order.desc("puntuacionMedia"));
-                        } else if (esPopulares) {
-                                sort = Sort.by(Sort.Order.desc("numVisualizaciones"));
-                        } else if ("antiguos".equals(sortBy)) {
-                                sort = Sort.by(Sort.Order.asc("fechaCreacion"));
-                        } else {
-                                sort = Sort.by(Sort.Order.desc("fechaCreacion"));
-                        }
-
-                        // Aplicar el sort ANTES del $facet (las dos sub-pipelines lo heredan)
-                        query.with(sort);
-
-                        // Filtro combinado (nombre, categoría, favoritos) aplicado ANTES del
-                        // $facet: así count y página evalúan exactamente los mismos documentos.
-                        // Un Query/Criteria único se reutiliza en ambas sub-pipelines (MEJORA 1).
-                        Criteria criterioFiltro = criterios.isEmpty()
-                                        ? new Criteria()
-                                        : new Criteria().andOperator(
-                                                        criterios.toArray(Criteria[]::new));
-
-                        // $facet: en UNA sola consulta devuelve el total (count) y la página
-                        // (skip+limit), evitando el patrón count+find = 2 idas a Mongo (MEJORA 1).
-                        AggregationResults<Document> resultados = mongoTemplate.aggregate(
-                                        Aggregation.newAggregation(
-                                                        Aggregation.match(criterioFiltro),
-                                                        Aggregation.sort(sort),
-                                                        Aggregation.facet(
-                                                                        Aggregation.count().as("total"))
-                                                                                        .as("totales")
-                                                                                        .and(
-                                                                                                        Aggregation.skip((long) page * size),
-                                                                                                        Aggregation.limit(size))
-                                                                                        .as("pagina")),
-                                        Figura.class,
-                                        Document.class);
-
-                        List<Document> documentos = resultados.getMappedResults();
-                        if (documentos.isEmpty()) {
-                                return new PaginaFigurasDto(List.of(), page, 0, 0, size);
-                        }
-
-                        // totales → [{total: N}] — $count devuelve Integer (Int32), no Long
-                        List<Document> totalesDocs = listaDocumentos(documentos.get(0).get("totales"));
-                        long totalElementos = totalesDocs.isEmpty() ? 0
-                                        : ((Number) totalesDocs.get(0).get("total")).longValue();
-
-                        if (totalElementos == 0 || (long) page * size >= totalElementos) {
-                                return new PaginaFigurasDto(List.of(), page,
-                                                totalPaginas(totalElementos, size), totalElementos, size);
-                        }
-
-                        // página → [{...figura...}]
-                        List<Document> paginaDocs = listaDocumentos(documentos.get(0).get("pagina"));
-                        List<Figura> figurasPagina = paginaDocs.stream()
-                                        .map(doc -> mongoConverter.read(Figura.class, doc))
-                                        .toList();
-
-                        return construirPaginaFigurasDto(
-                                        figurasPagina, page, size, totalElementos, usuarioId);
+                Sort sort;
+                if (esValorados) {
+                        sort = Sort.by(Sort.Order.desc("puntuacionMedia"));
+                } else if (esPopulares) {
+                        sort = Sort.by(Sort.Order.desc("numVisualizaciones"));
+                } else if ("antiguos".equals(sortBy)) {
+                        sort = Sort.by(Sort.Order.asc("fechaCreacion"));
+                } else {
+                        sort = Sort.by(Sort.Order.desc("fechaCreacion"));
                 }
+
+                // Aplicar el sort ANTES del $facet (las dos sub-pipelines lo heredan)
+                query.with(sort);
+
+                // Filtro combinado (nombre, categoría, favoritos) aplicado ANTES del
+                // $facet: así count y página evalúan exactamente los mismos documentos.
+                // Un Query/Criteria único se reutiliza en ambas sub-pipelines (MEJORA 1).
+                Criteria criterioFiltro = criterios.isEmpty()
+                                ? new Criteria()
+                                : new Criteria().andOperator(
+                                                criterios.toArray(Criteria[]::new));
+
+                // $facet: en UNA sola consulta devuelve el total (count) y la página
+                // (skip+limit), evitando el patrón count+find = 2 idas a Mongo (MEJORA 1).
+                AggregationResults<Document> resultados = mongoTemplate.aggregate(
+                                Aggregation.newAggregation(
+                                                Aggregation.match(criterioFiltro),
+                                                Aggregation.sort(sort),
+                                                Aggregation.facet(
+                                                                Aggregation.count().as("total"))
+                                                                .as("totales")
+                                                                .and(
+                                                                                Aggregation.skip((long) page * size),
+                                                                                Aggregation.limit(size))
+                                                                .as("pagina")),
+                                Figura.class,
+                                Document.class);
+
+                List<Document> documentos = resultados.getMappedResults();
+                if (documentos.isEmpty()) {
+                        return new PaginaFigurasDto(List.of(), page, 0, 0, size);
+                }
+
+                // totales → [{total: N}] — $count devuelve Integer (Int32), no Long
+                List<Document> totalesDocs = listaDocumentos(documentos.get(0).get("totales"));
+                long totalElementos = totalesDocs.isEmpty() ? 0
+                                : ((Number) totalesDocs.get(0).get("total")).longValue();
+
+                if (totalElementos == 0 || (long) page * size >= totalElementos) {
+                        return new PaginaFigurasDto(List.of(), page,
+                                        totalPaginas(totalElementos, size), totalElementos, size);
+                }
+
+                // página → [{...figura...}]
+                List<Document> paginaDocs = listaDocumentos(documentos.get(0).get("pagina"));
+                List<Figura> figurasPagina = paginaDocs.stream()
+                                .map(doc -> mongoConverter.read(Figura.class, doc))
+                                .toList();
+
+                return construirPaginaFigurasDto(
+                                figurasPagina, page, size, totalElementos, usuarioId);
+        }
 
         // Construir PaginaFigurasDto a partir de una lista de figuras de la página
         private PaginaFigurasDto construirPaginaFigurasDto(
