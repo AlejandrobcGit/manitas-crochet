@@ -1,0 +1,127 @@
+<mxfile host="app.diagrams.net" agent="Copilot">
+  <diagram id="bdd-manitas-crochet" name="Modelo de datos">
+    <mxGraphModel dx="2463" dy="973" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1350" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="edge-usuario-token" edge="1" parent="1" source="usuarios" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" target="tokens_verificacion" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-figura-categoria" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1230.6" y="369.5" />
+              <mxPoint x="1230.6" y="258" />
+            </Array>
+            <mxPoint x="1081" y="369.5" as="sourcePoint" />
+            <mxPoint x="1228.5" y="254.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-figura-color" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1247.6" y="369.2" />
+              <mxPoint x="1247.6" y="369.2" />
+            </Array>
+            <mxPoint x="1082" y="369.20000000000005" as="sourcePoint" />
+            <mxPoint x="1281" y="369.20000000000005" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-comentario-usuario" edge="1" parent="1" source="comentarios" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" target="usuarios" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-comentario-figura" edge="1" parent="1" source="comentarios" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" target="figuras" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="845.2" y="1089.2" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-favorito-usuario" edge="1" parent="1" source="favoritos" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="usuarios" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="594.5" y="685" />
+              <mxPoint x="594.5" y="657.2" />
+              <mxPoint x="348" y="657.2" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-favorito-figura" edge="1" parent="1" source="favoritos" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" target="figuras" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="594.5" y="654.8" />
+              <mxPoint x="846" y="654.8" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-valoracion-usuario" edge="1" parent="1" source="valoraciones" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" target="usuarios" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1031.6" y="990" />
+              <mxPoint x="348" y="990" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-valoracion-figura" edge="1" parent="1" source="valoraciones" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" target="figuras" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1028" y="655.6" />
+              <mxPoint x="982.8" y="655.6" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-visualizacion-usuario" edge="1" parent="1" source="visualizaciones" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" target="usuarios" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="348" y="627.6" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-visualizacion-figura" edge="1" parent="1" source="visualizaciones" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#64748B;strokeWidth=2;endArrow=open;endFill=0;" target="figuras" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1190.8" y="518" />
+              <mxPoint x="1190.8" y="369.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="titulo" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=none;fillColor=none;fontColor=#0F172A;fontSize=28;fontStyle=1;" value="MongoDB | Colecciones, campos e índices&amp;nbsp;" vertex="1">
+          <mxGeometry height="85" width="1550" x="50" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="usuarios" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background: rgb(29, 78, 216); color: rgb(255, 255, 255); padding: 10px; font-size: 16px; font-weight: bold;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;usuarios&lt;/div&gt;&lt;div style=&quot;padding: 10px; font-size: 12px; color: rgb(15, 23, 42);&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;username: String&lt;br&gt;email: String&lt;br&gt;password: String&lt;br&gt;rol: Rol (enum)&lt;br&gt;emailVerificado: boolean&lt;br&gt;politicaPrivacidadAceptada: boolean&lt;br&gt;fechaAceptacionPrivacidad: LocalDateTime&lt;hr&gt;&lt;b&gt;Índices&lt;/b&gt;&lt;br&gt;idx_usr_username (username)&lt;br&gt;idx_usr_email (email)&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="279" width="286" x="205" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="categorias" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background: rgb(29, 78, 216); color: rgb(255, 255, 255); padding: 10px; font-size: 16px; font-weight: bold;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;categorias&lt;/div&gt;&lt;div style=&quot;padding: 10px; font-size: 12px; color: rgb(15, 23, 42);&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;nombre: String&lt;br&gt;&lt;span style=&quot;color: rgb(100, 116, 139);&quot;&gt;Sin índices declarados en el modelo&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="124.5" width="231" x="1114" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="colores" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background: rgb(29, 78, 216); color: rgb(255, 255, 255); padding: 10px; font-size: 16px; font-weight: bold;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;colores&lt;/div&gt;&lt;div style=&quot;padding: 10px; font-size: 12px; color: rgb(15, 23, 42);&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;nombre: String&lt;br&gt;codigo: String&lt;br&gt;&lt;span style=&quot;color: rgb(100, 116, 139);&quot;&gt;Sin índices declarados en el modelo&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="131" width="234" x="1281" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="tokens_verificacion" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background:#1D4ED8;color:#FFFFFF;padding:10px;font-size:16px;font-weight:bold&quot;&gt;tokens_verificacion&lt;/div&gt;&lt;div style=&quot;padding:10px;font-size:12px;color:#0F172A&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;usuarioId: String → usuarios._id&lt;br&gt;token: String&lt;br&gt;fechaExpiracion: LocalDateTime&lt;br&gt;usado: boolean&lt;hr&gt;&lt;b&gt;Índices&lt;/b&gt;&lt;br&gt;usuarioId&lt;br&gt;token (único)&lt;br&gt;fechaExpiracion (TTL: 0 s)&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="230" width="231" x="83" y="472" as="geometry" />
+        </mxCell>
+        <mxCell id="figuras" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background: rgb(29, 78, 216); color: rgb(255, 255, 255); padding: 10px; font-size: 16px; font-weight: bold;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; figuras&lt;/div&gt;&lt;div style=&quot;padding: 10px; font-size: 12px; color: rgb(15, 23, 42);&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;nombre: String&lt;br&gt;descripcion: String&lt;br&gt;categoriaId: String → categorias._id&lt;br&gt;dificultad: Dificultad (enum)&lt;br&gt;autor: String&lt;br&gt;imagenPrincipal: String&lt;br&gt;fileId_imagenPrincipal: String&lt;br&gt;imagenesSecundarias: List (String)&lt;br&gt;fileId_imagenesSecundarias: List (String)&lt;br&gt;coloresIds: List (String) → colores._id&lt;br&gt;altura, ancho, peso: Integer&lt;br&gt;fechaCreacion, fechaModificacion: LocalDateTime&lt;br&gt;puntuacionMedia: Double&lt;br&gt;totalValoraciones, numVisualizaciones: Long&lt;hr&gt;&lt;b&gt;Índices&lt;/b&gt;&lt;br&gt;categoriaId (ascendente)&lt;br&gt;idx_fig_fecha (fechaCreacion DESC)&lt;br&gt;idx_figuras_categoria_fecha (categoriaId ASC, fechaCreacion DESC)&lt;br&gt;idx_figuras_categoria_puntuacion (categoriaId ASC, puntuacionMedia DESC)&lt;br&gt;idx_figuras_categoria_visualizaciones (categoriaId ASC, numVisualizaciones DESC)&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="459" width="536" x="546" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="comentarios" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background: rgb(29, 78, 216); color: rgb(255, 255, 255); padding: 10px; font-size: 16px; font-weight: bold;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;comentarios&lt;/div&gt;&lt;div style=&quot;padding: 10px; font-size: 12px; color: rgb(15, 23, 42);&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;usuarioId: String → usuarios._id&lt;br&gt;figuraId: String → figuras._id&lt;br&gt;comentario: String&lt;br&gt;fechaCreacion, fechaModificacion: LocalDateTime&lt;hr&gt;&lt;b&gt;Índices&lt;/b&gt;&lt;br&gt;idx_co_figura_fecha (figuraId ASC, fechaCreacion DESC)&lt;br&gt;idx_co_usuario_figura (usuarioId ASC, figuraId ASC)&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="237" width="341" x="127" y="1031" as="geometry" />
+        </mxCell>
+        <mxCell id="favoritos" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background: rgb(29, 78, 216); color: rgb(255, 255, 255); padding: 10px; font-size: 16px; font-weight: bold;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; favoritos&lt;/div&gt;&lt;div style=&quot;padding: 10px; font-size: 12px; color: rgb(15, 23, 42);&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;usuarioId: String → usuarios._id&lt;br&gt;figuraId: String → figuras._id&lt;br&gt;fechaAlta, fechaBaja: LocalDateTime&lt;br&gt;activo: boolean&lt;hr&gt;&lt;b&gt;Índices&lt;/b&gt;&lt;br&gt;idx_fav_figura (figuraId)&lt;br&gt;idx_fav_usuario_activo (usuarioId ASC, activo ASC)&lt;br&gt;idx_fav_usuario_figura_activo (usuarioId ASC, figuraId ASC, activo ASC)&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="263" width="415" x="380" y="685" as="geometry" />
+        </mxCell>
+        <mxCell id="valoraciones" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background: rgb(29, 78, 216); color: rgb(255, 255, 255); padding: 10px; font-size: 16px; font-weight: bold;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; valoraciones&lt;/div&gt;&lt;div style=&quot;padding: 10px; font-size: 12px; color: rgb(15, 23, 42);&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;usuarioId: String → usuarios._id&lt;br&gt;figuraId: String → figuras._id&lt;br&gt;puntuacion: Integer&lt;br&gt;fecha: LocalDateTime&lt;hr&gt;&lt;b&gt;Índices&lt;/b&gt;&lt;br&gt;idx_val_figura (figuraId)&lt;br&gt;idx_val_usuario_figura (usuarioId ASC, figuraId ASC)&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="230" width="328" x="861" y="683" as="geometry" />
+        </mxCell>
+        <mxCell id="visualizaciones" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#FFFFFF;strokeColor=#93C5FD;strokeWidth=2;shadow=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.4;text-align:left&quot;&gt;&lt;div style=&quot;background: rgb(29, 78, 216); color: rgb(255, 255, 255); padding: 10px; font-size: 16px; font-weight: bold;&quot;&gt;&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;visualizaciones&lt;/div&gt;&lt;div style=&quot;padding: 10px; font-size: 12px; color: rgb(15, 23, 42);&quot;&gt;&lt;b&gt;_id&lt;/b&gt;: String&lt;br&gt;usuarioId: String → usuarios._id&lt;br&gt;figuraId: String → figuras._id&lt;br&gt;fecha: LocalDateTime&lt;hr&gt;&lt;b&gt;Índices&lt;/b&gt;&lt;br&gt;idx_visual_figura (figuraId)&lt;br&gt;idx_visual_fecha (fecha)&lt;br&gt;idx_visual_evolucion (fecha DESC, figuraId ASC)&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="226" width="311" x="1204" y="436" as="geometry" />
+        </mxCell>
+        <mxCell id="enums" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=center;verticalAlign=center;spacing=0;fillColor=#F8FAFC;strokeColor=#CBD5E1;strokeWidth=1;dashed=1;" value="&lt;div style=&quot;font-family:Arial;line-height:1.5;text-align:left&quot;&gt;&lt;div style=&quot;background:#E2E8F0;color:#0F172A;padding:9px;font-size:14px;font-weight:bold&quot;&gt;Tipos enumerados (no son colecciones)&lt;/div&gt;&lt;div style=&quot;padding:10px;font-size:12px;color:#0F172A&quot;&gt;&lt;b&gt;Rol&lt;/b&gt;: USER, ADMIN&lt;br&gt;&lt;b&gt;Dificultad&lt;/b&gt;: PRINCIPIANTE, INTERMEDIO, AVANZADO&lt;/div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="105" width="328" x="896" y="1033" as="geometry" />
+        </mxCell>
+        <mxCell id="leyenda" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacing=10;fillColor=#F1F5F9;strokeColor=#CBD5E1;fontSize=12;" value="&lt;div style=&quot;font-family:Arial;line-height:1.45;text-align:left;color:#334155;font-size:12px&quot;&gt;&lt;b&gt;Lectura del diagrama&lt;/b&gt;&lt;br&gt;Línea discontinua: referencia lógica entre documentos (MongoDB no aplica claves foráneas).&lt;br&gt;Los nombres de campos e índices reflejan las entidades Java actuales. Los índices sin nombre explícito aparecen con su definición; MongoDB/Spring puede asignarles un nombre generado.&lt;/div&gt;" vertex="1">
+          <mxGeometry height="105" width="1031" x="509.5" y="1156" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -171,7 +171,7 @@ public class FiguraService {
                                 Aggregation.newAggregation(
                                                 Aggregation.match(criterioFiltro),
                                                 Aggregation.sort(sort),
-                                                Aggregation.facet(
+                                                Aggregation.facet( // Divide la ejecución en dos ramas paralelas sobre los mismos documentos
                                                                 Aggregation.count().as("total"))
                                                                 .as("totales")
                                                                 .and(

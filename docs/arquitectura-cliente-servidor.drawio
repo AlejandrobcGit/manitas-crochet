@@ -1,0 +1,130 @@
+<mxfile host="app.diagrams.net" agent="Copilot">
+  <diagram id="comunicacion-copilot-ver2" name="Arquitectura">
+    <mxGraphModel dx="1492" dy="598" grid="0" gridSize="10" guides="0" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1550" pageHeight="980" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=23;fontStyle=1;fontColor=#243447;" value="ArribaCrochet | Arquitectura" vertex="1">
+          <mxGeometry height="38" width="1000" x="30" y="18" as="geometry" />
+        </mxCell>
+        <mxCell id="zone_front" parent="1" style="swimlane;html=1;startSize=40;horizontal=1;rounded=1;fillColor=#dae8fc;swimlaneFillColor=#f6f9ff;strokeColor=#6c8ebf;fontSize=15;fontStyle=1;collapsible=0;" value="1 · FRONTEND | REACT" vertex="1">
+          <mxGeometry height="580" width="340" x="25" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zone_http" parent="1" style="swimlane;html=1;startSize=40;horizontal=1;rounded=1;fillColor=#e1d5e7;swimlaneFillColor=#faf7fc;strokeColor=#9673a6;fontSize=15;fontStyle=1;collapsible=0;" value="2 · COMUNICACIÓN | HTTP" vertex="1">
+          <mxGeometry height="580" width="350" x="385" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zone_backend" parent="1" style="swimlane;html=1;startSize=40;horizontal=1;rounded=1;fillColor=#d5e8d4;swimlaneFillColor=#f6fbf5;strokeColor=#82b366;fontSize=15;fontStyle=1;collapsible=0;" value="3 · BACKEND | SPRING BOOT" vertex="1">
+          <mxGeometry height="580" width="390" x="755" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zone_db" parent="1" style="swimlane;html=1;startSize=40;horizontal=1;rounded=1;fillColor=#fff2cc;swimlaneFillColor=#fffdf5;strokeColor=#d6b656;fontSize=14;fontStyle=1;collapsible=0;" value="4 · BASE DE DATOS | MONGODB ATLAS" vertex="1">
+          <mxGeometry height="580" width="360" x="1165" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ui" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=center;verticalAlign=middle;fontSize=12;spacing=8;" value="&lt;b&gt;Páginas y componentes&lt;/b&gt;&lt;br&gt;Consumen la API y el estado de sesión." vertex="1">
+          <mxGeometry height="62" width="280" x="55" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="hook" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;verticalAlign=middle;fontSize=11;spacing=9;" value="&lt;b&gt;useApiFetch&lt;/b&gt;&lt;br&gt;Crea cabeceras JSON; omite Content-Type en multipart.&lt;br&gt;Añade Bearer, unifica errores y ante 401 renueva/reintenta. 403 no renueva." vertex="1">
+          <mxGeometry height="120" width="280" x="55" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="user" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;verticalAlign=middle;fontSize=11;spacing=9;" value="&lt;b&gt;UserContext · fetch directo&lt;/b&gt;&lt;br&gt;signin · signup · logout · refresh&lt;br&gt;&lt;br&gt;Login aún no tiene token; el refresh no puede depender del hook que lo invoca." vertex="1">
+          <mxGeometry height="115" width="280" x="55" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="token_note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f6f9ff;strokeColor=#6c8ebf;align=center;verticalAlign=middle;fontSize=11;spacing=7;" value="Access JWT: estado de React&lt;br&gt;Refresh JWT: cookie HTTP-only" vertex="1">
+          <mxGeometry height="62" width="280" x="55" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="yzXHKO0XrAtPezLZpsDp-6" edge="1" parent="1" source="http_payload" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1f78d1;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" target="security">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="http_payload" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=center;verticalAlign=middle;fontSize=11;spacing=8;" value="&lt;b&gt;Formato y credenciales&lt;/b&gt;&lt;br&gt;JSON o multipart/form-data&lt;br&gt;Authorization: Bearer access token&lt;br&gt;Cookie HTTP-only: refresh token" vertex="1">
+          <mxGeometry height="100" width="290" x="415" y="148" as="geometry" />
+        </mxCell>
+        <mxCell id="http_flow" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;align=left;verticalAlign=middle;fontSize=12;spacing=11;" value="&lt;b&gt;Renovación de sesión&lt;/b&gt;&lt;br&gt;&lt;br&gt;1. Login: POST /auth/signin&lt;br&gt;2. Recibe access JWT y cookie refresh&lt;br&gt;3. Petición con Authorization&lt;br&gt;4. 401 inicia refresh; 403 no renueva&lt;br&gt;5. POST /auth/refresh con cookie&lt;br&gt;6. Reintento con el nuevo access token&lt;br&gt;&lt;br&gt;Si falla el refresh: sesión cerrada y SESSION_EXPIRED." vertex="1">
+          <mxGeometry height="270" width="290" x="415" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="yzXHKO0XrAtPezLZpsDp-7" edge="1" parent="1" source="security" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="rest" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="security" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;verticalAlign=middle;fontSize=11;spacing=8;" value="&lt;b&gt;Spring Security + filtro JWT&lt;/b&gt;&lt;br&gt;Valida el access token de cada petición protegida.&lt;br&gt;No autenticado: 401 · Sin permisos: 403" vertex="1">
+          <mxGeometry height="95" width="330" x="785" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="rest" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;align=center;verticalAlign=middle;fontSize=12;spacing=8;" value="&lt;b&gt;Controllers REST&lt;/b&gt;&lt;br&gt;→ &lt;b&gt;Services&lt;/b&gt; · lógica de negocio" vertex="1">
+          <mxGeometry height="72" width="330" x="785" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="repo" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e2f0d9;strokeColor=#2e7d32;align=center;verticalAlign=middle;fontSize=11;spacing=8;" value="&lt;b&gt;MongoRepository&lt;/b&gt;&lt;br&gt;CRUD simple&lt;br&gt;findById · save · deleteById" vertex="1">
+          <mxGeometry height="95" width="155" x="785" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="template" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#8e44ad;align=center;verticalAlign=middle;fontSize=11;spacing=8;" value="&lt;b&gt;MongoTemplate&lt;/b&gt;&lt;br&gt;Catálogo: Criteria + $facet&lt;br&gt;Dashboard: agregaciones&lt;br&gt;findAndModify atómico" vertex="1">
+          <mxGeometry height="110" width="155" x="960" y="410" as="geometry" />
+        </mxCell>
+        <mxCell id="collections" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf5;strokeColor=#d6b656;align=center;verticalAlign=middle;fontSize=11;spacing=9;" value="&lt;b&gt;9 colecciones&lt;/b&gt;&lt;br&gt;figuras · categorias · colores · usuarios&lt;br&gt;favoritos · valoraciones · comentarios&lt;br&gt;visualizaciones · tokens_verificacion" vertex="1">
+          <mxGeometry height="105" width="310" x="1190" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="indexes" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;align=left;verticalAlign=middle;fontSize=11;spacing=9;" value="&lt;b&gt;Índices definidos en los modelos&lt;/b&gt;&lt;br&gt;Figuras: fecha y categoría/ordenación.&lt;br&gt;Usuarios: username y email.&lt;br&gt;Favoritos, valoraciones, comentarios y visualizaciones: claves de consulta.&lt;br&gt;Tokens: usuario, token único y expiración TTL." vertex="1">
+          <mxGeometry height="150" width="310" x="1190" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="indices_note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf5;strokeColor=#d6b656;align=left;verticalAlign=middle;fontSize=10;spacing=8;" value="categorias y colores usan el índice _id predeterminado. tokens_verificacion guarda tokens de verificación; el refresh JWT se guarda en cookie." vertex="1">
+          <mxGeometry height="80" width="310" x="1190" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ui_hook" edge="1" parent="1" source="ui" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1f78d1;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;" target="hook" value="llamadas API">
+          <mxGeometry relative="1" x="-0.1368" y="-45" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_hook_http" edge="1" parent="1" source="hook" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#1f78d1;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="http_payload" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_user_flow" edge="1" parent="1" source="user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;" target="http_flow" value="login / refresh">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_auth_backend" edge="1" parent="1" source="http_flow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#d79b00;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;" target="rest" value="">
+          <mxGeometry relative="1" x="0.0065" y="-8" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_security_rest" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#548235;strokeWidth=2;endArrow=block;endFill=1;fontSize=10;" value="autorizado">
+          <mxGeometry relative="1" x="0.02" y="32" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="950" y="244" as="sourcePoint" />
+            <mxPoint x="950" y="284" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_rest_repo" edge="1" parent="1" source="rest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#2e7d32;strokeWidth=3;endArrow=block;endFill=1;fontSize=10;fontStyle=1;" target="repo" value="CRUD">
+          <mxGeometry relative="1" x="0.089" y="-13" as="geometry">
+            <mxPoint x="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_rest_template" edge="1" parent="1" source="rest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#8e44ad;strokeWidth=3;endArrow=block;endFill=1;fontSize=10;fontStyle=1;" target="template" value="consultas avanzadas">
+          <mxGeometry relative="1" x="0.3737" y="14" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_repo_db" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#2e7d32;strokeWidth=3;endArrow=block;endFill=1;fontSize=10;" value="operaciones simples">
+          <mxGeometry relative="1" x="-0.3988" y="-20" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="867.5" y="610" />
+              <mxPoint x="1155" y="610" />
+              <mxPoint x="1155" y="202.5" />
+            </Array>
+            <mxPoint x="867.5" y="505" as="sourcePoint" />
+            <mxPoint x="1195" y="202.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_template_db" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#8e44ad;strokeWidth=3;endArrow=block;endFill=1;fontSize=10;" value="consultas y agregaciones">
+          <mxGeometry relative="1" x="-0.8333" y="-20" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1042.5" y="540" />
+              <mxPoint x="1155" y="540" />
+              <mxPoint x="1155" y="202.5" />
+            </Array>
+            <mxPoint x="1042.5" y="520" as="sourcePoint" />
+            <mxPoint x="1195" y="202.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=20;fontColor=#526477;" value="Leyenda: &lt;font color=&quot;#1f78d1&quot;&gt;HTTP&lt;/font&gt; · &lt;font color=&quot;#d79b00&quot;&gt;autenticación&lt;/font&gt; · &lt;font color=&quot;#2e7d32&quot;&gt;MongoRepository&lt;/font&gt; · &lt;font color=&quot;#8e44ad&quot;&gt;MongoTemplate&lt;/font&gt; · &lt;font color=&quot;#b85450&quot;&gt;seguridad&lt;/font&gt;" vertex="1">
+          <mxGeometry height="25" width="1400" x="55" y="730" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
