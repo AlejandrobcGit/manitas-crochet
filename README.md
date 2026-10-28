@@ -8,7 +8,7 @@
 ![Estado](https://img.shields.io/badge/Estado-Versi%C3%B3n%204-brightgreen)
 ![Licencia](https://img.shields.io/badge/Licencia-MIT-blue)
 
-Manitas Crochet es una aplicación full stack para publicar y gestionar un catálogo digital de figuras de crochet y amigurumis. La versión 4 incorpora un catálogo paginado con filtros combinables y ordenación, mejoras de rendimiento en MongoDB y mantiene el dashboard de estadísticas, el almacenamiento de imágenes en ImageKit, la contenedorización con Docker y la monitorización con Actuator/Prometheus.
+Manitas Crochet es una aplicación full stack para publicar y gestionar un catálogo digital de figuras de crochet y amigurumis. La versión 4 incorpora un catálogo paginado con filtros combinables y ordenación sincronizados con la URL, mejoras de rendimiento en MongoDB y mantiene el dashboard de estadísticas, el almacenamiento de imágenes en ImageKit, la contenedorización con Docker y la monitorización con Actuator/Prometheus.
 
 ## ✨ Funcionalidades
 
@@ -18,9 +18,10 @@ Manitas Crochet es una aplicación full stack para publicar y gestionar un catá
 - Búsqueda por nombre, filtrado por categoría y filtro de favoritos.
 - Filtros combinables con ordenación por recientes, antiguos, más valorados y más populares.
 - Paginación del catálogo con navegación directa por número de página.
-- Estado de filtros, ordenación y página sincronizado con la URL y restaurado al volver desde el detalle.
+- Estado de filtros, ordenación y página sincronizado con la URL y restaurado al volver desde el detalle mediante `sessionStorage`.
 - Página de detalle con descripción, dificultad, autor, colores, dimensiones, galería de imágenes y valoraciones.
 - Comentarios públicos asociados a cada figura.
+- Páginas informativas y legales, con diseño adaptable a escritorio y móvil.
 
 ### Usuarios y seguridad
 
@@ -94,12 +95,17 @@ manitas-crochet/
 └── README.md          # Documentación general del proyecto
 ```
 
+Consulta las guías específicas de [frontend](frontend/README.md) y [backend](backend/README.md) para más detalles de cada módulo.
+
 ## ▶️ Inicio rápido
 
 ### Opción 1: Docker Compose (recomendado)
 
 Requisitos:
 - Docker y Docker Compose instalados.
+- Un archivo `backend/.env` con la configuración del backend y un `.env` en la raíz con `VITE_API_URL`.
+
+Para desarrollo local, el valor habitual de `VITE_API_URL` es `http://localhost:8080`. En producción debe apuntar a la URL pública de la API.
 
 ```bash
 docker compose up --build
@@ -127,17 +133,19 @@ Variables de entorno necesarias:
 
 ```bash
 MONGODB_URI=mongodb://localhost:27017/manitas-crochet
-SERVER_PORT=8080
-SERVER_ADDRESS=localhost
+PORT=8080
+SERVER_ADDRESS=0.0.0.0
 APP_PROTOCOLO=http
 APP_FRONTEND_URL=http://localhost:5173
-jwt.secret=una-clave-secreta-larga
+JWT_SECRET=una-clave-secreta-larga
 EMAIL_ADDRESS=tu-cuenta@gmail.com
 EMAIL_PASSWORD=tu-contraseña-de-aplicación
 IMAGEKIT_PUBLIC_KEY=tu-public-key
 IMAGEKIT_PRIVATE_KEY=tu-private-key
 IMAGEKIT_URL_ENDPOINT=tu-url-endpoint
 ```
+
+`JWT_SECRET` es el nombre de la variable de entorno; no incluyas credenciales reales en el repositorio. Para ejecutar con Docker Compose, configura estas variables en `backend/.env` y define `VITE_API_URL` en el `.env` de la raíz.
 
 Ejecutar:
 
@@ -179,7 +187,12 @@ http://localhost:5173
 - Autenticación: `/login`, `/signup`, `/verificar-email` y `/recuperar-contrasena`.
 - Información legal: `/politica-cookies`, `/politica-privacidad` y `/aviso-legal`.
 - Panel de administración: `/administracion` (incluye dashboard de estadísticas).
+- Respuesta de usuarios no autorizados: `/no-autorizado`.
 - API: `/auth/**`, `/api/figuras`, `/api/categorias`, `/api/color`, `/api/imagenes`, `/api/favorito`, `/api/valoraciones`, `/api/comentarios` y `/api/dashboard/kpis`.
+
+El listado paginado de figuras admite `page` (desde 0), `size` (de 1 a 50), `nombre`, `categoriaId`, `soloFavoritos` y `sortBy` (`recientes`, `antiguos`, `valorados` o `populares`). La respuesta incluye `contenido`, `paginaActual`, `totalPaginas`, `totalElementos` y `tamanoPagina`. El panel de administración y el dashboard están protegidos para el rol administrador.
+
+La API también expone `GET /actuator/health` y `GET /actuator/info`; las métricas de Prometheus están disponibles en `GET /actuator/prometheus` para administradores.
 
 ## 📌 Evolución de versiones
 

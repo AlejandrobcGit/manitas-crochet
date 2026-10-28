@@ -55,11 +55,11 @@ El backend usa estas variables de entorno:
 
 ```bash
 MONGODB_URI=mongodb://localhost:27017/manitas-crochet
-SERVER_PORT=8080
-SERVER_ADDRESS=localhost
+PORT=8080
+SERVER_ADDRESS=0.0.0.0
 APP_PROTOCOLO=http
 APP_FRONTEND_URL=http://localhost:5173
-jwt.secret=una-clave-secreta-larga
+JWT_SECRET=una-clave-secreta-larga
 EMAIL_ADDRESS=tu-cuenta@gmail.com
 EMAIL_PASSWORD=tu-contraseña-de-aplicación
 IMAGEKIT_PUBLIC_KEY=tu-public-key
