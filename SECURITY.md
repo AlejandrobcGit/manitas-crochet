@@ -25,6 +25,36 @@ Parches aplicados en `backend/pom.xml` sobre Spring Boot 3.5.16:
 Verificación: `mvn dependency:tree` confirma las versiones parcheadas y
 `mvn clean test` pasa con 206 tests (1 omitido), incluidos 7 nuevos tests de JWT.
 
+### Runtime de Java
+
+El 2026-11-17 Oracle publicó el *CPU Supplement* de noviembre de 2026, que
+corrige 9 vulnerabilidades en Java SE 21.0.13 (referenciadas por Oracle como
+21.0.13.0.3):
+
+| CVE | Componente | CVSS |
+| --- | --- | --- |
+| CVE-2026-114938 | Compiler | 8.1 |
+| CVE-2026-114939 | JGSS | 7.4 |
+| CVE-2026-114940 | JSSE (TLS) | 7.4 |
+| CVE-2026-114941 | Compiler | 7.0 |
+| CVE-2026-114942 | Libraries | 7.0 |
+| CVE-2026-114943 | Hotspot | 6.5 |
+| CVE-2026-114944 | Core Java Libraries | 5.9 |
+| CVE-2026-114945 | Libraries | 5.3 |
+| CVE-2026-114946 | Compiler | 4.8 |
+
+Afectan a APIs alcanzables desde un servicio web (no solo a clientes), por lo que
+se actualizó la imagen de runtime del backend de `eclipse-temurin:21.0.13_9-jre`
+a `eclipse-temurin:21.0.13.1_2-jre`, el *respin* de seguridad de Adoptium
+publicado el mismo día.
+
+Verificación: `docker run --rm eclipse-temurin:21.0.13.1_2-jre java -version`
+devuelve `openjdk version "21.0.13.1" 2026-11-17 LTS`.
+
+Pendiente en el entorno local: el JDK de desarrollo es 21.0.12 y la imagen de
+build `maven:3.9.16-eclipse-temurin-21` trae JDK 21.0.12.1. Ninguno se expone a
+entrada no confiable, pero conviene actualizarlos para mantener la paridad.
+
 ### Actualización de JJWT (sin CVE)
 
 JJWT se actualizó de 0.11.5 a 0.13.0 en `jjwt-api`, `jjwt-impl` y `jjwt-jackson`.
