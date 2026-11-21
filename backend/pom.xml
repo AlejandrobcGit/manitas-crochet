@@ -109,7 +109,7 @@
 		<dependency>
 			<groupId>io.imagekit</groupId>
 			<artifactId>image-kit-java</artifactId>
-			<version>3.0.0</version>
+			<version>3.9.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.sejda.imageio</groupId>
