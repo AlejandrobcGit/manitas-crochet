@@ -23,7 +23,15 @@ Parches aplicados en `backend/pom.xml` sobre Spring Boot 3.5.16:
 | Log4j API | 2.24.3 | 2.25.5 | CVE-2026-49844 |
 
 Verificación: `mvn dependency:tree` confirma las versiones parcheadas y
-`mvn clean test` pasa con 199 tests (1 omitido).
+`mvn clean test` pasa con 206 tests (1 omitido), incluidos 7 nuevos tests de JWT.
+
+### Actualización de JJWT (sin CVE)
+
+JJWT se actualizó de 0.11.5 a 0.13.0 en `jjwt-api`, `jjwt-impl` y `jjwt-jackson`.
+No corrige una CVE, pero adopta la API 0.12+ y sus endurecimientos (rechazo de
+JSON con miembros duplicados, límite de iteraciones PBES2, correcciones JPMS).
+`JwtUtils` se migró a `Jwts.parser().verifyWith(...).build().parseSignedClaims(...)`
+y `Jwts.SIG.HS256`, manteniendo la compatibilidad con los tokens ya emitidos.
 
 ### Riesgo aceptado: Spring Framework 6.2.19
 
@@ -44,7 +52,6 @@ migración a Spring Boot 4.x.
 
 ### Deuda técnica pendiente (sin CVE conocida)
 
-- JJWT 0.11.5 → 0.13.0 (requiere adaptar la API de parseo).
 - spring-dotenv 4.0.0 → 5.1.0.
 - image-kit-java 3.0.0 → 3.9.0.
 - Caffeine 3.1.8 → 3.3.1.
