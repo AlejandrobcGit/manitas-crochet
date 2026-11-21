@@ -1,0 +1,78 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Todos los lunes a las 06:00 UTC
+    - cron: "0 6 * * 1"
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  # Escaneo de dependencias (npm, Maven, Dockerfiles) contra OSV.dev
+  osv-scan:
+    name: OSV-Scanner
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.7.1
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+  frontend-audit:
+    name: npm audit (frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Auditar dependencias
+        run: npm audit --audit-level=high
+
+  backend-verify:
+    name: Tests y dependencias (backend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v6.3.0
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Comprobar versiones parcheadas
+        run: |
+          set -o pipefail
+          mvn -B dependency:tree \
+            -Dincludes=org.apache.tomcat.embed:*,com.fasterxml.jackson.core:*,org.apache.logging.log4j:* \
+            | tee dependency-tree.txt
+
+          if grep -Eq 'tomcat-embed-core:jar:10\.1\.55' dependency-tree.txt; then
+            echo "::error::Tomcat 10.1.55 detectado. Aplicar el parche de seguridad (>= 10.1.62)."
+            exit 1
+          fi
+          if grep -Eq 'jackson-databind:jar:2\.21\.4' dependency-tree.txt; then
+            echo "::error::Jackson 2.21.4 detectado. Aplicar el parche de seguridad (>= 2.21.8)."
+            exit 1
+          fi
+          if grep -Eq 'log4j-api:jar:2\.24\.3' dependency-tree.txt; then
+            echo "::error::Log4j 2.24.3 detectado. Aplicar el parche de seguridad (>= 2.25.5)."
+            exit 1
+          fi
+      - name: Ejecutar tests
+        run: mvn -B test

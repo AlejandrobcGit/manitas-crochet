@@ -1,0 +1,14 @@
+# Riesgos aceptados y documentados en SECURITY.md
+# Revisar antes de la fecha de expiración.
+
+# CVE-2026-47890 (GHSA-j9f9-w8pj-32f8)
+[[IgnoredVulns]]
+id = "CVE-2026-47890"
+effectiveUntil = 2027-06-30
+reason = "SSE con fragments: la aplicacion no usa SseEmitter ni eventos SSE."
+
+# CVE-2026-47884 (GHSA-pc63-qcmh-9cmg)
+[[IgnoredVulns]]
+id = "CVE-2026-47884"
+effectiveUntil = 2027-06-30
+reason = "XsltView: la aplicacion no usa XsltView ni un mapeo /** que renderice vistas por nombre."
